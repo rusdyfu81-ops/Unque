@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siapa yang Masuk dalam Cerita Ini?</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --cream: #f5f0e8;
+  --cream2: #ede5d4;
+  --warm: #c8956a;
+  --warm2: #a0714f;
+  --ink: #2c2416;
+  --ink2: #4a3d2e;
+  --ink3: #7a6a55;
+  --gold: #b8860b;
+  --gold-light: rgba(184,134,11,0.12);
+  --rust: #8b3a2a;
+  --sage: #5a7a5a;
+  --white: #fdfaf5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* PAPER TEXTURE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+/* SLIDE SYSTEM */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  padding: 60px;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.slide.exit {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* NAVIGATION */
+.nav-dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ink3);
+  opacity: 0.25;
+  transition: all 0.3s;
+}
+.dot.active { opacity: 1; background: var(--warm2); width: 20px; border-radius: 3px; }
+
+.nav-hint {
+  position: fixed;
+  bottom: 28px;
+  right: 36px;
+  font-size: 11px;
+  color: var(--ink3);
+  opacity: 0.5;
+  letter-spacing: 1px;
+  font-family: 'Source Sans 3';
+}
+
+.slide-num {
+  position: fixed;
+  top: 28px;
+  right: 36px;
+  font-size: 11px;
+  color: var(--ink3);
+  opacity: 0.4;
+  font-family: 'Lora', serif;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════
+   SLIDE LAYOUTS
+═══════════════════════════════════════ */
+
+/* COVER */
+.slide-cover {
+  background: var(--ink);
+  flex-direction: column;
+  text-align: center;
+  gap: 0;
+}
+
+.slide-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 40%, rgba(184,134,11,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 70%, rgba(200,149,106,0.06) 0%, transparent 50%);
+}
+
+.cover-ornament {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--warm), transparent);
+  margin: 0 auto 40px;
+  opacity: 0.6;
+}
+
+.cover-tag {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-bottom: 28px;
+  font-family: 'Source Sans 3';
+  font-weight: 300;
+}
+
+.cover-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5.5vw, 72px);
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin-bottom: 32px;
+  max-width: 700px;
+  z-index: 1;
+}
+
+.cover-title em {
+  font-style: italic;
+  color: var(--warm);
+}
+
+.cover-line {
+  width: 48px;
+  height: 1px;
+  background: var(--warm);
+  margin: 0 auto 28px;
+  opacity: 0.6;
+}
+
+.cover-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink3);
+  letter-spacing: 0.3px;
+  z-index: 1;
+}
+
+.cover-bottom {
+  position: absolute;
+  bottom: 48px;
+  font-size: 11px;
+  color: var(--ink3);
+  opacity: 0.4;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* QUESTION SLIDE */
+.slide-question {
+  background: var(--cream);
+  flex-direction: column;
+  text-align: center;
+}
+
+.slide-question::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 4px;
+  background: linear-gradient(to right, transparent, var(--warm), transparent);
+}
+
+.q-ornament {
+  font-family: 'Playfair Display', serif;
+  font-size: 80px;
+  color: var(--warm);
+  opacity: 0.15;
+  line-height: 1;
+  margin-bottom: -20px;
+}
+
+.q-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 3.5vw, 48px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.4;
+  max-width: 720px;
+  margin-bottom: 40px;
+}
+
+.q-sub {
+  font-size: 15px;
+  color: var(--ink3);
+  max-width: 480px;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* CONTEXT SLIDE */
+.slide-context {
+  background: var(--white);
+  flex-direction: column;
+  gap: 0;
+}
+
+.context-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(to right, var(--rust), var(--warm), var(--gold));
+}
+
+.bible-ref {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--warm2);
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.context-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 3.5vw, 52px);
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.2;
+  margin-bottom: 40px;
+  max-width: 700px;
+}
+
+.context-body {
+  max-width: 680px;
+  text-align: center;
+}
+
+.context-body p {
+  font-size: 18px;
+  color: var(--ink2);
+  line-height: 1.8;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+
+.context-body strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.context-body .highlight {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--rust);
+  font-weight: 400;
+}
+
+/* PERSON SLIDE */
+.slide-person {
+  flex-direction: row;
+  gap: 0;
+  align-items: stretch;
+  padding: 0;
+}
+
+.person-left {
+  width: 38%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px 50px 60px 60px;
+  position: relative;
+}
+
+.person-left.tamar { background: #2c1810; }
+.person-left.rahab { background: #1a1f2e; }
+.person-left.rut { background: #1a2818; }
+
+.person-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 100px;
+  font-weight: 700;
+  color: white;
+  opacity: 0.06;
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  line-height: 1;
+}
+
+.person-tag {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+.tamar .person-tag { color: #c8906a; }
+.rahab .person-tag { color: #8a9cc8; }
+.rut .person-tag { color: #8ac88a; }
+
+.person-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 5vw, 68px);
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.person-verse {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.person-right {
+  width: 62%;
+  background: var(--white);
+  padding: 60px 60px 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  border-left: 1px solid var(--cream2);
+}
+
+.person-story-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink3);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.person-facts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.person-facts li {
+  font-size: 17px;
+  color: var(--ink2);
+  line-height: 1.6;
+  font-weight: 300;
+  padding-left: 20px;
+  position: relative;
+}
+
+.person-facts li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--warm);
+  font-weight: 300;
+}
+
+.person-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--cream2);
+}
+
+.person-question {
+  background: var(--cream);
+  border-radius: 8px;
+  padding: 18px 22px;
+  border-left: 3px solid var(--warm);
+}
+
+.person-question p {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+/* QUOTE SLIDE */
+.slide-quote {
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+}
+
+.slide-quote.dark { background: var(--ink); }
+.slide-quote.light { background: var(--cream); }
+
+.quote-open {
+  font-family: 'Playfair Display', serif;
+  font-size: 120px;
+  color: var(--warm);
+  opacity: 0.2;
+  line-height: 0.5;
+  margin-bottom: 20px;
+}
+
+.quote-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 38px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 780px;
+  margin-bottom: 32px;
+}
+
+.slide-quote.dark .quote-text { color: var(--white); }
+.slide-quote.light .quote-text { color: var(--ink); }
+
+.quote-attr {
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.slide-quote.dark .quote-attr { color: var(--warm); }
+.slide-quote.light .quote-attr { color: var(--warm2); }
+
+.quote-line {
+  width: 40px;
+  height: 1px;
+  background: var(--warm);
+  margin: 0 auto 20px;
+  opacity: 0.5;
+}
+
+/* REVEAL SLIDE */
+.slide-reveal {
+  flex-direction: column;
+  background: var(--white);
+  text-align: center;
+}
+
+.reveal-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm2);
+  margin-bottom: 40px;
+}
+
+.reveal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 700px;
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.reveal-no {
+  background: #fdf0ec;
+  border: 1px solid #e8c8bc;
+  border-radius: 10px;
+  padding: 24px 28px;
+}
+
+.reveal-yes {
+  background: #eef4ee;
+  border: 1px solid #b8d4b8;
+  border-radius: 10px;
+  padding: 24px 28px;
+}
+
+.reveal-no-title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.reveal-yes-title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.reveal-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reveal-items li {
+  font-size: 15px;
+  color: var(--ink2);
+  line-height: 1.5;
+  font-weight: 300;
+  padding-left: 16px;
+  position: relative;
+}
+
+.reveal-no .reveal-items li::before { content: '✕'; position: absolute; left: 0; color: var(--rust); font-size: 10px; top: 3px; }
+.reveal-yes .reveal-items li::before { content: '✓'; position: absolute; left: 0; color: var(--sage); font-size: 11px; top: 2px; }
+
+.reveal-conclusion {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.5vw, 30px);
+  font-style: italic;
+  color: var(--ink);
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+/* REFLECTION SLIDE */
+.slide-reflection {
+  background: var(--cream2);
+  flex-direction: column;
+  text-align: center;
+}
+
+.reflection-label {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--warm2);
+  margin-bottom: 40px;
+}
+
+.reflection-q {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 3.5vw, 46px);
+  font-style: italic;
+  color: var(--ink);
+  max-width: 680px;
+  line-height: 1.4;
+  margin-bottom: 48px;
+}
+
+.three-names {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.name-pill {
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-style: italic;
+  border: 1px solid;
+}
+
+.name-pill.tamar { background: rgba(44,24,16,0.06); border-color: rgba(44,24,16,0.15); color: #2c1810; }
+.name-pill.rahab { background: rgba(26,31,46,0.06); border-color: rgba(26,31,46,0.15); color: #1a1f2e; }
+.name-pill.rut { background: rgba(26,40,24,0.06); border-color: rgba(26,40,24,0.15); color: #1a2818; }
+
+.reflection-note {
+  font-size: 14px;
+  color: var(--ink3);
+  font-style: italic;
+  margin-top: 32px;
+}
+
+/* CLOSING SLIDE */
+.slide-closing {
+  background: var(--ink);
+  flex-direction: column;
+  text-align: center;
+}
+
+.closing-ornament {
+  font-size: 32px;
+  margin-bottom: 32px;
+  opacity: 0.5;
+}
+
+.closing-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 2.5vw, 28px);
+  color: var(--cream);
+  font-weight: 400;
+  margin-bottom: 32px;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.closing-task {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(200,149,106,0.25);
+  border-radius: 12px;
+  padding: 28px 40px;
+  max-width: 540px;
+  margin-bottom: 32px;
+}
+
+.closing-task-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-bottom: 14px;
+}
+
+.closing-task-text {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--cream);
+  line-height: 1.7;
+}
+
+.closing-task-text strong {
+  font-style: normal;
+  color: var(--warm);
+}
+
+.closing-next {
+  font-size: 13px;
+  color: var(--ink3);
+  letter-spacing: 1px;
+}
+
+/* SECTION HEADER */
+.slide-section {
+  background: var(--cream2);
+  flex-direction: column;
+  text-align: center;
+  border-left: none;
+}
+
+.section-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 120px;
+  font-weight: 700;
+  color: var(--warm);
+  opacity: 0.1;
+  line-height: 1;
+  position: absolute;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--warm2);
+  margin-bottom: 16px;
+  z-index: 1;
+}
+
+.section-title-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(30px, 4vw, 54px);
+  color: var(--ink);
+  font-weight: 600;
+  z-index: 1;
+  max-width: 600px;
+  line-height: 1.2;
+}
+
+/* TRANSITION */
+.slide-transition {
+  background: var(--cream);
+  flex-direction: column;
+  text-align: center;
+}
+
+.transition-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 38px);
+  font-style: italic;
+  color: var(--ink2);
+  max-width: 600px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.transition-sub {
+  font-size: 15px;
+  color: var(--ink3);
+  font-weight: 300;
+}
+
+/* SILENT SLIDE */
+.slide-silent {
+  background: var(--ink);
+  flex-direction: column;
+  text-align: center;
+}
+
+.silent-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.8vw, 36px);
+  font-style: italic;
+  color: rgba(255,255,255,0.7);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.silent-pause {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.5;
+  margin-top: 40px;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide.active > * {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.slide.active > *:nth-child(2) { animation-delay: 0.1s; opacity: 0; }
+.slide.active > *:nth-child(3) { animation-delay: 0.2s; opacity: 0; }
+.slide.active > *:nth-child(4) { animation-delay: 0.3s; opacity: 0; }
+.slide.active > *:nth-child(5) { animation-delay: 0.4s; opacity: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: COVER -->
+<div class="slide slide-cover active" id="slide-0">
+  <div class="cover-ornament"></div>
+  <div class="cover-tag">Pertemuan Pertama · The Genesis Genealogies</div>
+  <div class="cover-title">Siapa yang Masuk<br>dalam <em>Cerita Ini?</em></div>
+  <div class="cover-line"></div>
+  <div class="cover-sub">Matius 1 · Silsilah Yesus Kristus</div>
+  <div class="cover-bottom">Klik untuk lanjut</div>
+</div>
+
+<!-- SLIDE 2: PERTANYAAN PEMBUKA -->
+<div class="slide slide-question" id="slide-1">
+  <div class="q-ornament">"</div>
+  <div class="q-text">Kalau Allah membuat daftar silsilah keluarga-Nya — apakah nama kamu akan ada di sana?</div>
+  <div class="q-sub">Kita akan mencari jawabannya bersama hari ini.</div>
+</div>
+
+<!-- SLIDE 3: KONTEKS MATIUS 1 -->
+<div class="slide slide-context" id="slide-2">
+  <div class="context-header"></div>
+  <div class="bible-ref">Matius 1:1–17</div>
+  <div class="context-title">Perjanjian Baru dibuka bukan dengan mukjizat.<br>Bukan dengan khotbah.<br>Tapi dengan sebuah daftar nama.</div>
+  <div class="context-body">
+    <p>Silsilah keluarga Yesus Kristus.</p>
+    <p>Dan di dalam daftar itu — ada sesuatu yang <strong>sangat tidak biasa.</strong></p>
+    <p class="highlight">Lima perempuan disebut.<br>Di zaman di mana perempuan tidak pernah masuk silsilah.</p>
+  </div>
+</div>
+
+<!-- SLIDE 4: INTRO TIGA PEREMPUAN -->
+<div class="slide slide-transition" id="slide-3">
+  <div class="transition-text">Hari ini kita akan bertemu tiga dari mereka.</div>
+  <div class="transition-sub">Tamar · Rahab · Rut</div>
+</div>
+
+<!-- SLIDE 5: SECTION TAMAR -->
+<div class="slide slide-section" id="slide-4">
+  <div class="section-num">1</div>
+  <div class="section-label">Perempuan Pertama</div>
+  <div class="section-title-text">Tamar</div>
+</div>
+
+<!-- SLIDE 6: TAMAR - CERITA -->
+<div class="slide slide-person" id="slide-5">
+  <div class="person-left tamar">
+    <div class="person-number">1</div>
+    <div class="person-tag">Menantu Yehuda</div>
+    <div class="person-name">Tamar</div>
+    <div class="person-verse">Matius 1:3</div>
+  </div>
+  <div class="person-right">
+    <div class="person-story-title">Siapa ia</div>
+    <ul class="person-facts">
+      <li>Suaminya mati. Lalu suami keduanya mati.</li>
+      <li>Mertua menolak memberi anak ketiganya — karena takut</li>
+      <li>Ditinggalkan. Diabaikan. Tidak ada masa depan yang terlihat</li>
+      <li>Hampir dihukum mati — sampai Yehuda berkata sendiri:</li>
+    </ul>
+    <div class="person-divider"></div>
+    <div class="person-question">
+      <p>"Ia lebih benar dari aku."<br>— Yehuda, mertuanya (Kejadian 38:26)</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: TAMAR - PERTANYAAN -->
+<div class="slide slide-silent" id="slide-6">
+  <div class="silent-text">Pernahkah kamu merasa ditinggalkan oleh sistem — oleh orang yang seharusnya melindungimu?</div>
+  <div class="silent-pause">Tidak perlu dijawab dengan suara</div>
+</div>
+
+<!-- SLIDE 8: SECTION RAHAB -->
+<div class="slide slide-section" id="slide-7">
+  <div class="section-num">2</div>
+  <div class="section-label">Perempuan Kedua</div>
+  <div class="section-title-text">Rahab</div>
+</div>
+
+<!-- SLIDE 9: RAHAB - CERITA -->
+<div class="slide slide-person" id="slide-8">
+  <div class="person-left rahab">
+    <div class="person-number">2</div>
+    <div class="person-tag">Perempuan Yerikho</div>
+    <div class="person-name">Rahab</div>
+    <div class="person-verse">Matius 1:5</div>
+  </div>
+  <div class="person-right">
+    <div class="person-story-title">Siapa ia</div>
+    <ul class="person-facts">
+      <li>Orang luar — bukan Israel, bukan bagian dari umat perjanjian</li>
+      <li>Semua orang tahu pekerjaannya</li>
+      <li>Tidak punya alasan untuk percaya kepada Allah Israel</li>
+      <li>Tapi ia mendengar — dan memilih percaya</li>
+    </ul>
+    <div class="person-divider"></div>
+    <div class="person-question">
+      <p>"TUHAN Allahmu, Dialah Allah — di atas di langit dan di bawah di bumi."<br>— Rahab (Yosua 2:11)</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: RAHAB - PERTANYAAN -->
+<div class="slide slide-silent" id="slide-9">
+  <div class="silent-text">Pernahkah kamu merasa bahwa masa lalumu mendiskualifikasimu dari cerita Allah?</div>
+  <div class="silent-pause">Tidak perlu dijawab dengan suara</div>
+</div>
+
+<!-- SLIDE 11: SECTION RUT -->
+<div class="slide slide-section" id="slide-10">
+  <div class="section-num">3</div>
+  <div class="section-label">Perempuan Ketiga</div>
+  <div class="section-title-text">Rut</div>
+</div>
+
+<!-- SLIDE 12: RUT - CERITA -->
+<div class="slide slide-person" id="slide-11">
+  <div class="person-left rut">
+    <div class="person-number">3</div>
+    <div class="person-tag">Perempuan Moab</div>
+    <div class="person-name">Rut</div>
+    <div class="person-verse">Matius 1:5</div>
+  </div>
+  <div class="person-right">
+    <div class="person-story-title">Siapa ia</div>
+    <ul class="person-facts">
+      <li>Dari bangsa yang dilarang masuk jemaah TUHAN sampai 10 generasi</li>
+      <li>Janda muda — ikut mertua yang juga janda dan miskin</li>
+      <li>Tidak ada yang menjamin masa depannya</li>
+      <li>Tapi ia memilih — tanpa paksaan, tanpa jaminan</li>
+    </ul>
+    <div class="person-divider"></div>
+    <div class="person-question">
+      <p>"Ke mana engkau pergi, ke sana aku pergi. Allahmu adalah Allahku."<br>— Rut (Rut 1:16)</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: RUT - PERTANYAAN -->
+<div class="slide slide-silent" id="slide-12">
+  <div class="silent-text">Pernahkah kamu memilih sesuatu yang benar — tanpa tahu apakah itu akan berhasil?</div>
+  <div class="silent-pause">Tidak perlu dijawab dengan suara</div>
+</div>
+
+<!-- SLIDE 14: QUOTE PARK -->
+<div class="slide slide-quote dark" id="slide-13">
+  <div class="quote-open">"</div>
+  <div class="quote-text">No obstacle on this earth could stand in the way of their living faith.</div>
+  <div class="quote-line"></div>
+  <div class="quote-attr">Abraham Park · The Unquenchable Lamp of the Covenant</div>
+</div>
+
+<!-- SLIDE 15: PENJELASAN QUOTE -->
+<div class="slide slide-context" id="slide-14">
+  <div class="context-header"></div>
+  <div class="context-title">Iman yang hidup.<br>Bukan iman yang sempurna.</div>
+  <div class="context-body">
+    <p>Bukan iman yang bersih dari masa lalu.</p>
+    <p>Bukan iman yang diakui semua orang.</p>
+    <p class="highlight">Iman yang tidak berhenti<br>meski semua alasan untuk berhenti ada.</p>
+  </div>
+</div>
+
+<!-- SLIDE 16: KEMBALI KE PERTANYAAN -->
+<div class="slide slide-question" id="slide-15">
+  <div class="q-ornament">"</div>
+  <div class="q-text">Kalau Allah membuat daftar silsilah keluarga-Nya — apakah nama kamu akan ada di sana?</div>
+  <div class="q-sub">Sekarang kita punya cukup untuk mulai menjawabnya.</div>
+</div>
+
+<!-- SLIDE 17: REVEAL - BUKAN INI -->
+<div class="slide slide-reveal" id="slide-16">
+  <div class="reveal-label">Yang masuk dalam silsilah</div>
+  <div class="reveal-grid">
+    <div class="reveal-no">
+      <div class="reveal-no-title">Bukan karena</div>
+      <ul class="reveal-items">
+        <li>Paling saleh</li>
+        <li>Masa lalu yang bersih</li>
+        <li>Diakui semua orang</li>
+        <li>Hidup yang sempurna</li>
+      </ul>
+    </div>
+    <div class="reveal-yes">
+      <div class="reveal-yes-title">Tapi karena</div>
+      <ul class="reveal-items">
+        <li>Imannya hidup</li>
+        <li>Memilih Allah tanpa jaminan</li>
+        <li>Tidak berhenti meski bisa</li>
+        <li>Allah yang memilih mereka</li>
+      </ul>
+    </div>
+  </div>
+  <div class="reveal-conclusion">Lampu ini tidak bergantung pada kelayakan manusia.</div>
+</div>
+
+<!-- SLIDE 18: PERTANYAAN REFLEKSI -->
+<div class="slide slide-reflection" id="slide-17">
+  <div class="reflection-label">Pertanyaan untuk dibawa pulang</div>
+  <div class="reflection-q">Di antara ketiga perempuan ini — siapa yang paling terasa dekat dengan hidupmu sekarang?</div>
+  <div class="three-names">
+    <div class="name-pill tamar">Tamar</div>
+    <div class="name-pill rahab">Rahab</div>
+    <div class="name-pill rut">Rut</div>
+  </div>
+  <div class="reflection-note">Jawab dalam hati. Tidak perlu diucapkan.</div>
+</div>
+
+<!-- SLIDE 19: PENUTUP - TUGAS -->
+<div class="slide slide-closing" id="slide-18">
+  <div class="closing-ornament">🕯</div>
+  <div class="closing-title">Park menghabiskan 50 tahun hidupnya<br>berdiam dalam teks yang sama.<br>Dan yang ia temukan bukan hanya informasi —<br>tapi pertemuan.</div>
+  <div class="closing-task">
+    <div class="closing-task-label">Sebelum pertemuan berikutnya</div>
+    <div class="closing-task-text">Buka buku kalian. Temukan halaman yang membahas salah satu dari tiga nama tadi. Baca <strong>satu paragraf saja</strong>. Lihat apa yang kamu rasakan.</div>
+  </div>
+  <div class="closing-next">Pertemuan berikutnya · Bagaimana lampu hampir padam — berkali-kali</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-dots" id="navDots"></div>
+<div class="nav-hint">klik untuk lanjut</div>
+<div class="slide-num" id="slideNum"></div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('navDots');
+const slideNum = document.getElementById('slideNum');
+let current = 0;
+
+// Build dots
+slides.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.onclick = (e) => { e.stopPropagation(); goTo(i); };
+  navDots.appendChild(dot);
+});
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.className = 'dot' + (i === current ? ' active' : '');
+  });
+  slideNum.textContent = `${current + 1} / ${slides.length}`;
+}
+
+function goTo(n) {
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit');
+  setTimeout(() => slides[current].classList.remove('exit'), 600);
+  current = Math.max(0, Math.min(n, slides.length - 1));
+  slides[current].classList.add('active');
+  updateDots();
+}
+
+document.body.addEventListener('click', () => {
+  if (current < slides.length - 1) goTo(current + 1);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') goTo(current + 1);
+  if (e.key === 'ArrowLeft') goTo(current - 1);
+  if (e.key === 'f' || e.key === 'F') document.documentElement.requestFullscreen?.();
+});
+
+updateDots();
+</script>
+</body>
+</html>

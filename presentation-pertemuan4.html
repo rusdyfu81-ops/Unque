@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pertemuan 4 — Lampu Itu Sekarang Ada di Tanganmu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --cream: #f5f0e8;
+  --cream2: #ede5d4;
+  --cream3: #e4d8c4;
+  --warm: #c8956a;
+  --warm2: #a0714f;
+  --ink: #2c2416;
+  --ink2: #4a3d2e;
+  --ink3: #7a6a55;
+  --gold: #b8860b;
+  --gold-light: rgba(184,134,11,0.12);
+  --rust: #8b3a2a;
+  --sage: #5a7a5a;
+  --white: #fdfaf5;
+  --dark: #1a1208;
+  --amber: #1e1408;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  overflow: hidden;
+  width: 100vw; height: 100vh;
+  cursor: pointer;
+  user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1000; opacity: 0.5;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.65s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; padding: 60px;
+}
+.slide.active { opacity: 1; transform: translateY(0); pointer-events: all; }
+.slide.exit { opacity: 0; transform: translateY(-20px); }
+
+.nav-dots { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(44,36,22,0.15); transition: all 0.3s; }
+.dot.active { background: var(--warm2); width: 20px; border-radius: 3px; }
+.nav-hint { position: fixed; bottom: 28px; right: 36px; font-size: 11px; color: var(--ink3); opacity: 0.3; letter-spacing: 1px; }
+.slide-num { position: fixed; top: 28px; right: 36px; font-size: 11px; color: var(--ink3); opacity: 0.35; font-family: 'Lora', serif; font-style: italic; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.slide.active > * { animation: fadeUp 0.5s ease forwards; }
+.slide.active > *:nth-child(2) { animation-delay: 0.1s; opacity: 0; }
+.slide.active > *:nth-child(3) { animation-delay: 0.2s; opacity: 0; }
+.slide.active > *:nth-child(4) { animation-delay: 0.3s; opacity: 0; }
+.slide.active > *:nth-child(5) { animation-delay: 0.4s; opacity: 0; }
+
+/* ══════════════════════════════
+   PERTEMUAN 4 — ALL WARM/LIGHT
+   Hanya satu slide gelap: slide pembuka recap
+══════════════════════════════ */
+
+/* COVER — warm, intimate */
+.slide-cover {
+  background: var(--cream2); flex-direction: column; text-align: center;
+}
+.slide-cover::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(to right, transparent, var(--warm), transparent); }
+.slide-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(200,149,106,0.12) 0%, transparent 65%);
+}
+.cover-ornament { font-size: 36px; margin-bottom: 28px; z-index: 1; opacity: 0.6; }
+.cover-tag { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--warm2); opacity: 0.7; margin-bottom: 20px; z-index:1; }
+.cover-num { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--ink3); margin-bottom: 16px; z-index:1; opacity: 0.6; }
+.cover-title { font-family: 'Playfair Display', serif; font-size: clamp(30px,5vw,64px); font-weight: 400; color: var(--ink); line-height: 1.2; max-width: 700px; z-index:1; margin-bottom: 20px; }
+.cover-title em { font-style: italic; color: var(--warm2); }
+.cover-line { width: 40px; height: 1px; background: var(--warm); opacity: 0.4; margin: 0 auto 20px; z-index:1; }
+.cover-sub { font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--ink3); z-index:1; }
+.cover-bottom { position: absolute; bottom: 44px; font-size: 11px; color: var(--ink3); opacity: 0.3; letter-spacing: 2px; text-transform: uppercase; }
+
+/* DARK RECAP — satu-satunya slide gelap */
+.slide-dark-recap {
+  background: var(--dark); flex-direction: column; text-align: center;
+}
+.dark-recap-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm); opacity: 0.5; margin-bottom: 28px; }
+.dark-recap-items { display: flex; flex-direction: column; gap: 16px; max-width: 600px; }
+.dark-recap-item { display: flex; align-items: center; gap: 16px; text-align: left; }
+.dark-recap-num { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(200,149,106,0.3); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--warm); flex-shrink: 0; font-family: 'Playfair Display', serif; }
+.dark-recap-text { font-family: 'Lora', serif; font-style: italic; font-size: 15px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+.dark-recap-text strong { font-style: normal; color: rgba(255,255,255,0.7); }
+.dark-recap-footer { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: rgba(255,255,255,0.6); margin-top: 40px; max-width: 500px; text-align: center; line-height: 1.5; }
+
+/* QUESTION */
+.slide-question { flex-direction: column; text-align: center; }
+.slide-question.warm { background: var(--cream); }
+.slide-question.cream2 { background: var(--cream2); }
+.q-ornament { font-family: 'Playfair Display', serif; font-size: 80px; opacity: 0.1; line-height: 1; margin-bottom: -16px; color: var(--warm); }
+.q-text { font-family: 'Playfair Display', serif; font-size: clamp(24px,3.5vw,46px); font-weight: 400; font-style: italic; line-height: 1.4; max-width: 720px; margin-bottom: 28px; color: var(--ink); }
+.q-sub { font-size: 15px; font-weight: 300; max-width: 480px; line-height: 1.7; color: var(--ink3); }
+
+/* PROVERBS SLIDE */
+.slide-proverbs {
+  background: var(--amber); flex-direction: column; text-align: center;
+}
+.slide-proverbs::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,149,106,0.1) 0%, transparent 65%);
+}
+.prov-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm); opacity: 0.6; margin-bottom: 16px; z-index:1; }
+.prov-ref { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: rgba(255,255,255,0.3); margin-bottom: 24px; z-index:1; }
+.prov-text { font-family: 'Playfair Display', serif; font-size: clamp(26px,3.8vw,52px); font-style: italic; color: var(--white); max-width: 680px; line-height: 1.45; margin-bottom: 20px; z-index:1; }
+.prov-text em { color: var(--warm); font-style: normal; }
+.prov-sub { font-size: 14px; color: rgba(255,255,255,0.3); z-index:1; font-weight: 300; }
+
+/* LAMP IN HANDS — the central image */
+.slide-lamp {
+  background: var(--cream); flex-direction: column; text-align: center;
+}
+.slide-lamp::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, transparent, var(--gold), transparent); }
+.lamp-icon { font-size: 56px; margin-bottom: 20px; opacity: 0.8; }
+.lamp-title { font-family: 'Playfair Display', serif; font-size: clamp(28px,4vw,54px); font-weight: 400; color: var(--ink); max-width: 680px; line-height: 1.3; margin-bottom: 24px; }
+.lamp-title em { font-style: italic; color: var(--warm2); }
+.lamp-body { font-size: 17px; color: var(--ink2); max-width: 560px; line-height: 1.8; font-weight: 300; }
+.lamp-body strong { font-weight: 600; color: var(--ink); }
+
+/* MOVEMENT SLIDE — from cosmic to personal */
+.slide-movement {
+  background: var(--white); flex-direction: column; text-align: center;
+}
+.slide-movement::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, transparent, var(--warm), transparent); }
+.move-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm2); margin-bottom: 32px; }
+.move-chain { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 480px; }
+.move-step { padding: 14px 28px; text-align: center; position: relative; width: 100%; }
+.move-step-text { font-family: 'Playfair Display', serif; font-size: clamp(16px,2vw,22px); color: var(--ink2); font-style: italic; }
+.move-step.highlight .move-step-text { color: var(--ink); font-weight: 600; font-size: clamp(18px,2.5vw,28px); font-style: normal; }
+.move-step.highlight { background: var(--gold-light); border: 1px solid rgba(184,134,11,0.2); border-radius: 10px; }
+.move-arrow { font-size: 18px; color: var(--warm); opacity: 0.4; padding: 4px 0; }
+.move-footer { font-size: 14px; color: var(--ink3); margin-top: 28px; font-style: italic; max-width: 440px; line-height: 1.6; }
+
+/* WHAT PARK WANTS */
+.slide-parkwants {
+  background: var(--cream2); flex-direction: column; text-align: center;
+}
+.park-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm2); margin-bottom: 28px; }
+.park-quote { font-family: 'Playfair Display', serif; font-size: clamp(22px,3vw,40px); font-style: italic; color: var(--ink); max-width: 700px; line-height: 1.5; margin-bottom: 24px; }
+.park-attr { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm2); opacity: 0.7; margin-bottom: 32px; }
+.park-line { width: 36px; height: 1px; background: var(--warm); opacity: 0.4; margin: 0 auto 28px; }
+.park-explain { font-size: 16px; color: var(--ink2); max-width: 560px; line-height: 1.8; font-weight: 300; }
+
+/* FOUR WEEKS REVIEW */
+.slide-fourweeks {
+  background: var(--white); flex-direction: column; align-items: center;
+}
+.slide-fourweeks::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, var(--rust), var(--warm), var(--gold)); }
+.fw-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm2); margin-bottom: 32px; }
+.fw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 700px; margin-bottom: 28px; }
+.fw-item { background: var(--cream); border: 1px solid var(--cream2); border-radius: 10px; padding: 20px 24px; text-align: left; }
+.fw-item-num { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--warm); opacity: 0.3; line-height: 1; margin-bottom: 8px; }
+.fw-item-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--ink); font-weight: 600; margin-bottom: 4px; }
+.fw-item-sub { font-size: 13px; color: var(--ink3); line-height: 1.5; font-weight: 300; }
+.fw-item.current { background: var(--gold-light); border-color: rgba(184,134,11,0.25); }
+.fw-item.current .fw-item-num { color: var(--gold); opacity: 0.7; }
+.fw-conclusion { font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--ink2); max-width: 560px; text-align: center; line-height: 1.7; }
+
+/* SILENT */
+.slide-silent { flex-direction: column; text-align: center; }
+.slide-silent.warm { background: var(--cream); }
+.slide-silent.cream2 { background: var(--cream2); }
+.silent-text { font-family: 'Playfair Display', serif; font-size: clamp(22px,3vw,42px); font-style: italic; max-width: 640px; line-height: 1.55; color: var(--ink); }
+.silent-pause { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm2); opacity: 0.5; margin-top: 40px; }
+
+/* INVITATION */
+.slide-invitation {
+  background: var(--cream3); flex-direction: column; text-align: center;
+}
+.inv-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm2); margin-bottom: 28px; }
+.inv-title { font-family: 'Playfair Display', serif; font-size: clamp(24px,3.5vw,48px); color: var(--ink); font-weight: 400; line-height: 1.35; max-width: 680px; margin-bottom: 32px; }
+.inv-title em { font-style: italic; color: var(--warm2); }
+.inv-options { display: flex; gap: 16px; max-width: 680px; }
+.inv-option { flex: 1; background: var(--white); border: 1px solid var(--cream2); border-radius: 10px; padding: 20px 22px; text-align: left; }
+.inv-option-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm2); margin-bottom: 8px; font-weight: 600; }
+.inv-option-text { font-size: 14px; color: var(--ink2); line-height: 1.6; font-weight: 300; }
+
+/* FINAL QUESTION — the open ending */
+.slide-final {
+  background: var(--ink); flex-direction: column; text-align: center;
+}
+.slide-final::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,149,106,0.08) 0%, transparent 60%);
+}
+.final-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm); opacity: 0.5; margin-bottom: 32px; z-index:1; }
+.final-text { font-family: 'Playfair Display', serif; font-size: clamp(26px,4vw,54px); font-style: italic; color: var(--white); max-width: 700px; line-height: 1.4; z-index:1; }
+.final-sub { font-size: 14px; color: rgba(255,255,255,0.25); margin-top: 32px; z-index:1; font-weight: 300; letter-spacing: 0.5px; }
+
+/* SEND-OFF — very last slide, warm */
+.slide-sendoff {
+  background: var(--cream2); flex-direction: column; text-align: center;
+}
+.sendoff-ornament { font-size: 32px; margin-bottom: 28px; opacity: 0.5; }
+.sendoff-main { font-family: 'Playfair Display', serif; font-size: clamp(22px,3vw,40px); color: var(--ink); font-weight: 400; line-height: 1.45; max-width: 640px; margin-bottom: 36px; }
+.sendoff-main em { font-style: italic; color: var(--warm2); }
+.sendoff-verse { background: var(--white); border-left: 4px solid var(--warm); border-radius: 0 10px 10px 0; padding: 20px 28px; max-width: 520px; text-align: left; margin-bottom: 28px; }
+.sendoff-verse-text { font-family: 'Lora', serif; font-style: italic; font-size: 17px; color: var(--ink2); line-height: 1.7; margin-bottom: 8px; }
+.sendoff-verse-ref { font-size: 11px; letter-spacing: 1px; color: var(--ink3); opacity: 0.7; text-transform: uppercase; }
+.sendoff-close { font-size: 13px; color: var(--ink3); font-style: italic; }
+
+</style>
+</head>
+<body>
+
+<!-- 1: COVER -->
+<div class="slide slide-cover active" id="slide-0">
+  <div class="cover-ornament">🕯</div>
+  <div class="cover-num">Pertemuan Keempat · Terakhir</div>
+  <div class="cover-tag">The Unquenchable Lamp of the Covenant</div>
+  <div class="cover-title">Lampu Itu Sekarang<br>Ada di <em>Tanganmu</em></div>
+  <div class="cover-line"></div>
+  <div class="cover-sub">Amsal 20:27 · "Roh manusia adalah pelita TUHAN."</div>
+  <div class="cover-bottom">Klik untuk lanjut</div>
+</div>
+
+<!-- 2: RECAP PERJALANAN -->
+<div class="slide slide-dark-recap" id="slide-1">
+  <div class="dark-recap-label">Perjalanan empat minggu</div>
+  <div class="dark-recap-items">
+    <div class="dark-recap-item">
+      <div class="dark-recap-num">1</div>
+      <div class="dark-recap-text"><strong>Siapa yang masuk dalam cerita ini</strong> — tiga perempuan yang imannya tidak bisa dihentikan</div>
+    </div>
+    <div class="dark-recap-item">
+      <div class="dark-recap-num">2</div>
+      <div class="dark-recap-text"><strong>Bagaimana lampu hampir padam</strong> — 340 tahun lebih gelap dari Sodom</div>
+    </div>
+    <div class="dark-recap-item">
+      <div class="dark-recap-num">3</div>
+      <div class="dark-recap-text"><strong>Mengapa Allah tidak menyerah</strong> — sumpah, kecemburuan, nilai satu jiwa</div>
+    </div>
+    <div class="dark-recap-item">
+      <div class="dark-recap-num">4</div>
+      <div class="dark-recap-text"><strong>Malam ini</strong> — ke mana semua itu bermuara</div>
+    </div>
+  </div>
+  <div class="dark-recap-footer">Semua itu bukan sejarah yang sudah selesai.</div>
+</div>
+
+<!-- 3: PERTANYAAN JEMBATAN -->
+<div class="slide slide-question warm" id="slide-2">
+  <div class="q-ornament">"</div>
+  <div class="q-text">Kalau seluruh perjalanan itu berakhir di satu titik — di mana titik itu?</div>
+  <div class="q-sub">Park menjawabnya dengan satu ayat dari Amsal.</div>
+</div>
+
+<!-- 4: AMSAL 20:27 -->
+<div class="slide slide-proverbs" id="slide-3">
+  <div class="prov-label">Kunci seluruh buku</div>
+  <div class="prov-ref">Amsal 20:27</div>
+  <div class="prov-text">"Roh manusia adalah <em>pelita</em> TUHAN,<br>yang menyelidiki seluruh lubuk hatinya."</div>
+  <div class="prov-sub">Park memilih ayat ini sebagai jantung dari seluruh argumennya.</div>
+</div>
+
+<!-- 5: ARTINYA -->
+<div class="slide slide-lamp" id="slide-4">
+  <div class="lamp-icon">🕯</div>
+  <div class="lamp-title">Bukan lampu yang ada di <em>luar</em> kamu.<br>Lampu yang <em>adalah</em> kamu.</div>
+  <div class="lamp-body">Park menulis bahwa seluruh silsilah itu — 1163 tahun, generasi demi generasi, Tamar dan Rahab dan Rut dan Daud — semua itu bergerak menuju <strong>satu tujuan</strong>: supaya jiwa manusia bisa menjadi pelita yang menyala.</div>
+</div>
+
+<!-- 6: GERAKAN — alam semesta ke satu jiwa -->
+<div class="slide slide-movement" id="slide-5">
+  <div class="move-label">Gerakan yang Park temukan</div>
+  <div class="move-chain">
+    <div class="move-step"><div class="move-step-text">Alam semesta yang tidak terbatas</div></div>
+    <div class="move-arrow">↓</div>
+    <div class="move-step"><div class="move-step-text">1163 tahun sejarah</div></div>
+    <div class="move-arrow">↓</div>
+    <div class="move-step"><div class="move-step-text">42 nama dalam silsilah</div></div>
+    <div class="move-arrow">↓</div>
+    <div class="move-step highlight"><div class="move-step-text">Satu jiwa — jiwamu</div></div>
+  </div>
+  <div class="move-footer">Allah tidak bergerak dari besar ke kecil karena jiwamu kecil. Ia bergerak ke arahmu karena jiwamu adalah segalanya.</div>
+</div>
+
+<!-- 7: PARK'S INTENT -->
+<div class="slide slide-parkwants" id="slide-6">
+  <div class="park-label">Yang Park inginkan dari pembacanya</div>
+  <div class="park-quote">"Become a living lamp — a light that illuminates the path of redemption for others."</div>
+  <div class="park-attr">Abraham Park · The Unquenchable Lamp of the Covenant</div>
+  <div class="park-line"></div>
+  <div class="park-explain">Park tidak menulis buku ini supaya kamu mengerti silsilah. Ia menulis supaya kamu menjadi sesuatu. Bukan pembaca yang lebih pintar — tapi pelita yang menyala.</div>
+</div>
+
+<!-- 8: SILENT — jiwamu -->
+<div class="slide slide-silent warm" id="slide-7">
+  <div class="silent-text">Apa yang harus menyala dalam dirimu — yang sekarang masih redup?</div>
+  <div class="silent-pause">Tidak perlu dijawab dengan suara</div>
+</div>
+
+<!-- 9: EMPAT MINGGU DIRANGKUM -->
+<div class="slide slide-fourweeks" id="slide-8">
+  <div class="fw-label">Apa yang kita sudah lewati bersama</div>
+  <div class="fw-grid">
+    <div class="fw-item">
+      <div class="fw-item-num">1</div>
+      <div class="fw-item-title">Tamar · Rahab · Rut</div>
+      <div class="fw-item-sub">Iman yang hidup tidak bisa dihentikan oleh apapun</div>
+    </div>
+    <div class="fw-item">
+      <div class="fw-item-num">2</div>
+      <div class="fw-item-title">340 Tahun Kegelapan</div>
+      <div class="fw-item-sub">Semakin gelap zamannya — semakin jelas tangan Allah</div>
+    </div>
+    <div class="fw-item">
+      <div class="fw-item-num">3</div>
+      <div class="fw-item-title">Mengapa Tidak Menyerah</div>
+      <div class="fw-item-sub">Sumpah, kecemburuan, nilai satu jiwa</div>
+    </div>
+    <div class="fw-item current">
+      <div class="fw-item-num">4</div>
+      <div class="fw-item-title">Lampumu</div>
+      <div class="fw-item-sub">Roh manusia adalah pelita TUHAN — Amsal 20:27</div>
+    </div>
+  </div>
+  <div class="fw-conclusion">Ini bukan kursus yang sudah selesai. Ini pintu yang baru dibuka.</div>
+</div>
+
+<!-- 10: UNDANGAN -->
+<div class="slide slide-invitation" id="slide-9">
+  <div class="inv-label">Dari sini, ke mana?</div>
+  <div class="inv-title">Park menulis 11 buku lagi setelah ini.<br>Tapi yang ia inginkan bukan agar kamu membacanya semua.</div>
+  <div class="inv-options">
+    <div class="inv-option">
+      <div class="inv-option-label">Yang pertama</div>
+      <div class="inv-option-text">Baca ulang bab tentang nama yang paling kamu ingat dari empat minggu ini. Baca bukan untuk mengerti — tapi untuk bertemu.</div>
+    </div>
+    <div class="inv-option">
+      <div class="inv-option-label">Yang lebih panjang</div>
+      <div class="inv-option-text">Lanjutkan buku ini sendiri — dari bab yang belum kita bahas. Sekarang kamu sudah tahu cara membacanya.</div>
+    </div>
+    <div class="inv-option">
+      <div class="inv-option-label">Yang paling berharga</div>
+      <div class="inv-option-text">Duduk bersama satu pertanyaan dari empat minggu ini — yang belum selesai. Biarkan ia bekerja.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 11: SILENT AKHIR -->
+<div class="slide slide-silent cream2" id="slide-10">
+  <div class="silent-text">Dari semua yang kamu dengar empat minggu ini — satu hal apa yang tidak bisa kamu lupakan?</div>
+  <div class="silent-pause">Boleh dibagikan — boleh disimpan</div>
+</div>
+
+<!-- 12: PERTANYAAN FINAL — open ending, dark slide -->
+<div class="slide slide-final" id="slide-11">
+  <div class="final-label">Pertanyaan yang Park tinggalkan</div>
+  <div class="final-text">Lampu itu sudah menyala selama lebih dari tiga ribu tahun.<br><br>Apa yang akan kamu lakukan dengan lampu yang ada di tanganmu?</div>
+  <div class="final-sub">Tidak ada jawaban yang benar. Hanya jawaban yang jujur.</div>
+</div>
+
+<!-- 13: SEND-OFF -->
+<div class="slide slide-sendoff" id="slide-12">
+  <div class="sendoff-ornament">🕯</div>
+  <div class="sendoff-main">Terima kasih sudah berjalan bersama.<br>Perjalanan ini tidak selesai di sini — <em>ia baru mulai.</em></div>
+  <div class="sendoff-verse">
+    <div class="sendoff-verse-text">"Roh manusia adalah pelita TUHAN,<br>yang menyelidiki seluruh lubuk hatinya."</div>
+    <div class="sendoff-verse-ref">Amsal 20:27</div>
+  </div>
+  <div class="sendoff-close">The Unquenchable Lamp of the Covenant · Abraham Park</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-dots" id="navDots"></div>
+<div class="nav-hint">klik untuk lanjut</div>
+<div class="slide-num" id="slideNum"></div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('navDots');
+const slideNum = document.getElementById('slideNum');
+let current = 0;
+
+slides.forEach((_,i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot'+(i===0?' active':'');
+  dot.onclick = (e) => { e.stopPropagation(); goTo(i); };
+  navDots.appendChild(dot);
+});
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d,i) => d.className='dot'+(i===current?' active':''));
+  slideNum.textContent = `${current+1} / ${slides.length}`;
+}
+function goTo(n) {
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit');
+  setTimeout(()=>slides[current].classList.remove('exit'),650);
+  current = Math.max(0,Math.min(n,slides.length-1));
+  slides[current].classList.add('active');
+  updateDots();
+}
+document.body.addEventListener('click',()=>{ if(current<slides.length-1) goTo(current+1); });
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+  if(e.key==='f'||e.key==='F') document.documentElement.requestFullscreen?.();
+});
+updateDots();
+</script>
+</body>
+</html>

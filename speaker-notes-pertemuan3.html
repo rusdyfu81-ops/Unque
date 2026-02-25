@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catatan Pembicara — Pertemuan 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #f5f0e8; --cream2: #ede5d4; --warm: #c8956a; --warm2: #a0714f;
+  --ink: #2c2416; --ink2: #4a3d2e; --ink3: #7a6a55;
+  --rust: #8b3a2a; --sage: #5a7a5a; --white: #fdfaf5; --dark: #1a1208;
+  --gold: #b8860b;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Source Sans 3', sans-serif; background: var(--cream); color: var(--ink); font-size: 15px; line-height: 1.7; padding-bottom: 80px; }
+
+.header { background: var(--dark); padding: 28px 24px 24px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+.header-tag { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--warm); opacity: 0.7; margin-bottom: 4px; }
+.header-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--white); font-weight: 400; }
+.header-right { font-size: 11px; color: var(--ink3); text-align: right; font-style: italic; }
+
+.progress-bar { height: 3px; background: rgba(184,134,11,0.15); position: sticky; top: 74px; z-index: 99; }
+.progress-fill { height: 100%; background: var(--gold); transition: width 0.3s; width: 0%; }
+
+.mood-banner { background: rgba(184,134,11,0.07); border-bottom: 1px solid rgba(184,134,11,0.15); padding: 12px 20px; }
+.mood-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 3px; font-weight: 600; }
+.mood-text { font-size: 13px; color: var(--ink2); font-style: italic; line-height: 1.6; }
+
+.slide-card { margin: 0; border-bottom: 1px solid var(--cream2); transition: background 0.2s; }
+.slide-card.active { background: var(--white); border-left: 4px solid var(--gold); }
+.slide-card-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.slide-num-badge { width: 32px; height: 32px; border-radius: 50%; background: var(--cream2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--ink3); flex-shrink: 0; transition: all 0.2s; }
+.slide-card.active .slide-num-badge { background: var(--gold); color: white; }
+.slide-card-meta { flex: 1; }
+.slide-type { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 2px; }
+.slide-card.active .slide-type { color: var(--gold); }
+.slide-title-small { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--ink); font-weight: 400; line-height: 1.3; }
+.slide-arrow { font-size: 12px; color: var(--ink3); opacity: 0.4; transition: transform 0.2s; }
+.slide-card.active .slide-arrow { transform: rotate(90deg); opacity: 0.8; }
+
+.slide-content { display: none; padding: 0 20px 20px 66px; }
+.slide-card.active .slide-content { display: block; }
+
+.block { margin-bottom: 16px; }
+.block-label { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--warm2); margin-bottom: 6px; font-weight: 600; }
+.block-text { font-size: 14px; color: var(--ink2); line-height: 1.7; font-weight: 300; }
+.block-text strong { font-weight: 600; color: var(--ink); }
+.block-text em { font-style: italic; color: var(--warm2); }
+
+.talking-points { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.talking-points li { font-size: 14px; color: var(--ink2); line-height: 1.6; padding-left: 18px; position: relative; font-weight: 300; }
+.talking-points li::before { content: '·'; position: absolute; left: 6px; color: var(--warm); font-size: 18px; line-height: 1.2; }
+
+.script-box { background: var(--dark); border-radius: 8px; padding: 14px 18px; margin-top: 10px; }
+.script-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--warm); opacity: 0.7; margin-bottom: 6px; }
+.script-text { font-family: 'Lora', serif; font-style: italic; font-size: 14px; color: rgba(253,250,245,0.85); line-height: 1.7; }
+
+.caution-box { background: rgba(139,58,42,0.08); border: 1px solid rgba(139,58,42,0.2); border-radius: 8px; padding: 12px 16px; margin-top: 10px; }
+.caution-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--rust); margin-bottom: 4px; font-weight: 600; }
+.caution-text { font-size: 13px; color: var(--rust); line-height: 1.6; }
+
+.tip-box { background: rgba(90,122,90,0.08); border: 1px solid rgba(90,122,90,0.2); border-radius: 8px; padding: 12px 16px; margin-top: 10px; }
+.tip-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--sage); margin-bottom: 4px; font-weight: 600; }
+.tip-text { font-size: 13px; color: var(--sage); line-height: 1.6; }
+
+.gold-box { background: rgba(184,134,11,0.07); border: 1px solid rgba(184,134,11,0.2); border-radius: 8px; padding: 12px 16px; margin-top: 10px; }
+.gold-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; font-weight: 600; }
+.gold-text { font-size: 13px; color: var(--ink2); line-height: 1.6; }
+
+.divider { width: 32px; height: 1px; background: var(--cream2); margin: 14px 0; }
+.timer-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--cream2); border-radius: 12px; padding: 3px 10px; font-size: 11px; color: var(--ink3); margin-bottom: 12px; }
+
+.arc-indicator {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+  font-size: 11px; color: var(--ink3); font-style: italic;
+}
+.arc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.arc-dot.dark { background: #2a2018; border: 1px solid rgba(255,255,255,0.2); }
+.arc-dot.mid { background: var(--warm2); }
+.arc-dot.light { background: var(--gold); }
+
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--cream2); padding: 12px 20px; display: flex; gap: 10px; z-index: 100; }
+.nav-btn { flex: 1; padding: 12px; border: 1px solid var(--cream2); border-radius: 10px; background: var(--cream); font-family: 'Source Sans 3', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink2); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+.nav-btn:active { background: var(--cream2); transform: scale(0.97); }
+.nav-btn.primary { background: var(--dark); color: var(--white); border-color: var(--dark); }
+.nav-btn.primary:active { background: var(--ink2); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-tag">Catatan Pembicara</div>
+    <div class="header-title">Pertemuan 3 · 45 Menit</div>
+  </div>
+  <div class="header-right">8 orang<br>Ibu-ibu 35–45</div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="mood-banner">
+  <div class="mood-label">Catatan suasana pertemuan ini</div>
+  <div class="mood-text">Ini pertemuan yang paling dramatis. Dimulai gelap seperti pertemuan 2 — tapi berbeda: kali ini ada jawaban yang datang. Jangan terburu-buru ke terang. Biarkan jawabannya datang pelan-pelan, slide per slide. Slide 14–16 adalah titik tertinggi — beri waktu di sana.</div>
+</div>
+
+<!-- S1 -->
+<div class="slide-card active" id="card-0">
+  <div class="slide-card-header" onclick="toggle(0)">
+    <div class="slide-num-badge">1</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Cover</div>
+      <div class="slide-title-small">Mengapa Allah Tidak Menyerah?</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Masih gelap — pertanyaan menggantung</div>
+    <div class="timer-badge">⏱ 0:00</div>
+    <div class="block">
+      <div class="block-label">Suasana pembukaan</div>
+      <div class="block-text">Biarkan slide tampil diam beberapa detik. Pertanyaan di judul sudah menggantung dua minggu — mereka sudah membawanya kemari.</div>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat pembuka</div>
+      <div class="script-text">"Dua minggu kita sudah melihat betapa gelapnya. Betapa berulangnya. Betapa lelahnya. Hari ini kita akan mencari jawaban untuk satu pertanyaan — mengapa Allah tidak berhenti saja?"</div>
+    </div>
+  </div>
+</div>
+
+<!-- S2 -->
+<div class="slide-card" id="card-1">
+  <div class="slide-card-header" onclick="toggle(1)">
+    <div class="slide-num-badge">2</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Recap</div>
+      <div class="slide-title-small">Dua minggu terakhir — semua yang sudah dilihat</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Masih di zona gelap</div>
+    <div class="timer-badge">⏱ 0:45</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Rekap singkat — dua kalimat, tidak lebih</li>
+        <li>Tujuannya bukan mengulang — tapi membuat berat perjalanan itu terasa sebelum jawaban datang</li>
+        <li>Tanya ringan: <em>"Ada yang membaca Mazmur yang kita rekomendasikan minggu lalu?"</em></li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tip</div>
+      <div class="tip-text">Kalau ada yang berbagi pengalaman membaca — sambut singkat dan hangat. Ini tanda bahwa proses sedang bekerja.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S3 -->
+<div class="slide-card" id="card-2">
+  <div class="slide-card-header" onclick="toggle(2)">
+    <div class="slide-num-badge">3</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Jujur</div>
+      <div class="slide-title-small">"Mengapa Allah tidak berhenti saja?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Titik paling gelap sebelum naik</div>
+    <div class="timer-badge">⏱ 1:30</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan pelan — <em>"Setelah semua itu — mengapa Allah tidak berhenti saja?"</em></li>
+        <li>Tambahkan: <em>"Ini pertanyaan yang jujur. Dan Park tidak menjawabnya dengan cepat."</em></li>
+        <li>Diam sebentar — biarkan pertanyaan itu berat</li>
+      </ul>
+    </div>
+    <div class="gold-box">
+      <div class="gold-label">Catatan penting</div>
+      <div class="gold-text">Pertanyaan ini mungkin terasa terlalu berani untuk diucapkan di konteks ibadah biasa. Tapi Park sendiri yang memunculkannya. Izinkan pertanyaan yang jujur — itu yang membuat jawaban menjadi bermakna.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S4 -->
+<div class="slide-card" id="card-3">
+  <div class="slide-card-header" onclick="toggle(3)">
+    <div class="slide-num-badge">4</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Section Header</div>
+      <div class="slide-title-small">Daud — yang dipilih, diremukkan, dibentuk</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Masuk ke Daud — masih gelap</div>
+    <div class="timer-badge">⏱ 2:30</div>
+    <div class="block-text">Perkenalkan Daud sebagai jangkar pertama hari ini. Bukan Daud yang kita kenal dari lagu rohani — tapi Daud yang penuh kompleksitas yang Park telusuri halaman demi halaman.</div>
+    <div class="script-box">
+      <div class="script-label">Kalimat transisi</div>
+      <div class="script-text">"Park menjawab pertanyaan itu melalui satu orang. Bukan tokoh yang paling bersih — justru tokoh yang paling kompleks dalam seluruh silsilah ini. Daud."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S5 -->
+<div class="slide-card" id="card-4">
+  <div class="slide-card-header" onclick="toggle(4)">
+    <div class="slide-num-badge">5</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Daud — Fase 1: Dipilih</div>
+      <div class="slide-title-small">"Allah melihat hatinya sebelum siapapun melihatnya"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Masih zona gelap</div>
+    <div class="timer-badge">⏱ 3:00 — Daud fase 1 (3 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin utama yang perlu hidup</div>
+      <ul class="talking-points">
+        <li>Ayah Daud sendiri tidak memikirkan Daud saat Samuel datang — ia tidak dipanggil masuk</li>
+        <li>Saudara-saudaranya lebih tinggi, lebih gagah — manusia melihat penampilan</li>
+        <li>Allah berkata: <em>"Bukan yang dilihat manusia yang dilihat Allah — manusia melihat rupa, Allah melihat hati"</em> (1 Sam 16:7)</li>
+        <li>Diurapi — tapi tidak langsung naik takhta. Allah memulai proses yang panjang</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Penekanan yang kuat</div>
+      <div class="script-text">"Allah memilih Daud bukan karena ia sudah jadi. Tapi karena Allah melihat siapa yang ia akan menjadi — dan memulai proses untuk membentuknya ke sana."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Untuk ibu-ibu</div>
+      <div class="tip-text">Banyak perempuan pernah merasa tidak dilihat oleh orang-orang yang seharusnya melihat mereka — orang tua, pasangan, komunitas. Cerita Daud berbicara langsung ke sana tanpa perlu dieksplisitkan.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S6 -->
+<div class="slide-card" id="card-5">
+  <div class="slide-card-header" onclick="toggle(5)">
+    <div class="slide-num-badge">6</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Daud — Fase 2: Diremukkan</div>
+      <div class="slide-title-small">10 tahun pelarian — setiap tempat adalah ruang kelas</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot dark"></div> Masih gelap — tapi mulai ada dimensi lain</div>
+    <div class="timer-badge">⏱ 6:00 — Daud fase 2 (4 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin utama yang perlu hidup</div>
+      <ul class="talking-points">
+        <li>Setelah diurapi — bukan langsung raja. Malah dikejar-kejar Saul selama 10 tahun</li>
+        <li>Park mencatat setiap lokasi pelarian dengan teliti — setiap nama tempat punya makna</li>
+        <li>Di setiap tempat, lahir satu atau lebih Mazmur — keluhan, doa, kepercayaan</li>
+        <li>Park menyebut ini bukan hukuman — tapi pembentukan. <em>"God was molding David."</em></li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+    <div class="block">
+      <div class="block-label">Kalimat Park yang kunci</div>
+      <div class="block-text"><em>"God was molding David into a leader of faith who could fulfill His administration in the history of redemption."</em> — Daud tidak menjalani 10 tahun itu untuk dirinya sendiri. Ia dibentuk untuk sesuatu yang lebih besar.</div>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jangan terlalu cepat</div>
+      <div class="caution-text">Jangan langsung katakan "padang gurun itu untuk kebaikanmu." Biarkan beratnya 10 tahun itu terasa dulu. Baru kemudian Park yang mengatakan interpretasinya — bukan kamu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S7 -->
+<div class="slide-card" id="card-6">
+  <div class="slide-card-header" onclick="toggle(6)">
+    <div class="slide-num-badge">7</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Mazmur dari Padang Gurun</div>
+      <div class="slide-title-small">Mazmur 18 — "Engkaulah yang menyalakan pelitaku"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot mid"></div> Mulai naik — titik emosional pertama</div>
+    <div class="timer-badge">⏱ 10:00 — Momen emosional pertama</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Baca ayat ini pelan — sangat pelan. Ini puisi, bukan informasi</li>
+        <li>Tekankan: <em>"Ditulis bukan di tahta — tapi di padang gurun"</em></li>
+        <li>Diam setelah membaca. Biarkan kata <strong>"pelita"</strong> bergema</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Bisa ditambahkan setelah membaca</div>
+      <div class="script-text">"Daud tidak menulis ini setelah hidupnya mudah. Ia menulis ini di titik paling berat — dan yang ia temukan bukan penjelasan, bukan jawaban. Tapi Seseorang yang menyalakan lampunya."</div>
+    </div>
+    <div class="gold-box">
+      <div class="gold-label">Koneksi ke judul buku</div>
+      <div class="gold-text">Kata "pelita" di Mazmur 18 adalah jantung dari judul buku Park — The Unquenchable Lamp. Ini bukan kebetulan. Park memilih judul itu dari sini. Boleh disebutkan kalau terasa pas.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S8 -->
+<div class="slide-card" id="card-7">
+  <div class="slide-card-header" onclick="toggle(7)">
+    <div class="slide-num-badge">8</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Diam</div>
+      <div class="slide-title-small">"Pernah merasa dipersiapkan — padahal rasanya seperti dibuang?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot mid"></div> Titik personal — momen yang dalam</div>
+    <div class="timer-badge">⏱ 12:30 — Diam (1-2 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan sangat pelan</li>
+        <li>Tambahkan: <em>"Tidak perlu dijawab."</em></li>
+        <li>Diam lebih panjang dari biasanya — ini pertanyaan yang paling dalam untuk banyak perempuan</li>
+      </ul>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Perhatikan ruangan</div>
+      <div class="caution-text">Ada kemungkinan seseorang menangis atau sangat tersentuh di sini. Jangan buru-buru lanjut. Biarkan momen itu ada. Itu bukan gangguan — itu tanda bahwa pertemuan ini bekerja.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S9 -->
+<div class="slide-card" id="card-8">
+  <div class="slide-card-header" onclick="toggle(8)">
+    <div class="slide-num-badge">9</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Section — Karakter Allah</div>
+      <div class="slide-title-small">Dari Daud ke yang lebih besar</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot mid"></div> Perpindahan — dari manusia ke Allah</div>
+    <div class="timer-badge">⏱ 14:30</div>
+    <div class="block-text">Perpindahan penting. Dari cerita Daud, kita bergerak ke pertanyaan yang lebih besar — bukan lagi siapa Daud, tapi mengapa Allah melakukan semua ini.</div>
+    <div class="script-box">
+      <div class="script-label">Kalimat transisi</div>
+      <div class="script-text">"Kisah Daud memberi kita gambaran tentang bagaimana Allah bekerja. Tapi mengapa? Apa yang mendorong Allah untuk melakukan semua ini — untuk generasi demi generasi? Park menemukan tiga jawaban."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S10 -->
+<div class="slide-card" id="card-9">
+  <div class="slide-card-header" onclick="toggle(9)">
+    <div class="slide-num-badge">10</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Jawaban 1 — Sumpah Allah</div>
+      <div class="slide-title-small">Lampu itu adalah sumpah — bukan hanya janji</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot mid"></div> Mulai naik — jawaban pertama</div>
+    <div class="timer-badge">⏱ 15:30 — (3 menit)</div>
+    <div class="block">
+      <div class="block-label">Tiga hal yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li><strong>Perjanjian dengan Abraham</strong> — Allah bersumpah dengan nama-Nya sendiri. Artinya jika gagal, Allah sendiri yang runtuh. Itu tidak mungkin.</li>
+        <li><strong>Perjanjian dengan Daud</strong> — keturunannya akan memerintah selamanya. 2 Samuel 7. Ini bukan harapan — ini sumpah.</li>
+        <li><strong>Kuncinya</strong>: sumpah ini tidak bergantung pada kesetiaan manusia. Bergantung pada karakter Allah.</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat yang bisa dipakai</div>
+      <div class="script-text">"Park menemukan ini: yang membuat lampu tidak bisa padam bukan karena manusia cukup kuat menjaganya. Tapi karena Allah sudah bersumpah — dan sumpah Allah tidak bisa batal."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S11 -->
+<div class="slide-card" id="card-10">
+  <div class="slide-card-header" onclick="toggle(10)">
+    <div class="slide-num-badge">11</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Jawaban 2 — Kecemburuan Allah</div>
+      <div class="slide-title-small">Yesaya 9:7 — "The zeal of the LORD"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot mid"></div> Terus naik</div>
+    <div class="timer-badge">⏱ 18:30</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Baca kalimat Yesaya 9:7 — pelan, dalam bahasa Indonesia juga</li>
+        <li><em>"Kecemburuan TUHAN semesta alam yang akan melakukan ini"</em></li>
+        <li>Kata kunci: <strong>kecemburuan / semangat</strong> — bukan kewajiban, bukan rutinitas</li>
+        <li>Allah tidak menjaga lampu ini dengan terpaksa — Ia melakukannya dengan semangat penuh</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Penjelasan yang bisa dipakai</div>
+      <div class="script-text">"Kata 'zeal' dalam bahasa Ibrani — qin'ah — berarti kecemburuan yang membakar. Seperti seseorang yang tidak bisa diam melihat yang ia kasihi dalam bahaya. Itu yang mendorong Allah melalui 340 tahun kegelapan."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S12 -->
+<div class="slide-card" id="card-11">
+  <div class="slide-card-header" onclick="toggle(11)">
+    <div class="slide-num-badge">12</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Jawaban 3 — Nilai Satu Jiwa</div>
+      <div class="slide-title-small">"Satu jiwa lebih berharga dari seluruh alam semesta"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Mendekati puncak — kalimat terpenting buku</div>
+    <div class="timer-badge">⏱ 20:30 — Momen terpenting</div>
+    <div class="block">
+      <div class="block-label">Ini kalimat yang paling berat dalam buku Park</div>
+      <div class="block-text">Baca quote ini pelan. Ulangi jika perlu. Beri waktu yang cukup.</div>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Terjemahan bebas</div>
+      <div class="script-text">"Apa yang Allah lakukan untuk menyelamatkan satu jiwa — begitu besar, begitu dalam, sampai seluruh alam semesta yang tak terbatas tidak bisa dibandingkan dengan nilai satu jiwa itu."</div>
+    </div>
+    <div class="gold-box">
+      <div class="gold-label">Mengapa ini kalimat terpenting</div>
+      <div class="gold-text">Park menulis kalimat ini di Part 1 — fondasi seluruh buku. Ini yang menjelaskan mengapa Allah repot-repot menjaga silsilah selama 1163 tahun. Bukan karena silsilahnya istimewa — tapi karena jiwa yang akan diselamatkan melaluinya lebih berharga dari alam semesta.</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Cara mendaratkannya</div>
+      <div class="tip-text">Setelah membaca quote — diam. Lalu katakan: "Park tidak menulis ini tentang umat Israel. Ia menulis ini tentang jiwamu."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S13 -->
+<div class="slide-card" id="card-12">
+  <div class="slide-card-header" onclick="toggle(12)">
+    <div class="slide-num-badge">13</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Paradoks Terjawab</div>
+      <div class="slide-title-small">"Allah repot-repot untuk apa?" → "Karena satu jiwamu lebih berharga"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Titik pembalikan dramatis</div>
+    <div class="timer-badge">⏱ 23:00</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Tunjuk pertanyaan yang dicoret di atas: <em>"Allah repot-repot untuk apa?"</em></li>
+        <li>Tunjuk panah ke bawah</li>
+        <li>Baca jawaban: <em>"Karena satu jiwa lebih berharga dari seluruh alam semesta yang Ia ciptakan"</em></li>
+        <li>Diam. Ini pembalikan yang perlu waktu untuk mendarat.</li>
+      </ul>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jangan terburu-buru</div>
+      <div class="caution-text">Ini momen terbesar pertemuan ini. Jangan langsung lanjut ke slide berikutnya. Biarkan kalimat itu tinggal di ruangan selama 20-30 detik.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S14 -->
+<div class="slide-card" id="card-13">
+  <div class="slide-card-header" onclick="toggle(13)">
+    <div class="slide-num-badge">14</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Diam — Nilai Jiwa</div>
+      <div class="slide-title-small">"Jika jiwamu lebih berharga dari alam semesta — bagaimana kamu memperlakukan jiwamu?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Puncak — paling personal</div>
+    <div class="timer-badge">⏱ 24:30 — Diam (2 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan sangat pelan — satu kata per detik hampir</li>
+        <li>Tambahkan: <em>"Tidak perlu dijawab."</em></li>
+        <li>Diam paling panjang malam ini. Ini pertanyaan yang paling dalam.</li>
+      </ul>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jaga ruang ini dengan serius</div>
+      <div class="caution-text">Pertanyaan ini menyentuh cara seseorang memandang dirinya sendiri — apakah ia merasa berharga, apakah ia merawat dirinya, apakah ia merasa layak untuk dikasihi Allah. Biarkan keheningan menjadi ruang yang aman dan dalam.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S15 -->
+<div class="slide-card" id="card-14">
+  <div class="slide-card-header" onclick="toggle(14)">
+    <div class="slide-num-badge">15</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Tiga Jawaban — Bright Slide</div>
+      <div class="slide-title-small">Sumpah · Kecemburuan · Nilai Jiwa</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Terang — slide paling cerah sejauh ini</div>
+    <div class="timer-badge">⏱ 27:00 — (3 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Ini ringkasan dari tiga jawaban Park — bacakan satu per satu dengan jeda</li>
+        <li>Sumpah-Nya tidak bisa dibatalkan — tidak bergantung pada kesetiaan manusia</li>
+        <li>Kecemburuan-Nya tidak bisa dipadamkan — semangat Allah sendiri yang menopang</li>
+        <li>Nilai jiwa melampaui alam semesta — satu jiwa terlalu berharga untuk dibiarkan</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat penutup slide ini</div>
+      <div class="script-text">"Ini yang Park temukan setelah 50 tahun. Bukan tiga poin teologi. Tapi tiga alasan mengapa Allah tidak pernah, tidak bisa, berhenti."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Boleh buka diskusi kecil di sini</div>
+      <div class="tip-text">"Dari tiga ini — yang mana yang paling terasa hari ini?" Biarkan yang mau berbagi berbagi. Sambut singkat dan hangat.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S16 -->
+<div class="slide-card" id="card-15">
+  <div class="slide-card-header" onclick="toggle(15)">
+    <div class="slide-num-badge">16</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Quote Park — Kesimpulan Buku</div>
+      <div class="slide-title-small">"It was not a simple task... but God never gave up."</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Terang — slide paling hangat</div>
+    <div class="timer-badge">⏱ 30:00</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Baca quote Park pelan — dalam bahasa Indonesia jika mau</li>
+        <li><em>"Bukan tugas yang sederhana bagi Allah untuk mengutus Yesus Kristus ke dunia ini. Silsilah ini melewati begitu banyak belokan dan tikungan — tapi Allah tidak pernah menyerah."</em></li>
+        <li>Diam setelah membaca</li>
+      </ul>
+    </div>
+    <div class="gold-box">
+      <div class="gold-label">Mengapa slide ini penting</div>
+      <div class="gold-text">Ini Park berbicara langsung — bukan sebagai teolog, tapi sebagai orang yang sudah 50 tahun duduk bersama teks ini. "God never gave up" bukan slogan. Ini kesimpulan dari ribuan halaman penelitian.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S17 -->
+<div class="slide-card" id="card-16">
+  <div class="slide-card-header" onclick="toggle(16)">
+    <div class="slide-num-badge">17</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Refleksi Akhir</div>
+      <div class="slide-title-small">"Allah tidak menyerah pada sejarah itu. Apakah kamu menyerah pada dirimu sendiri?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="arc-indicator"><div class="arc-dot light"></div> Pertanyaan paling personal malam ini</div>
+    <div class="timer-badge">⏱ 32:00 — Diam (2 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu dilakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan sangat pelan — dua kalimat, beri jeda di antaranya</li>
+        <li>Tambahkan: <em>"Biarkan pertanyaan ini tinggal."</em></li>
+        <li>Diam panjang. Ini penutup dari seluruh perjalanan tiga pertemuan.</li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Boleh buka ruang sharing terakhir</div>
+      <div class="tip-text">"Ada yang mau berbagi apa yang dibawa pulang malam ini?" — Kalau ada yang berbagi, ini adalah momen yang sangat berharga. Jangan dianalisis atau dikomentar panjang. Cukup: "Terima kasih sudah berbagi."</div>
+    </div>
+  </div>
+</div>
+
+<!-- S18 -->
+<div class="slide-card" id="card-17">
+  <div class="slide-card-header" onclick="toggle(17)">
+    <div class="slide-num-badge">18</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Penutup + Tugas</div>
+      <div class="slide-title-small">Mazmur 18:1–3 dan 28–29</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 35:00 — Penutup (5 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Minggu depan adalah pertemuan terakhir — dan yang paling dekat dengan mereka</li>
+        <li>Judul: <em>"Lampu itu sekarang ada di tanganmu"</em></li>
+        <li>Tugas: Mazmur 18:1–3 dan 28–29. Hanya enam ayat total</li>
+        <li>Ini Mazmur yang Daud tulis setelah keluar dari semua pelarian — bukan di tengah kegelapan, tapi setelah melewatinya</li>
+        <li>Minta mereka menemukan <strong>satu kata atau kalimat</strong> yang paling terasa — dan ingat itu sampai minggu depan</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat penutup</div>
+      <div class="script-text">"Daud menulis Mazmur 18 setelah semua pelariannya selesai. Ini bukan doa orang yang sedang berjuang — ini doa orang yang sudah melewatinya dan menemukan bahwa Allah memang ada. Baca enam ayat itu. Temukan satu kata yang berbicara kepadamu."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tutup dengan hangat — bukan dramatis</div>
+      <div class="tip-text">Pertemuan ini naik ke puncak emosional. Tutup dengan tenang dan hangat — doa singkat yang personal, bukan yang panjang dan formal. Biarkan mereka pulang dengan ruang untuk merenungkan.</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn" onclick="prev()">← Sebelumnya</button>
+  <button class="nav-btn primary" onclick="next()">Berikutnya →</button>
+</div>
+
+<script>
+let current = 0;
+const total = 18;
+function toggle(n) {
+  document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + n).classList.add('active');
+  current = n;
+  updateProgress();
+  document.getElementById('card-' + n).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function next() { if (current < total - 1) toggle(current + 1); }
+function prev() { if (current > 0) toggle(current - 1); }
+function updateProgress() {
+  document.getElementById('progressFill').style.width = ((current + 1) / total * 100) + '%';
+}
+updateProgress();
+</script>
+</body>
+</html>

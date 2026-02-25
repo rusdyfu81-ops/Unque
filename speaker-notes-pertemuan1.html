@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catatan Pembicara — Pertemuan 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --cream: #f5f0e8;
+  --cream2: #ede5d4;
+  --warm: #c8956a;
+  --warm2: #a0714f;
+  --ink: #2c2416;
+  --ink2: #4a3d2e;
+  --ink3: #7a6a55;
+  --rust: #8b3a2a;
+  --sage: #5a7a5a;
+  --white: #fdfaf5;
+  --gold: #b8860b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-bottom: 80px;
+}
+
+/* HEADER */
+.header {
+  background: var(--ink);
+  padding: 28px 24px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {}
+.header-tag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: var(--white);
+  font-weight: 400;
+}
+
+.header-right {
+  font-size: 11px;
+  color: var(--ink3);
+  text-align: right;
+  font-style: italic;
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  height: 3px;
+  background: rgba(200,149,106,0.2);
+  position: sticky;
+  top: 74px;
+  z-index: 99;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--warm);
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* SLIDE CARD */
+.slide-card {
+  margin: 0;
+  border-bottom: 1px solid var(--cream2);
+  transition: background 0.2s;
+}
+
+.slide-card.active {
+  background: var(--white);
+  border-left: 4px solid var(--warm);
+}
+
+.slide-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.slide-num-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--cream2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink3);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.slide-card.active .slide-num-badge {
+  background: var(--warm);
+  color: white;
+}
+
+.slide-card-meta {
+  flex: 1;
+}
+
+.slide-type {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 2px;
+}
+
+.slide-card.active .slide-type { color: var(--warm2); }
+
+.slide-title-small {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.slide-arrow {
+  font-size: 12px;
+  color: var(--ink3);
+  opacity: 0.4;
+  transition: transform 0.2s;
+}
+
+.slide-card.active .slide-arrow { transform: rotate(90deg); opacity: 0.8; }
+
+/* SLIDE CONTENT */
+.slide-content {
+  display: none;
+  padding: 0 20px 20px 66px;
+}
+
+.slide-card.active .slide-content { display: block; }
+
+/* CONTENT BLOCKS */
+.block {
+  margin-bottom: 16px;
+}
+
+.block-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--warm2);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.block-text {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.block-text strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.block-text em {
+  font-style: italic;
+  color: var(--warm2);
+}
+
+/* TALKING POINTS */
+.talking-points {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.talking-points li {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.6;
+  padding-left: 18px;
+  position: relative;
+  font-weight: 300;
+}
+
+.talking-points li::before {
+  content: '·';
+  position: absolute;
+  left: 6px;
+  color: var(--warm);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+/* SCRIPT BOX */
+.script-box {
+  background: var(--ink);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 10px;
+}
+
+.script-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.script-text {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(253,250,245,0.85);
+  line-height: 1.7;
+}
+
+/* CAUTION BOX */
+.caution-box {
+  background: rgba(139,58,42,0.08);
+  border: 1px solid rgba(139,58,42,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 10px;
+}
+
+.caution-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.caution-text {
+  font-size: 13px;
+  color: var(--rust);
+  line-height: 1.6;
+}
+
+/* TIP BOX */
+.tip-box {
+  background: rgba(90,122,90,0.08);
+  border: 1px solid rgba(90,122,90,0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 10px;
+}
+
+.tip-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.tip-text {
+  font-size: 13px;
+  color: var(--sage);
+  line-height: 1.6;
+}
+
+/* DIVIDER */
+.divider {
+  width: 32px;
+  height: 1px;
+  background: var(--cream2);
+  margin: 14px 0;
+}
+
+/* TIMER */
+.timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--cream2);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--ink3);
+  margin-bottom: 12px;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--cream2);
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--cream2);
+  border-radius: 10px;
+  background: var(--cream);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+
+.nav-btn:active { background: var(--cream2); transform: scale(0.97); }
+.nav-btn.primary { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.nav-btn.primary:active { background: var(--ink2); }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-tag">Catatan Pembicara</div>
+    <div class="header-title">Pertemuan 1 · 45 Menit</div>
+  </div>
+  <div class="header-right">8 orang<br>Ibu-ibu 35–45</div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- SLIDE 1 -->
+<div class="slide-card active" id="card-0">
+  <div class="slide-card-header" onclick="toggle(0)">
+    <div class="slide-num-badge">1</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Cover</div>
+      <div class="slide-title-small">Siapa yang Masuk dalam Cerita Ini?</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 0:00 — Pembukaan</div>
+    <div class="block">
+      <div class="block-label">Yang terjadi di slide ini</div>
+      <div class="block-text">Slide cover. Biarkan tampil beberapa detik sebelum mulai bicara. Beri ruang bagi mereka untuk settle.</div>
+    </div>
+    <div class="block">
+      <div class="block-label">Kalimat pembuka pilihan</div>
+      <div class="script-box">
+        <div class="script-label">Bisa dibuka dengan</div>
+        <div class="script-text">"Hari ini kita akan membuka buku Park — tapi bukan dari halaman pertama. Kita akan masuk dari sebuah pertanyaan."</div>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tip</div>
+      <div class="tip-text">Jangan terburu-buru. Biarkan mereka melihat judul dan menyerap suasana dulu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2 -->
+<div class="slide-card" id="card-1">
+  <div class="slide-card-header" onclick="toggle(1)">
+    <div class="slide-num-badge">2</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Pembuka</div>
+      <div class="slide-title-small">"Apakah nama kamu akan ada di sana?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 0:30 — Pembukaan</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan ini <strong>pelan-pelan</strong> — satu kata per detik hampir</li>
+        <li>Setelah selesai membaca, <strong>diam</strong> minimal 5 detik</li>
+        <li>Jangan isi keheningan itu. Biarkan pertanyaan mendarat</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Setelah diam</div>
+      <div class="script-text">"Kita akan mencari jawabannya bersama hari ini."</div>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jangan</div>
+      <div class="caution-text">Jangan langsung menjawab pertanyaan ini. Biarkan ia menggantung sampai slide ke-16.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3 -->
+<div class="slide-card" id="card-2">
+  <div class="slide-card-header" onclick="toggle(2)">
+    <div class="slide-num-badge">3</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Konteks</div>
+      <div class="slide-title-small">Matius 1 — Perjanjian Baru dibuka dengan daftar nama</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 1:00 — Konteks (2 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Perjanjian Baru tidak dibuka dengan mukjizat atau khotbah yang dramatis</li>
+        <li>Dibuka dengan silsilah — daftar nama yang kelihatannya membosankan</li>
+        <li>Tapi di dalamnya ada sesuatu yang sangat tidak biasa: <strong>lima perempuan disebut</strong></li>
+        <li>Di zaman itu, perempuan tidak pernah masuk silsilah</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat yang bisa dipakai</div>
+      <div class="script-text">"Kalau kamu buka Matius pasal 1, kamu akan menemukan daftar nama yang panjang. Kebanyakan orang melewatinya. Tapi Park duduk selama 50 tahun dengan daftar nama ini — dan ia menemukan sesuatu."</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4 -->
+<div class="slide-card" id="card-3">
+  <div class="slide-card-header" onclick="toggle(3)">
+    <div class="slide-num-badge">4</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Transisi</div>
+      <div class="slide-title-small">Tamar · Rahab · Rut</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 2:30 — Transisi</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Ada lima perempuan. Hari ini kita fokus pada tiga</li>
+        <li>Sebutkan nama ketiganya dengan jeda — <em>Tamar... Rahab... Rut</em></li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tip</div>
+      <div class="tip-text">Slide ini pendek — cukup baca nama ketiganya, lalu klik lanjut. Biarkan penasaran membangun sendiri.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5 -->
+<div class="slide-card" id="card-4">
+  <div class="slide-card-header" onclick="toggle(4)">
+    <div class="slide-num-badge">5</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Section Header</div>
+      <div class="slide-title-small">Perempuan Pertama — Tamar</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 3:00</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Sebutkan namanya saja — "Tamar"</li>
+        <li>Beri sedikit jeda sebelum klik lanjut</li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tip</div>
+      <div class="tip-text">Slide section header berfungsi sebagai napas. Tidak perlu banyak kata.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6 -->
+<div class="slide-card" id="card-5">
+  <div class="slide-card-header" onclick="toggle(5)">
+    <div class="slide-num-badge">6</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Cerita · Tamar</div>
+      <div class="slide-title-small">Ditinggalkan. Diabaikan. Tapi yang benar.</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 3:30 — Tamar (4 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin utama yang perlu hidup</div>
+      <ul class="talking-points">
+        <li>Tamar bukan wanita yang jahat — ia korban sistem yang tidak adil</li>
+        <li>Dua suami mati. Mertua yang seharusnya melindunginya — malah menghindar</li>
+        <li>Ia melakukan sesuatu yang tidak bisa ia jelaskan kepada siapapun</li>
+        <li>Hampir dihukum mati — sampai Yehuda sendiri yang berkata: <em>"Ia lebih benar dari aku"</em></li>
+        <li>Dan Yehuda adalah leluhur Yesus. Ia yang mengakui kesalahannya</li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+    <div class="block">
+      <div class="block-label">Yang bisa ditambahkan kalau ada waktu</div>
+      <div class="block-text">Park menulis bahwa Tamar tidak menyerah pada ketidakadilan — tapi ia juga tidak menyerah pada keinginan untuk melanjutkan garis perjanjian. Apa yang ia lakukan mungkin terlihat salah — tapi hatinya benar.</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Cara menceritakannya</div>
+      <div class="tip-text">Ceritakan seperti sedang menceritakan kisah seorang teman. Bukan kuliah. Bukan ceramah. Sesederhana: "bayangkan posisi Tamar..."</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7 -->
+<div class="slide-card" id="card-6">
+  <div class="slide-card-header" onclick="toggle(6)">
+    <div class="slide-num-badge">7</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Diam · Tamar</div>
+      <div class="slide-title-small">"Pernah merasa ditinggalkan oleh yang seharusnya melindungi?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 7:00 — Diam (1 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan di slide — pelan</li>
+        <li>Tambahkan: <em>"Tidak perlu dijawab dengan suara."</em></li>
+        <li><strong>Diam minimal 30 detik.</strong> Ini momen yang paling sulit tapi paling penting</li>
+        <li>Jangan bicara untuk mengisi keheningan</li>
+      </ul>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jangan</div>
+      <div class="caution-text">Jangan meminta mereka menjawab. Jangan bertanya "ada yang mau share?" di sini. Biarkan pertanyaan bekerja sendiri di dalam diri mereka.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8 -->
+<div class="slide-card" id="card-7">
+  <div class="slide-card-header" onclick="toggle(7)">
+    <div class="slide-num-badge">8</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Section Header</div>
+      <div class="slide-title-small">Perempuan Kedua — Rahab</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 8:00</div>
+    <div class="block-text">Sebutkan namanya. Beri jeda. Klik lanjut.</div>
+  </div>
+</div>
+
+<!-- SLIDE 9 -->
+<div class="slide-card" id="card-8">
+  <div class="slide-card-header" onclick="toggle(8)">
+    <div class="slide-num-badge">9</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Cerita · Rahab</div>
+      <div class="slide-title-small">Orang luar. Masa lalu yang diketahui semua orang.</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 8:30 — Rahab (4 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin utama yang perlu hidup</div>
+      <ul class="talking-points">
+        <li>Rahab bukan orang Israel. Ia orang luar dari Yerikho</li>
+        <li>Pekerjaannya diketahui semua orang — tidak ada yang bisa ia sembunyikan</li>
+        <li>Tidak ada alasan teologis baginya untuk percaya kepada Allah Israel</li>
+        <li>Tapi ia <em>mendengar</em> — dan satu hal yang ia dengar cukup untuk mengubah segalanya</li>
+        <li>Pengakuan imannya lebih kuat dari banyak orang Israel yang sudah bertahun-tahun di dalam perjanjian</li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+    <div class="script-box">
+      <div class="script-label">Penekanan yang kuat</div>
+      <div class="script-text">"Rahab bukan bertobat karena sudah tidak berdosa. Ia percaya di tengah-tengah hidupnya — dan itu yang Allah hitung."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Kalau ada yang tanya soal moralitas Rahab</div>
+      <div class="tip-text">Park tidak meromantisasi masa lalu Rahab. Tapi yang Park soroti adalah: Allah melihat iman yang hidup — bukan track record yang bersih.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10 -->
+<div class="slide-card" id="card-9">
+  <div class="slide-card-header" onclick="toggle(9)">
+    <div class="slide-num-badge">10</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Diam · Rahab</div>
+      <div class="slide-title-small">"Pernah merasa masa lalu mendiskualifikasimu?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 12:00 — Diam (1 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan. Tambahkan: <em>"Tidak perlu dijawab."</em></li>
+        <li>Diam. Ini mungkin pertanyaan yang paling mengena untuk kelompok ini</li>
+        <li>Perhatikan ekspresi wajah mereka — itu akan memberi tahu kamu apakah pertanyaan ini mendarat</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11 -->
+<div class="slide-card" id="card-10">
+  <div class="slide-card-header" onclick="toggle(10)">
+    <div class="slide-num-badge">11</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Section Header</div>
+      <div class="slide-title-small">Perempuan Ketiga — Rut</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 13:00</div>
+    <div class="block-text">Sebutkan namanya. Beri jeda. Klik lanjut.</div>
+  </div>
+</div>
+
+<!-- SLIDE 12 -->
+<div class="slide-card" id="card-11">
+  <div class="slide-card-header" onclick="toggle(11)">
+    <div class="slide-num-badge">12</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Cerita · Rut</div>
+      <div class="slide-title-small">Orang asing. Pilihan tanpa jaminan.</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 13:30 — Rut (4 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin utama yang perlu hidup</div>
+      <ul class="talking-points">
+        <li>Rut bisa pulang ke rumah orang tuanya — itu pilihan yang logis dan aman</li>
+        <li>Naomi sendiri yang menyuruhnya pulang: <em>"Pergilah, kembalilah ke rumah ibumu"</em></li>
+        <li>Tidak ada yang memaksanya ikut. Tidak ada jaminan apapun menunggunya</li>
+        <li>Tapi Rut memilih — dan pilihannya bukan karena ia tidak punya tempat lain</li>
+        <li>Ia memilih karena sesuatu sudah berubah di dalam dirinya</li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+    <div class="script-box">
+      <div class="script-label">Penekanan yang kuat</div>
+      <div class="script-text">"Iman Rut bukan tentang tidak takut. Ia memilih justru ketika semua pilihan yang lebih mudah ada di depannya."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Untuk ibu-ibu</div>
+      <div class="tip-text">Rut memilih di masa kehilangan — suami sudah meninggal, masa depan tidak jelas. Banyak perempuan di ruangan itu mungkin pernah atau sedang ada di titik seperti itu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13 -->
+<div class="slide-card" id="card-12">
+  <div class="slide-card-header" onclick="toggle(12)">
+    <div class="slide-num-badge">13</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Diam · Rut</div>
+      <div class="slide-title-small">"Pernah memilih yang benar tanpa jaminan?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 17:00 — Diam (1 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan. Tambahkan: <em>"Tidak perlu dijawab."</em></li>
+        <li>Diam. Ini pertanyaan tentang keberanian — dan semua orang punya momennya</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 14 -->
+<div class="slide-card" id="card-13">
+  <div class="slide-card-header" onclick="toggle(13)">
+    <div class="slide-num-badge">14</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Quote — Park</div>
+      <div class="slide-title-small">"No obstacle could stand in the way of their living faith"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 18:00</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca quote ini pelan — dalam bahasa Indonesia kalau mau</li>
+        <li><em>"Tidak ada hambatan di bumi ini yang bisa menghentikan iman yang hidup."</em></li>
+        <li>Diam sebentar setelah membacanya</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Bisa ditambahkan</div>
+      <div class="script-text">"Ini yang Park tulis setelah membaca ketiga cerita ini berulang-ulang selama puluhan tahun. Bukan 'iman yang sempurna.' Tapi 'iman yang hidup.'"</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 15 -->
+<div class="slide-card" id="card-14">
+  <div class="slide-card-header" onclick="toggle(14)">
+    <div class="slide-num-badge">15</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Penjelasan Quote</div>
+      <div class="slide-title-small">Iman yang hidup — bukan yang sempurna</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 19:30</div>
+    <div class="block">
+      <div class="block-label">Tiga hal yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Bukan iman yang bersih dari masa lalu</li>
+        <li>Bukan iman yang diakui semua orang di sekitarmu</li>
+        <li>Iman yang tidak berhenti — meski semua alasan untuk berhenti ada</li>
+      </ul>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Jeda di sini</div>
+      <div class="tip-text">Ini adalah puncak dari bagian pertama. Beri napas. Sebelum lanjut ke bagian berikutnya yang akan membalikkan pertanyaan pembuka.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 16 -->
+<div class="slide-card" id="card-15">
+  <div class="slide-card-header" onclick="toggle(15)">
+    <div class="slide-num-badge">16</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Kembali ke Pertanyaan Pembuka</div>
+      <div class="slide-title-small">"Sekarang kita punya cukup untuk menjawabnya."</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 21:00 — Titik Balik</div>
+    <div class="block">
+      <div class="block-label">Momen penting</div>
+      <div class="block-text">Ini adalah momen di mana pertanyaan di slide 2 kembali — tapi sekarang dengan konteks yang berbeda. Biarkan mereka merasakannya.</div>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat yang bisa dipakai</div>
+      <div class="script-text">"Ingat pertanyaan tadi? Kalau Allah membuat daftar silsilah keluarga-Nya — apakah nama kamu akan ada di sana? Sekarang kita punya cukup untuk mulai menjawabnya."</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 17 -->
+<div class="slide-card" id="card-16">
+  <div class="slide-card-header" onclick="toggle(16)">
+    <div class="slide-num-badge">17</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Reveal</div>
+      <div class="slide-title-small">Bukan karena · Tapi karena</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 22:00 — Titik Balik (3 menit)</div>
+    <div class="block">
+      <div class="block-label">Poin yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Baca kolom kiri dulu: <em>"Bukan karena paling saleh, bersih, diakui, sempurna"</em></li>
+        <li>Pause</li>
+        <li>Baca kolom kanan: <em>"Tapi karena imannya hidup, memilih Allah, tidak berhenti"</em></li>
+        <li>Tutup dengan kalimat di bawah: <em>"Lampu ini tidak bergantung pada kelayakan manusia"</em></li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat penutup slide ini</div>
+      <div class="script-text">"Ini yang Park temukan setelah 50 tahun. Silsilah ini bukan daftar orang-orang suci. Ini daftar orang-orang yang imannya tidak bisa dipadamkan — oleh apapun."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Boleh buka diskusi kecil di sini</div>
+      <div class="tip-text">"Ada yang merasakan sesuatu ketika mendengar ini?" — tapi jangan paksa. Kalau sunyi pun, itu baik.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 18 -->
+<div class="slide-card" id="card-17">
+  <div class="slide-card-header" onclick="toggle(17)">
+    <div class="slide-num-badge">18</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Pertanyaan Refleksi</div>
+      <div class="slide-title-small">"Siapa yang paling terasa dekat dengan hidupmu?"</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 25:00 — Refleksi (5 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu kamu lakukan</div>
+      <ul class="talking-points">
+        <li>Baca pertanyaan pelan — <em>"Di antara Tamar, Rahab, dan Rut..."</em></li>
+        <li>Tunjuk nama-nama di slide</li>
+        <li>Tambahkan: <em>"Jawab dalam hati. Tidak perlu diucapkan."</em></li>
+        <li>Diam 30–60 detik</li>
+      </ul>
+    </div>
+    <div class="divider"></div>
+    <div class="block">
+      <div class="block-label">Kalau ada yang mau berbagi</div>
+      <div class="block-text">Sambut dengan hangat tapi singkat. Jangan analisis atau komentari terlalu panjang. Cukup: <em>"Terima kasih sudah berbagi."</em> Lalu lanjut.</div>
+    </div>
+    <div class="caution-box">
+      <div class="caution-label">Jangan</div>
+      <div class="caution-text">Jangan paksa siapapun untuk menjawab. Ruang keheningan adalah ruang yang paling berharga di sini.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 19 -->
+<div class="slide-card" id="card-18">
+  <div class="slide-card-header" onclick="toggle(18)">
+    <div class="slide-num-badge">19</div>
+    <div class="slide-card-meta">
+      <div class="slide-type">Penutup</div>
+      <div class="slide-title-small">Tugas: satu paragraf saja</div>
+    </div>
+    <div class="slide-arrow">▶</div>
+  </div>
+  <div class="slide-content">
+    <div class="timer-badge">⏱ 30:00 — Penutup (5 menit)</div>
+    <div class="block">
+      <div class="block-label">Yang perlu disampaikan</div>
+      <ul class="talking-points">
+        <li>Park menghabiskan 50 tahun dengan teks ini — dan yang ia temukan bukan informasi tapi pertemuan</li>
+        <li>Kita baru menyentuh permukaannya hari ini</li>
+        <li>Tugas: buka buku, temukan halaman tentang Tamar/Rahab/Rut, baca <strong>satu paragraf saja</strong></li>
+        <li>Lihat apa yang dirasakan — itu saja</li>
+      </ul>
+    </div>
+    <div class="script-box">
+      <div class="script-label">Kalimat penutup</div>
+      <div class="script-text">"Minggu depan kita akan masuk lebih dalam — bagaimana lampu ini hampir padam berkali-kali, dan mengapa ia tetap menyala. Tapi sebelum itu — satu paragraf saja."</div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-label">Tutup dengan doa atau diam</div>
+      <div class="tip-text">Jangan tutup dengan energi yang tinggi. Biarkan suasana tetap tenang dan dalam. Doa pendek atau diam sejenak lebih kuat dari penutupan yang terlalu bersemangat.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn" onclick="prev()">← Sebelumnya</button>
+  <button class="nav-btn primary" onclick="next()">Berikutnya →</button>
+</div>
+
+<script>
+let current = 0;
+const total = 19;
+
+function toggle(n) {
+  const card = document.getElementById('card-' + n);
+  if (n === current && card.classList.contains('active')) return;
+  document.querySelectorAll('.slide-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  current = n;
+  updateProgress();
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function next() {
+  if (current < total - 1) toggle(current + 1);
+}
+
+function prev() {
+  if (current > 0) toggle(current - 1);
+}
+
+function updateProgress() {
+  const pct = ((current + 1) / total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+updateProgress();
+</script>
+</body>
+</html>

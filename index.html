@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Unquenchable Lamp — Seri Pelajaran</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --cream: #f5f0e8;
+  --cream2: #ede5d4;
+  --cream3: #e4d8c4;
+  --warm: #c8956a;
+  --warm2: #a0714f;
+  --warm3: #7a5438;
+  --ink: #2c2416;
+  --ink2: #4a3d2e;
+  --ink3: #7a6a55;
+  --gold: #b8860b;
+  --gold-light: rgba(184,134,11,0.10);
+  --rust: #8b3a2a;
+  --sage: #4a6a4a;
+  --white: #fdfaf5;
+  --dark: #1a1208;
+  --shadow: rgba(44,36,22,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* PAPER TEXTURE */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.7;
+}
+
+/* ══════════════════
+   HERO
+══════════════════ */
+.hero {
+  background: var(--dark);
+  padding: 80px 40px 72px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 60%, rgba(200,149,106,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 30%, rgba(184,134,11,0.06) 0%, transparent 50%);
+}
+
+.hero-ornament {
+  font-size: 32px;
+  margin-bottom: 28px;
+  opacity: 0.5;
+  position: relative; z-index: 1;
+}
+
+.hero-series {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.6;
+  margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  position: relative; z-index: 1;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--warm);
+}
+
+.hero-author {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 36px;
+  position: relative; z-index: 1;
+}
+
+.hero-verse {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: rgba(255,255,255,0.45);
+  max-width: 440px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+  position: relative; z-index: 1;
+}
+
+.hero-verse-ref {
+  font-family: 'Source Sans 3', sans-serif;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.6;
+  display: block;
+  margin-top: 10px;
+}
+
+.hero-divider {
+  width: 48px;
+  height: 1px;
+  background: var(--warm);
+  opacity: 0.25;
+  margin: 0 auto;
+  position: relative; z-index: 1;
+}
+
+/* ══════════════════
+   INTRO BAND
+══════════════════ */
+.intro-band {
+  background: var(--cream2);
+  border-bottom: 1px solid var(--cream3);
+  padding: 32px 40px;
+  text-align: center;
+  position: relative; z-index: 1;
+}
+
+.intro-text {
+  font-size: 16px;
+  color: var(--ink2);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.intro-text strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ══════════════════
+   MAIN CONTENT
+══════════════════ */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 32px 100px;
+  position: relative; z-index: 1;
+}
+
+/* SECTION LABEL */
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--warm2);
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cream3);
+}
+
+/* ══════════════════
+   SESSION CARDS
+══════════════════ */
+.sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 64px;
+}
+
+.session-card {
+  background: var(--white);
+  border: 1px solid var(--cream2);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px var(--shadow);
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.session-card:hover {
+  box-shadow: 0 6px 28px rgba(44,36,22,0.16);
+  transform: translateY(-2px);
+}
+
+.session-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+}
+
+/* Session color bars */
+.session-card:nth-child(1) .session-accent { background: linear-gradient(180deg, #2c1810 0%, #5a3020 100%); }
+.session-card:nth-child(2) .session-accent { background: linear-gradient(180deg, #1a1208 0%, #3a2810 100%); }
+.session-card:nth-child(3) .session-accent { background: linear-gradient(180deg, #1e1408 0%, #4a3018 100%); }
+.session-card:nth-child(4) .session-accent { background: linear-gradient(180deg, #2a1e0e 0%, var(--cream3) 100%); }
+
+.session-accent {
+  width: 6px;
+  flex-shrink: 0;
+}
+
+.session-body {
+  padding: 28px 32px 24px;
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.session-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--warm2);
+}
+
+.session-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--cream3); }
+
+.session-duration {
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 1px;
+}
+
+.session-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.session-subtitle {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink3);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.session-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.theme-pill {
+  font-size: 11px;
+  color: var(--ink3);
+  background: var(--cream);
+  border: 1px solid var(--cream3);
+  border-radius: 20px;
+  padding: 3px 12px;
+  letter-spacing: 0.3px;
+}
+
+.session-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  letter-spacing: 0.2px;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--ink2); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--cream);
+  color: var(--ink2);
+  border: 1px solid var(--cream3);
+}
+.btn-secondary:hover { background: var(--cream2); transform: translateY(-1px); }
+
+.btn-icon { font-size: 14px; }
+
+/* ══════════════════
+   HOW TO USE
+══════════════════ */
+.howto {
+  background: var(--white);
+  border: 1px solid var(--cream2);
+  border-radius: 16px;
+  padding: 36px 40px;
+  margin-bottom: 64px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+.howto-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+
+.howto-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .howto-steps { grid-template-columns: 1fr; }
+  .hero { padding: 56px 24px 52px; }
+  .container { padding: 40px 20px 80px; }
+  .session-body { padding: 22px 24px 20px; }
+  .howto { padding: 28px 24px; }
+  .session-actions { flex-direction: column; }
+  .btn { justify-content: center; }
+}
+
+.howto-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.howto-step-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  border: 1px solid rgba(184,134,11,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-family: 'Playfair Display', serif;
+}
+
+.howto-step-body {}
+.howto-step-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.howto-step-text { font-size: 13px; color: var(--ink3); line-height: 1.6; font-weight: 300; }
+
+/* ══════════════════
+   NOTES SECTION
+══════════════════ */
+.notes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 64px;
+}
+
+@media (max-width: 600px) {
+  .notes-grid { grid-template-columns: 1fr; }
+}
+
+.note-card {
+  background: var(--white);
+  border: 1px solid var(--cream2);
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 8px var(--shadow);
+}
+
+.note-icon { font-size: 24px; margin-bottom: 12px; opacity: 0.7; }
+.note-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.note-text { font-size: 13px; color: var(--ink3); line-height: 1.65; font-weight: 300; }
+
+/* ══════════════════
+   FOOTER
+══════════════════ */
+.footer {
+  background: var(--dark);
+  padding: 40px;
+  text-align: center;
+  position: relative; z-index: 1;
+}
+
+.footer-verse {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(255,255,255,0.35);
+  max-width: 400px;
+  margin: 0 auto 12px;
+  line-height: 1.7;
+}
+
+.footer-ref {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--warm);
+  opacity: 0.45;
+}
+
+/* ══════════════════
+   ANIMATIONS
+══════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero > * { animation: fadeUp 0.6s ease forwards; }
+.hero > *:nth-child(2) { animation-delay: 0.1s; opacity: 0; }
+.hero > *:nth-child(3) { animation-delay: 0.2s; opacity: 0; }
+.hero > *:nth-child(4) { animation-delay: 0.3s; opacity: 0; }
+.hero > *:nth-child(5) { animation-delay: 0.4s; opacity: 0; }
+.hero > *:nth-child(6) { animation-delay: 0.5s; opacity: 0; }
+.hero > *:nth-child(7) { animation-delay: 0.6s; opacity: 0; }
+
+.session-card { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+.session-card:nth-child(1) { animation-delay: 0.1s; }
+.session-card:nth-child(2) { animation-delay: 0.2s; }
+.session-card:nth-child(3) { animation-delay: 0.3s; }
+.session-card:nth-child(4) { animation-delay: 0.4s; }
+
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-ornament">🕯</div>
+  <div class="hero-series">Seri Pelajaran · 4 Pertemuan</div>
+  <div class="hero-title">The Unquenchable<br><em>Lamp of the Covenant</em></div>
+  <div class="hero-author">Abraham Park</div>
+  <div class="hero-verse">
+    "Roh manusia adalah pelita TUHAN,<br>yang menyelidiki seluruh lubuk hatinya."
+    <span class="hero-verse-ref">Amsal 20:27</span>
+  </div>
+  <div class="hero-divider"></div>
+</div>
+
+<!-- INTRO BAND -->
+<div class="intro-band">
+  <div class="intro-text">
+    Empat pertemuan untuk <strong>8 orang · 45 menit</strong> setiap pertemuan.<br>
+    Setiap pertemuan memiliki slide presentasi untuk TV dan catatan pembicara untuk iPad.
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- SESSIONS -->
+  <div class="section-label">Empat Pertemuan</div>
+  <div class="sessions">
+
+    <!-- SESSION 1 -->
+    <div class="session-card">
+      <div class="session-header">
+        <div class="session-accent"></div>
+        <div class="session-body">
+          <div class="session-meta">
+            <span class="session-num">Pertemuan 1</span>
+            <div class="session-dot"></div>
+            <span class="session-duration">45 menit · 19 slide</span>
+          </div>
+          <div class="session-title">Siapa yang Masuk dalam Cerita Ini?</div>
+          <div class="session-subtitle">Tiga perempuan dalam silsilah Yesus — dan apa yang membuat mereka berbeda dari yang lain.</div>
+          <div class="session-themes">
+            <span class="theme-pill">Tamar</span>
+            <span class="theme-pill">Rahab</span>
+            <span class="theme-pill">Rut</span>
+            <span class="theme-pill">Matius 1:1–6</span>
+            <span class="theme-pill">Iman yang hidup</span>
+          </div>
+          <div class="session-actions">
+            <a href="presentation-pertemuan1.html" class="btn btn-primary" target="_blank">
+              <span class="btn-icon">▶</span> Buka Presentasi
+            </a>
+            <a href="speaker-notes-pertemuan1.html" class="btn btn-secondary" target="_blank">
+              <span class="btn-icon">📋</span> Catatan Pembicara
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSION 2 -->
+    <div class="session-card">
+      <div class="session-header">
+        <div class="session-accent"></div>
+        <div class="session-body">
+          <div class="session-meta">
+            <span class="session-num">Pertemuan 2</span>
+            <div class="session-dot"></div>
+            <span class="session-duration">45 menit · 19 slide</span>
+          </div>
+          <div class="session-title">Bagaimana Lampu Hampir Padam</div>
+          <div class="session-subtitle">340 tahun kegelapan — lebih gelap dari Sodom. Dan mengapa siklus yang sama terus berulang.</div>
+          <div class="session-themes">
+            <span class="theme-pill">Zaman Hakim</span>
+            <span class="theme-pill">Gideon</span>
+            <span class="theme-pill">Samson</span>
+            <span class="theme-pill">Hakim 2 & 6</span>
+            <span class="theme-pill">340 tahun</span>
+          </div>
+          <div class="session-actions">
+            <a href="presentation-pertemuan2.html" class="btn btn-primary" target="_blank">
+              <span class="btn-icon">▶</span> Buka Presentasi
+            </a>
+            <a href="speaker-notes-pertemuan2.html" class="btn btn-secondary" target="_blank">
+              <span class="btn-icon">📋</span> Catatan Pembicara
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSION 3 -->
+    <div class="session-card">
+      <div class="session-header">
+        <div class="session-accent"></div>
+        <div class="session-body">
+          <div class="session-meta">
+            <span class="session-num">Pertemuan 3</span>
+            <div class="session-dot"></div>
+            <span class="session-duration">45 menit · 18 slide</span>
+          </div>
+          <div class="session-title">Mengapa Allah Tidak Menyerah?</div>
+          <div class="session-subtitle">Dari kegelapan ke terang — melalui Daud, sumpah Allah, dan nilai satu jiwa yang melampaui alam semesta.</div>
+          <div class="session-themes">
+            <span class="theme-pill">Daud</span>
+            <span class="theme-pill">Padang gurun</span>
+            <span class="theme-pill">Mazmur 18</span>
+            <span class="theme-pill">1 Samuel 16</span>
+            <span class="theme-pill">Yesaya 9:7</span>
+          </div>
+          <div class="session-actions">
+            <a href="presentation-pertemuan3.html" class="btn btn-primary" target="_blank">
+              <span class="btn-icon">▶</span> Buka Presentasi
+            </a>
+            <a href="speaker-notes-pertemuan3.html" class="btn btn-secondary" target="_blank">
+              <span class="btn-icon">📋</span> Catatan Pembicara
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSION 4 -->
+    <div class="session-card">
+      <div class="session-header">
+        <div class="session-accent"></div>
+        <div class="session-body">
+          <div class="session-meta">
+            <span class="session-num">Pertemuan 4 · Terakhir</span>
+            <div class="session-dot"></div>
+            <span class="session-duration">45 menit · 13 slide</span>
+          </div>
+          <div class="session-title">Lampu Itu Sekarang Ada di Tanganmu</div>
+          <div class="session-subtitle">Ke mana seluruh perjalanan ini bermuara — dan apa yang kamu lakukan dengan lampu yang ada di tanganmu.</div>
+          <div class="session-themes">
+            <span class="theme-pill">Amsal 20:27</span>
+            <span class="theme-pill">Pelita TUHAN</span>
+            <span class="theme-pill">Satu jiwa</span>
+            <span class="theme-pill">Akhir terbuka</span>
+          </div>
+          <div class="session-actions">
+            <a href="presentation-pertemuan4.html" class="btn btn-primary" target="_blank">
+              <span class="btn-icon">▶</span> Buka Presentasi
+            </a>
+            <a href="speaker-notes-pertemuan4.html" class="btn btn-secondary" target="_blank">
+              <span class="btn-icon">📋</span> Catatan Pembicara
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HOW TO USE -->
+  <div class="section-label">Cara Pakai</div>
+  <div class="howto">
+    <div class="howto-title">Sebelum setiap pertemuan</div>
+    <div class="howto-steps">
+      <div class="howto-step">
+        <div class="howto-step-num">1</div>
+        <div class="howto-step-body">
+          <div class="howto-step-title">Buka Presentasi di TV</div>
+          <div class="howto-step-text">Klik "Buka Presentasi" → buka di Chrome → tekan F untuk fullscreen. Klik atau tekan → untuk lanjut, ← untuk kembali.</div>
+        </div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-step-num">2</div>
+        <div class="howto-step-body">
+          <div class="howto-step-title">Buka Catatan di iPad</div>
+          <div class="howto-step-text">Klik "Catatan Pembicara" → buka di Safari atau Chrome iPad. Gunakan tombol Berikutnya → di bawah untuk navigasi.</div>
+        </div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-step-num">3</div>
+        <div class="howto-step-body">
+          <div class="howto-step-title">Sinkronisasi Manual</div>
+          <div class="howto-step-text">Setiap kartu catatan sesuai satu slide presentasi. Nomor di pojok kanan atas TV sesuai dengan nomor slide di catatan.</div>
+        </div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-step-num">4</div>
+        <div class="howto-step-body">
+          <div class="howto-step-title">Jaga 15 Menit Tersisa</div>
+          <div class="howto-step-text">Konten dirancang untuk 30 menit. 15 menit sisanya untuk keheningan, sharing, dan momen yang tidak bisa dijadwalkan.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="section-label">Catatan Penting</div>
+  <div class="notes-grid">
+    <div class="note-card">
+      <div class="note-icon">🌑</div>
+      <div class="note-title">Arc Keseluruhan</div>
+      <div class="note-text">Pertemuan 1 hangat dan personal. Pertemuan 2 gelap dan berat. Pertemuan 3 dramatis — dari gelap ke terang. Pertemuan 4 paling intim. Setiap pertemuan punya warna visual yang berbeda.</div>
+    </div>
+    <div class="note-card">
+      <div class="note-icon">📖</div>
+      <div class="note-title">Buka Alkitab Bersama</div>
+      <div class="note-text">Mat 1:1–6 (P1) · Hakim 2:11–19 (P2) · 1 Sam 16:6–7 (P3) · Amsal 20:27 (P4). Satu momen per pertemuan di mana Alkitab dibuka bersama — bukan hanya ditampilkan di slide.</div>
+    </div>
+    <div class="note-card">
+      <div class="note-icon">🤫</div>
+      <div class="note-title">Jaga Keheningan</div>
+      <div class="note-text">Setiap pertemuan punya "slide diam" — pertanyaan yang dibiarkan tanpa jawaban. Jangan isi keheningan itu. Itulah momen terpenting dalam seluruh pertemuan.</div>
+    </div>
+    <div class="note-card">
+      <div class="note-icon">🔁</div>
+      <div class="note-title">Seri Bisa Diulang</div>
+      <div class="note-text">Dengan kelompok yang berbeda, jawaban tiga pertanyaan awal mungkin berbeda — dan seluruh seri bisa disesuaikan. Fondasi sudah ada, tinggal disesuaikan konteksnya.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-verse">"Roh manusia adalah pelita TUHAN,<br>yang menyelidiki seluruh lubuk hatinya."</div>
+  <div class="footer-ref">Amsal 20:27 · The Unquenchable Lamp of the Covenant</div>
+</div>
+
+</body>
+</html>
