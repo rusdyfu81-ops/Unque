@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Perjanjian Kasih Karunia & Yesus Kristus</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#C9A84C; --gold-light:#E8C97A; --deep:#1A1209; --dark:#221A08; --mid:#3D2E10;
+    --cream:#F5EDD8; --cream-dim:#E8DCC0; --text-dim:#B8A882;
+    --fs-label:clamp(14px,1.9vw,38px); --fs-title:clamp(38px,6.5vw,120px);
+    --fs-title2:clamp(30px,5vw,96px); --fs-title3:clamp(24px,3.5vw,68px);
+    --fs-body:clamp(18px,2.6vw,52px); --fs-body-sm:clamp(15px,2vw,40px);
+    --fs-ref:clamp(13px,1.7vw,34px); --fs-small:clamp(12px,1.4vw,28px);
+    --sp-xs:clamp(4px,.6vh,16px); --sp-sm:clamp(9px,1.3vh,28px);
+    --sp-md:clamp(15px,2.2vh,44px); --sp-lg:clamp(22px,3.2vh,64px);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--deep);font-family:'Lato',sans-serif;color:var(--cream);height:100dvh;overflow:hidden;user-select:none}
+  #progress-bar{position:fixed;top:0;left:0;height:clamp(3px,.4vh,8px);background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .4s ease;z-index:100;box-shadow:0 0 8px var(--gold)}
+  #slide-counter{position:fixed;top:clamp(10px,1.5vh,28px);right:clamp(14px,2.5vw,48px);font-size:clamp(12px,1.4vw,28px);letter-spacing:2px;color:var(--text-dim);z-index:100;font-weight:300}
+  #section-badge{position:fixed;top:clamp(10px,1.5vh,28px);left:clamp(14px,2.5vw,48px);font-size:clamp(12px,1.4vw,28px);letter-spacing:2px;color:var(--gold);z-index:100;font-weight:700;text-transform:uppercase;opacity:.7}
+  #slides{width:100%;height:100dvh;position:relative}
+  .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:clamp(44px,6.5vh,86px) clamp(30px,7.5vw,150px) clamp(84px,11vh,136px);opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;transform:translateX(50px);overflow:hidden}
+  .slide>*:not(.bignumber):not(.swipe-hint){max-width:min(100%,1200px);width:100%;}
+  .slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+  .slide.exit{opacity:0;transform:translateX(-50px)}
+  .bg-cover{background:radial-gradient(ellipse at 30% 40%,#3D2500 0%,#1A1209 60%,#0D0906 100%)}
+  .bg-cover::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C9A84C' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
+  .bg-dark{background:linear-gradient(160deg,#1A1209 0%,#221A08 100%)}
+  .bg-mid{background:linear-gradient(140deg,#2A1F0A 0%,#1A1209 100%)}
+  .bg-green{background:radial-gradient(ellipse at center,#0D1A0D 0%,#080F08 100%)}
+  .bg-blue{background:radial-gradient(ellipse at 50% 30%,#0D1020 0%,#07080F 100%)}
+  .bg-red{background:radial-gradient(ellipse at center,#1A0808 0%,#0D0404 100%)}
+  .bg-close{background:radial-gradient(ellipse at 50% 60%,#2A1A00 0%,#1A1209 60%,#0D0906 100%)}
+  .ornament{font-size:clamp(28px,4vw,64px);color:var(--gold);opacity:.6;margin-bottom:var(--sp-sm)}
+  .gold-line{width:clamp(40px,6vw,100px);height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:var(--sp-sm) auto}
+  .label{font-size:var(--fs-label);letter-spacing:clamp(3px,.5vw,7px);text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:var(--sp-xs)}
+  .title-main{font-family:'Playfair Display',serif;font-size:var(--fs-title);font-weight:900;color:var(--cream);line-height:1.1;text-align:center;margin-bottom:var(--sp-xs)}
+  .title-sub{font-family:'Playfair Display',serif;font-size:var(--fs-title3);font-weight:700;font-style:italic;color:var(--gold-light);text-align:center}
+  .slide-title{font-family:'Playfair Display',serif;font-size:var(--fs-title2);font-weight:700;color:var(--cream);line-height:1.2;text-align:center;margin-bottom:var(--sp-xs);width:100%}
+  .body{font-size:var(--fs-body);line-height:1.7;color:var(--cream-dim);text-align:center;font-weight:300;width:100%}
+  .body-sm{font-size:var(--fs-body-sm);line-height:1.7;color:var(--cream-dim);font-weight:300}
+  .accent{color:var(--gold-light);font-style:italic}
+  .strong{color:var(--cream);font-weight:700}
+  .scripture{background:rgba(201,168,76,.07);border-left:clamp(3px,.4vw,6px) solid var(--gold);padding:var(--sp-sm) var(--sp-md);margin:var(--sp-sm) 0;border-radius:0 8px 8px 0;font-size:var(--fs-body-sm);line-height:1.75;color:var(--cream-dim);font-style:italic;width:100%}
+  .scripture .ref{font-style:normal;font-weight:700;color:var(--gold);font-size:var(--fs-ref);letter-spacing:1px;margin-bottom:var(--sp-xs);display:block}
+  .truth{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);border-radius:clamp(10px,1.5vw,20px);padding:var(--sp-md) var(--sp-lg);text-align:center;width:100%;margin:var(--sp-sm) 0}
+  .truth-text{font-family:'Playfair Display',serif;font-size:var(--fs-body);color:var(--cream);line-height:1.5;font-style:italic}
+  .qbox{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:clamp(10px,1.5vw,20px);padding:var(--sp-md) var(--sp-lg);width:100%;text-align:center;margin:var(--sp-sm) 0}
+  .qmark{font-family:'Playfair Display',serif;font-size:clamp(50px,8vw,120px);color:rgba(201,168,76,.25);line-height:1;margin-bottom:var(--sp-xs)}
+  .qtext{font-family:'Playfair Display',serif;font-size:var(--fs-title3);color:var(--cream);line-height:1.5;font-style:italic}
+  .card-row{display:flex;gap:clamp(10px,1.5vw,24px);width:100%;margin:var(--sp-sm) 0}
+  .card{flex:1;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:clamp(10px,1.2vw,18px);padding:var(--sp-md) var(--sp-sm);text-align:center}
+  .card-icon{font-size:clamp(26px,3.5vw,56px);margin-bottom:var(--sp-xs)}
+  .card-title{font-size:var(--fs-ref);font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:var(--sp-xs)}
+  .card-text{font-size:var(--fs-body-sm);color:var(--text-dim);line-height:1.5}
+  .num-list{width:100%}
+  .num-item{display:flex;align-items:flex-start;gap:clamp(12px,1.8vw,28px);padding:var(--sp-sm) 0;border-bottom:1px solid rgba(201,168,76,.1)}
+  .num-item:last-child{border-bottom:none}
+  .num{width:clamp(30px,3.8vw,58px);height:clamp(30px,3.8vw,58px);border-radius:50%;background:var(--gold);color:var(--deep);font-weight:900;font-size:var(--fs-ref);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .num-text{font-size:var(--fs-body);color:var(--cream-dim);line-height:1.6;padding-top:2px}
+  .timeline{width:100%}
+  .tl-item{display:flex;align-items:flex-start;gap:clamp(12px,1.8vw,28px);margin-bottom:clamp(10px,1.5vh,24px);position:relative}
+  .tl-dot-wrap{position:relative;flex-shrink:0}
+  .tl-dot{width:clamp(12px,1.4vw,20px);height:clamp(12px,1.4vw,20px);border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);margin-top:4px}
+  .tl-line{position:absolute;left:50%;transform:translateX(-50%);top:clamp(16px,2vw,24px);bottom:clamp(-10px,-1.5vh,-24px);width:2px;background:linear-gradient(to bottom,rgba(201,168,76,.4),transparent)}
+  .tl-name{font-weight:700;color:var(--gold-light);font-size:var(--fs-body-sm)}
+  .tl-ref{font-size:var(--fs-small);color:var(--text-dim);margin-top:3px}
+  .bullet-list{width:100%}
+  .bullet-item{display:flex;align-items:flex-start;gap:clamp(10px,1.5vw,22px);margin-bottom:var(--sp-sm)}
+  .bullet-dot{width:clamp(8px,1vw,14px);height:clamp(8px,1vw,14px);border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:clamp(7px,.9vw,13px)}
+  .bullet-text{font-size:var(--fs-body);color:var(--cream-dim);line-height:1.6}
+  .rainbow-arc{width:clamp(180px,28vw,420px);height:clamp(90px,14vw,210px);border-radius:500px 500px 0 0;margin:var(--sp-sm) auto;position:relative;overflow:hidden}
+  .rainbow-arc::before{content:'';position:absolute;inset:0;border-radius:500px 500px 0 0;background:conic-gradient(from 180deg at 50% 100%,#FF0000,#FF7700,#FFFF00,#00FF00,#0000FF,#8B00FF,#FF0000);mask:radial-gradient(ellipse at 50% 100%,transparent 55%,black 60%,black 85%,transparent 90%);-webkit-mask:radial-gradient(ellipse at 50% 100%,transparent 55%,black 60%,black 85%,transparent 90%)}
+  .cross-wrap{display:flex;align-items:center;justify-content:center;margin:var(--sp-sm) 0}
+  .cross{position:relative;width:clamp(40px,5vw,80px);height:clamp(56px,7vw,112px)}
+  .cross::before{content:'';position:absolute;left:50%;transform:translateX(-50%);width:clamp(8px,1vw,16px);height:100%;background:linear-gradient(to bottom,var(--gold),rgba(201,168,76,.3));border-radius:2px}
+  .cross::after{content:'';position:absolute;top:25%;left:50%;transform:translate(-50%,-50%);width:100%;height:clamp(8px,1vw,16px);background:linear-gradient(90deg,rgba(201,168,76,.3),var(--gold),rgba(201,168,76,.3));border-radius:2px}
+  .contrast-row{display:flex;gap:clamp(10px,1.5vw,24px);width:100%;margin:var(--sp-sm) 0}
+  .contrast-bad{flex:1;background:rgba(139,32,32,.1);border:1px solid rgba(139,32,32,.35);border-radius:clamp(10px,1.2vw,18px);padding:var(--sp-md) var(--sp-sm);text-align:center}
+  .contrast-good{flex:1;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:clamp(10px,1.2vw,18px);padding:var(--sp-md) var(--sp-sm);text-align:center}
+  .c-icon{font-size:clamp(28px,3.5vw,56px);margin-bottom:var(--sp-xs)}
+  .c-bad{font-size:var(--fs-ref);font-weight:700;color:#E07070;text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs)}
+  .c-good{font-size:var(--fs-ref);font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:var(--sp-xs)}
+  .c-text{font-size:var(--fs-body-sm);color:var(--text-dim);line-height:1.55}
+  .bignumber{font-family:'Playfair Display',serif;font-size:clamp(80px,12vw,180px);font-weight:900;color:rgba(201,168,76,.1);position:absolute;top:clamp(16px,2vh,36px);right:clamp(16px,2.5vw,48px);line-height:1;pointer-events:none}
+  .swipe-hint{position:absolute;bottom:clamp(70px,9vh,110px);left:50%;transform:translateX(-50%);font-size:var(--fs-small);color:rgba(201,168,76,.3);letter-spacing:3px;white-space:nowrap;animation:fadeH 4s ease 2s both}
+  @keyframes fadeH{0%{opacity:0}20%{opacity:1}75%{opacity:1}100%{opacity:0}}
+  @keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .slide.active .a1{animation:up .5s ease .08s both}
+  .slide.active .a2{animation:up .5s ease .22s both}
+  .slide.active .a3{animation:up .5s ease .36s both}
+  .slide.active .a4{animation:up .5s ease .50s both}
+  .slide.active .a5{animation:up .5s ease .64s both}
+  .slide.active .a6{animation:up .5s ease .78s both}
+  #bottom-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:clamp(10px,1.5vh,28px) clamp(20px,4vw,80px) clamp(14px,2vh,36px);background:linear-gradient(to top,rgba(10,8,4,.98),transparent);z-index:50}
+  .nav-btn{width:clamp(46px,5.5vw,110px);height:clamp(46px,5.5vw,110px);border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);font-size:clamp(22px,3vw,56px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .nav-btn:active{background:rgba(201,168,76,.25);transform:scale(.95)}
+  .nav-btn:disabled{opacity:.2}
+  #note-btn{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:var(--gold);border-radius:clamp(18px,2.5vw,50px);padding:clamp(9px,1.3vh,24px) clamp(18px,2.8vw,56px);font-size:clamp(12px,1.4vw,28px);letter-spacing:2px;text-transform:uppercase;font-family:'Lato',sans-serif;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s}
+  #note-btn:active{background:rgba(201,168,76,.25)}
+  #note-panel{position:fixed;bottom:0;left:0;right:0;background:rgba(8,6,2,.98);border-top:1px solid rgba(201,168,76,.25);transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:200;max-height:68dvh;border-radius:clamp(14px,2vw,28px) clamp(14px,2vw,28px) 0 0;overflow:hidden}
+  #note-panel.open{transform:translateY(0)}
+  .note-handle{width:clamp(32px,4vw,56px);height:clamp(4px,.5vh,7px);background:rgba(201,168,76,.3);border-radius:3px;margin:clamp(10px,1.5vh,20px) auto clamp(6px,1vh,14px)}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,3vw,48px) clamp(10px,1.5vh,20px);border-bottom:1px solid rgba(201,168,76,.1)}
+  .note-label{font-size:var(--fs-label);letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .note-close{width:clamp(28px,3.5vw,50px);height:clamp(28px,3.5vw,50px);border-radius:50%;background:rgba(201,168,76,.1);border:none;color:var(--gold);font-size:clamp(16px,2vw,30px);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .note-body{padding:clamp(14px,2vh,30px) clamp(18px,3vw,48px) clamp(24px,3.5vh,50px);overflow-y:auto;max-height:calc(68dvh - 90px)}
+  .note-sec{margin-bottom:clamp(14px,2vh,28px)}
+  .note-sec-title{font-size:var(--fs-small);letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:clamp(5px,.7vh,12px)}
+  .note-sec-text{font-size:var(--fs-body-sm);color:var(--cream-dim);line-height:1.75;font-weight:300}
+  .note-tip{background:rgba(201,168,76,.08);border-left:3px solid var(--gold);padding:clamp(8px,1.2vh,18px) clamp(12px,2vw,28px);border-radius:0 8px 8px 0;font-size:var(--fs-body-sm);color:var(--gold-light);line-height:1.65;margin-top:clamp(8px,1vh,16px)}
+  #swipe-overlay{position:fixed;inset:0;z-index:30}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<div id="slide-counter">1 / 29</div>
+<div id="section-badge"></div>
+<div id="slides">
+
+<!-- 1. COVER -->
+<div class="slide bg-cover active" data-section="Pembuka">
+  <div class="bignumber">I</div>
+  <div class="ornament a1">✦</div>
+  <div class="label a2">Seri Perjanjian Allah · Pelajaran 3</div>
+  <div class="title-main a2">Perjanjian<br>Kasih Karunia</div>
+  <div class="title-sub a2">& Yesus Kristus</div>
+  <div class="gold-line a3"></div>
+  <p class="body-sm a3" style="color:var(--text-dim);text-align:center;">Fokus: 7 Perjanjian KK & Studi Kasus Perjanjian Nuh</p>
+  <div class="swipe-hint">GESER UNTUK LANJUT →</div>
+</div>
+
+<!-- 2. PERTANYAAN PEMBUKA -->
+<div class="slide bg-green" data-section="Pembuka">
+  <div class="label a1">Pertanyaan Pembuka</div>
+  <div class="slide-title a2">Diskusikan Dulu</div>
+  <div class="gold-line a2"></div>
+  <div class="qbox a3">
+    <div class="qmark">?</div>
+    <div class="qtext">Mengapa Allah yang Mahakuasa mau repot-repot membuat perjanjian dengan manusia yang terus gagal dan berdosa?</div>
+  </div>
+  <p class="body a4" style="font-size:var(--fs-body-sm);margin-top:var(--sp-sm);">Pikirkan sebentar — kita temukan jawabannya bersama.</p>
+</div>
+
+<!-- 3. ALLAH YANG BESAR -->
+<div class="slide bg-dark" data-section="Fondasi">
+  <div class="label a1">Fondasi</div>
+  <div class="slide-title a2">Allah yang Lebih Besar<br>dari Segalanya</div>
+  <div class="gold-line a2"></div>
+  <div class="truth a3">
+    <div class="truth-text">"Ia yang menghitung bintang-bintang, yang memanggil semuanya dengan nama." <span style="font-size:var(--fs-ref);color:var(--gold);">— Mzm 147:4</span></div>
+  </div>
+  <div class="bullet-list a4" style="margin-top:var(--sp-sm);">
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">100 miliar galaksi · masing-masing berisi ratusan miliar bintang</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Allah memanggil nama setiap bintang <span class="accent">satu per satu</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Allah yang sebesar itu <span class="accent">memperhatikan kamu satu per satu</span></div></div>
+  </div>
+</div>
+
+<!-- 4. MENGAPA ALLAH MEMBUAT PERJANJIAN -->
+<div class="slide bg-mid" data-section="Fondasi">
+  <div class="label a1">Jawaban Pertanyaan Pembuka</div>
+  <div class="slide-title a2">Mengapa Allah<br>Membuat Perjanjian?</div>
+  <div class="gold-line a2"></div>
+  <div class="truth a3">
+    <div class="truth-text">"Bukan kita yang telah mengasihi Allah, tetapi Allah yang telah mengasihi kita." <span style="font-size:var(--fs-ref);color:var(--gold);">— 1 Yoh 4:10</span></div>
+  </div>
+  <div class="scripture a4"><span class="ref">1 Yohanes 4:19</span>Kita mengasihi, karena Allah lebih dahulu mengasihi kita.</div>
+  <p class="body a5" style="margin-top:var(--sp-sm);">Bukan karena manusia layak —<br>tapi karena <span class="accent">kecemburuan kasih Allah yang tidak bisa berhenti.</span></p>
+</div>
+
+<!-- 5. 3 JENIS PERJANJIAN -->
+<div class="slide bg-dark" data-section="Perjanjian KK">
+  <div class="label a1">Definisi</div>
+  <div class="slide-title a2">3 Jenis Perjanjian</div>
+  <div class="gold-line a2"></div>
+  <div class="card-row a3">
+    <div class="card"><div class="card-icon">⚖️</div><div class="card-title">Perbuatan</div><div class="card-text">Kej 2:15–17<br>Manusia harus memenuhi syarat → gagal</div></div>
+    <div class="card"><div class="card-icon">🕊️</div><div class="card-title">Penebusan</div><div class="card-text">Ef 1:4–5<br>Rencana kekal Allah sebelum dunia ada</div></div>
+    <div class="card"><div class="card-icon">✨</div><div class="card-title">Kasih Karunia</div><div class="card-text">Ef 2:8–9<br>Allah yang memenuhi syarat untuk manusia</div></div>
+  </div>
+  <div class="scripture a4"><span class="ref">Efesus 2:8–9</span>Sebab karena kasih karunia kamu diselamatkan oleh iman... itu bukan hasil usahamu, tetapi pemberian Allah.</div>
+</div>
+
+<!-- 6. SIFAT PERJANJIAN KK -->
+<div class="slide bg-mid" data-section="Perjanjian KK">
+  <div class="label a1">Sifat Perjanjian Kasih Karunia</div>
+  <div class="slide-title a2">Mengapa Disebut<br>"Kasih Karunia"?</div>
+  <div class="gold-line a2"></div>
+  <div class="card-row a3">
+    <div class="card"><div class="card-icon">👑</div><div class="card-title">Berdaulat</div><div class="card-text">Dimulai oleh Allah, bukan karena manusia minta atau layak</div></div>
+    <div class="card"><div class="card-icon">🤲</div><div class="card-title">Sepihak</div><div class="card-text">Allah yang proaktif mendatangi manusia yang berdosa</div></div>
+    <div class="card"><div class="card-icon">♾️</div><div class="card-title">Kekal</div><div class="card-text">Tidak tergantung kesetiaan manusia</div></div>
+  </div>
+  <div class="scripture a4"><span class="ref">Roma 3:10, 23</span>Tidak ada yang benar, seorang pun tidak... semua orang telah berbuat dosa.</div>
+</div>
+
+<!-- 7. PERJANJIAN SULUH -->
+<div class="slide bg-dark" data-section="Perjanjian KK">
+  <div class="label a1">Ilustrasi: Perjanjian Suluh</div>
+  <div class="slide-title a2">Hanya Suluh<br>yang Berjalan</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 15:17</span>Tampak lah perapian yang berasap beserta suluh yang berapi, yang lewat di antara potongan-potongan daging itu.</div>
+  <div class="bullet-list a4">
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text"><span class="strong">Abraham tertidur</span> — ia tidak berjalan melewati potongan binatang</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text"><span class="strong">Hanya suluh (Allah)</span> yang berjalan — menanggung sumpah KEDUA PIHAK</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Penggenapan: <span class="accent">Yesus di kayu salib menanggung yang seharusnya ditanggung kita</span></div></div>
+  </div>
+</div>
+
+<!-- 8. POLA PERJANJIAN -->
+<div class="slide bg-mid" data-section="Peta Perjanjian">
+  <div class="label a1">Peta Besar</div>
+  <div class="slide-title a2">Pola yang Terulang<br>Sepanjang Sejarah</div>
+  <div class="gold-line a2"></div>
+  <div class="truth a3">
+    <div class="truth-text">Setiap kali manusia gagal — Allah datang lagi dengan perjanjian baru. Bukan karena Allah lemah, tapi karena kasih-Nya tidak menyerah.</div>
+  </div>
+  <div class="scripture a4"><span class="ref">Mazmur 105:8–10</span>Ia ingat untuk selama-lamanya akan perjanjian-Nya... diadakan-Nya hal itu menjadi perjanjian kekal bagi Israel.</div>
+</div>
+
+<!-- 9. 6 PERJANJIAN TIMELINE -->
+<div class="slide bg-dark" data-section="Peta Perjanjian">
+  <div class="label a1">7 Perjanjian Kasih Karunia</div>
+  <div class="slide-title a2" style="font-size:var(--fs-title3);margin-bottom:var(--sp-sm);">Dari Adam hingga Yehezkiel</div>
+  <div class="timeline a3">
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-name">Adam — Proto Injil</div><div class="tl-ref">Kej 3:15 · Benih perempuan yang meremukkan kepala ular</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-name">Nuh — Perjanjian Pelangi</div><div class="tl-ref">Kej 6:18; 9:8–12 · Penghakiman ditahan</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-name">Abraham — Perjanjian Suluh</div><div class="tl-ref">Kej 12, 15, 17, 22 · Bangsa, tanah, keturunan</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-name">Musa — Perjanjian Sinai</div><div class="tl-ref">Kel 20–23 · Taurat dan bangsa pilihan · ~11 bulan berkemah di Sinai</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div><div class="tl-name">Daud — Perjanjian Kerajaan</div><div class="tl-ref">2 Sam 7:12–16 · Raja kekal dari keturunannya · Salomo → Yesus · Yoh 2:19–21 · Yobel: bebas dari dosa & maut (Bil 14:34; Yeh 4:6) · Bait kekal (Why 21:22–23)</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--gold-light);box-shadow:0 0 12px var(--gold-light);"></div><div class="tl-line"></div></div><div><div class="tl-name" style="color:var(--gold-light);">Yeremia — Perjanjian Baru</div><div class="tl-ref">Yer 31:33 · Firman ditulis di hati · Yes 11:9; Hos 2:14 · Ibr 8:8–10 · digenapi Yesus Kristus</div></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:#A8D8A8;box-shadow:0 0 12px #A8D8A8;"></div></div><div><div class="tl-name" style="color:#A8D8A8;">Yehezkiel — Perjanjian Kekal</div><div class="tl-ref">Yeh 34:24–31 · Gembala yang satu, Daud (Mesias) · Yoh 10:3–5 · Domba-domba mendengar suara-Nya</div></div></div>
+  </div>
+</div>
+
+<!-- 10. MESIAS TERSEMBUNYI -->
+<div class="slide bg-mid" data-section="Peta Perjanjian">
+  <div class="label a1">Kunci Membaca Perjanjian</div>
+  <div class="slide-title a2">Di Balik Setiap Perjanjian<br>Tersembunyi Pesan Mesias</div>
+  <div class="gold-line a2"></div>
+  <div class="truth a3"><div class="truth-text">Isi perjanjian tampak spesifik dan jelas di permukaan — tapi di dalamnya tersembunyi hati Allah: pesan tentang Yesus Kristus.</div></div>
+  <div class="card-row a4">
+    <div class="card"><div class="card-icon">📖</div><div class="card-title">Kej 3:15</div><div class="card-text">Keturunan yang meremukkan kepala ular = Yesus</div></div>
+    <div class="card"><div class="card-icon">🌈</div><div class="card-title">Perjanjian Nuh</div><div class="card-text">Pelangi = gambaran Yesus di salib menahan penghakiman</div></div>
+    <div class="card"><div class="card-icon">👑</div><div class="card-title">Perjanjian Daud</div><div class="card-text">Raja yang membangun bait kekal = Yesus (Yoh 2:19–21)</div></div>
+  </div>
+</div>
+
+<!-- 11. KONTEKS ZAMAN NUH -->
+<div class="slide bg-dark" data-section="Perjanjian Nuh">
+  <div class="label a1">Studi Kasus: Perjanjian Nuh</div>
+  <div class="slide-title a2">Dunia di Zaman Nuh</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 6:5</span>TUHAN melihat bahwa kejahatan manusia besar di bumi dan bahwa segala kecenderungan hatinya selalu membuahkan kejahatan semata-mata.</div>
+  <div class="bullet-list a4">
+    <div class="bullet-item"><div class="bullet-dot" style="background:#E07070;"></div><div class="bullet-text">Dunia penuh kekerasan dan dosa — <span class="strong">sangat layak untuk dihakimi</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot" style="background:#E07070;"></div><div class="bullet-text">Makan, minum, kawin-mengawinkan — <span class="strong">terlelap dalam dunia ini</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Tapi Allah tidak langsung menghakimi — <span class="accent">Ia mencari satu orang yang bisa dipakai</span></div></div>
+  </div>
+</div>
+
+<!-- 12. PERJANJIAN 1: BAHTERA -->
+<div class="slide bg-dark" data-section="Perjanjian Nuh">
+  <div class="label a1">Perjanjian Nuh · Bagian 1</div>
+  <div class="slide-title a2">Perjanjian Sebelum<br>Masuk Bahtera</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 6:18</span>"Tetapi dengan engkau Aku akan mengadakan perjanjian-Ku, dan engkau akan masuk ke dalam bahtera itu: engkau bersama-sama dengan anak-anakmu dan isterimu dan isteri anak-anakmu."</div>
+  <div class="truth a4"><div class="truth-text">Inisiatif dari Allah — bukan Nuh yang membangun bahtera lalu Allah berterima kasih. Allah yang datang lebih dahulu kepada Nuh.</div></div>
+</div>
+
+<!-- 13. BAHTERA = GAMBARAN MESIAS -->
+<div class="slide bg-mid" data-section="Perjanjian Nuh">
+  <div class="label a1">Makna Tersembunyi</div>
+  <div class="slide-title a2">Bahtera = Gambaran<br>Pekerjaan Mesias</div>
+  <div class="gold-line a2"></div>
+  <div class="bullet-list a3">
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Nuh membangun bahtera di tengah dunia yang <span class="strong">tidak peduli dan tidak percaya</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Dunia sibuk makan, minum, kawin-mengawinkan — <span class="strong">terlelap dalam dosa</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Gambaran persis pekerjaan Yesus: <span class="accent">bekerja untuk keselamatan di tengah dunia yang tidak peduli</span></div></div>
+  </div>
+  <div class="scripture a4"><span class="ref">Adam → Set → Nuh · Kej 3:15; 4:26; 5:1–32</span>Adam menerima Proto-Evangelium dan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">percaya</span> — lalu mewariskan iman itu kepada Set. Dari Set, iman itu diteruskan generasi demi generasi sampai kepada Nuh. Silsilah bukan sekadar catatan darah, tapi <span class="accent">pewarisan iman akan janji Allah.</span></div>
+</div>
+
+<!-- 14. PERJANJIAN 2: PELANGI - TEKS -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="label a1">Perjanjian Nuh · Bagian 2</div>
+  <div class="slide-title a2">Perjanjian Pelangi<br>Setelah Keluar Bahtera</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 9:11–13</span>"Maka Kuadakan perjanjian-Ku dengan kamu, bahwa sejak ini tidak ada yang hidup yang akan dilenyapkan oleh air bah lagi... Busur-Ku Kutaruh di awan, supaya itu menjadi tanda perjanjian antara Aku dan bumi."</div>
+  <div class="bullet-list a4">
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Berlaku untuk Nuh, keturunannya, <span class="strong">dan seluruh makhluk hidup</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Allah akan <span class="accent">menahan penghakiman</span> sampai sejarah penebusan selesai</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Perjanjian ini <span class="strong">masih berlaku sampai hari ini</span></div></div>
+  </div>
+</div>
+
+<!-- 15. MAKNA TEOLOGIS PELANGI -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="label a1">Makna Teologis</div>
+  <div class="slide-title a2">"Apabila Aku Melihat<br>Busur Itu..."</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 9:16</span>"Jika busur itu ada di awan, maka Aku akan melihatnya, sehingga Aku mengingat perjanjian-Ku yang kekal antara Allah dan segala makhluk yang hidup..."</div>
+  <div class="truth a4"><div class="truth-text">Allah sendiri yang melihat pelangi sebagai pengingat sumpah-Nya. Setiap ada pelangi — Allah memilih untuk tidak menghakimi, meski manusia layak dihakimi.</div></div>
+</div>
+
+<!-- 15b. FISIKA CAHAYA - FONDASI ALEGORIS -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="label a1">Sebelum Masuk ke Alegoris</div>
+  <div class="slide-title a2" style="font-size:var(--fs-title3);">Cahaya Itu Sendiri<br>Tidak Kelihatan</div>
+  <div class="gold-line a2"></div>
+  <div class="truth a3"><div class="truth-text">Cahaya membantu kita melihat — tapi cahaya itu sendiri tidak terlihat. Cahaya baru menjadi <span style="color:var(--gold);">terlihat</span> ketika dipantulkan oleh molekul air yang bersih dan murni.</div></div>
+  <div class="bullet-list a4">
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Cahaya mengenai butir-butir air yang bersih di langit</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Cahaya dipantulkan → <span class="strong">menjadi terlihat</span> dalam 7 warna</div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Inilah yang disebut pelangi: <span class="accent">terang yang tadinya tidak kelihatan, menjadi kelihatan</span></div></div>
+  </div>
+  <p class="body a5" style="font-size:var(--fs-body-sm);margin-top:var(--sp-sm);">Ingat prinsip ini — karena inilah dasar dari alegoris pelangi yang akan kita bahas.</p>
+</div>
+
+<!-- 16. ALEGORIS: UNSUR PELANGI -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="label a1">Alegoris: Bagaimana Pelangi Terbentuk?</div>
+  <div class="slide-title a2" style="font-size:var(--fs-title3);">Makna di Balik<br>Setiap Unsur</div>
+  <div class="gold-line a2"></div>
+  <div class="num-list a3" style="margin-top:var(--sp-xs);">
+    <div class="num-item" style="padding:var(--sp-xs) 0;"><div class="num">☀️</div><div class="num-text" style="font-size:var(--fs-body-sm);"><span class="strong">Matahari = Tuhan</span> — "TUHAN Allah adalah matahari dan perisai" (Mzm 84:11)</div></div>
+    <div class="num-item" style="padding:var(--sp-xs) 0;"><div class="num">💧</div><div class="num-text" style="font-size:var(--fs-body-sm);"><span class="strong">Air = Manusia berdosa</span> — "air yang kaulihat... adalah bangsa-bangsa dan rakyat banyak" (Why 17:15)</div></div>
+    <div class="num-item" style="padding:var(--sp-xs) 0;"><div class="num">✨</div><div class="num-text" style="font-size:var(--fs-body-sm);"><span class="strong">Cahaya = Firman Allah</span> — ketika Firman mengenai manusia berdosa, terjadi pemisahan dan pemurnian (Ams 6:23)</div></div>
+    <div class="num-item" style="padding:var(--sp-xs) 0;"><div class="num">🌈</div><div class="num-text" style="font-size:var(--fs-body-sm);"><span class="strong">Pelangi = Terang yang terlihat</span> — cahaya yang tidak kelihatan, menjadi kelihatan (Yoh 1:14)</div></div>
+  </div>
+</div>
+
+<!-- 17. PELANGI = YESUS -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="label a1">Pelangi = Yesus Kristus</div>
+  <div class="slide-title a2">Allah yang Tidak Kelihatan<br>Menjadi Kelihatan</div>
+  <div class="gold-line a2"></div>
+  <div class="cross-wrap a3"><div class="cross"></div></div>
+  <div class="scripture a4"><span class="ref">Yohanes 1:1, 14</span>Pada mulanya adalah Firman... dan Firman itu adalah Allah... Firman itu telah menjadi manusia, dan diam di antara kita.</div>
+  <div class="truth a5"><div class="truth-text">Seperti pelangi = cahaya yang terlihat — Yesus adalah Allah yang tidak kelihatan menjadi kelihatan. <span style="color:var(--gold);">Yesus adalah "pelangi" itu.</span></div></div>
+</div>
+
+<!-- 18. 7 WARNA = 7 FIRMAN -->
+<div class="slide bg-blue" data-section="Perjanjian Nuh">
+  <div class="rainbow-arc a1" style="margin-bottom:var(--sp-sm);"></div>
+  <div class="label a2">7 Warna Pelangi</div>
+  <div class="slide-title a2" style="font-size:var(--fs-title3);">= 7 Firman Yesus<br>di Atas Kayu Salib</div>
+  <div class="gold-line a2"></div>
+  <div class="num-list a3" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(4px,.6vw,10px);">
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">1</div><div class="num-text" style="font-size:var(--fs-small);">Bapa, ampunilah mereka</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">2</div><div class="num-text" style="font-size:var(--fs-small);">Hari ini kamu bersama-Ku di surga</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">3</div><div class="num-text" style="font-size:var(--fs-small);">Perempuan, inilah anakmu</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">4</div><div class="num-text" style="font-size:var(--fs-small);">Allahku, mengapa Engkau meninggalkan Aku?</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">5</div><div class="num-text" style="font-size:var(--fs-small);">Aku haus</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">6</div><div class="num-text" style="font-size:var(--fs-small);">Sudah selesai</div></div>
+    <div class="num-item" style="border:none;padding:clamp(3px,.4vh,7px) 0;grid-column:1/-1;"><div class="num" style="width:clamp(22px,2.5vw,38px);height:clamp(22px,2.5vw,38px);font-size:var(--fs-small);">7</div><div class="num-text" style="font-size:var(--fs-small);">Ya Bapa, ke dalam tangan-Mu Kuserahkan nyawa-Ku</div></div>
+  </div>
+  <div class="truth a4" style="margin-top:var(--sp-xs);"><div class="truth-text" style="font-size:var(--fs-body-sm);">Ketujuh firman ini adalah <span style="color:var(--gold);">esensi seluruh kehidupan dan misi Yesus</span> — dirangkum di titik paling kritis. Inilah "pelangi" itu.</div></div>
+</div>
+
+<!-- 19. AWAN = ORANG KUDUS -->
+<div class="slide bg-dark" data-section="Awan & Orang Kudus">
+  <div class="label a1">Alegoris: Awan</div>
+  <div class="slide-title a2">Awan = Orang Kudus</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Daniel 7:13 · Mat 24:30 · Why 1:7</span>Aku terus melihat dalam penglihatan malam itu... dengan awan-awan dari langit datanglah seorang seperti anak manusia... Kedatangan Tuhan dengan awan-awan dicatat dari PL hingga PB.</div>
+  <div class="scripture a4"><span class="ref">Ibrani 12:1 · Yudas 1:14</span>Kita mempunyai banyak saksi, <span style="color:var(--gold-light);font-style:normal;font-weight:700;">bagaikan awan</span> yang mengelilingi kita... Tuhan datang dengan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">beribu-ribu orang kudus</span>-Nya.</div>
+  <div class="truth a5"><div class="truth-text">Awan-awan = beribu-ribu orang kudus. Kedatangan Yesus bukan hanya peristiwa meteorologis — <span style="color:var(--gold);">Ia datang bersama seluruh umat yang telah dikuduskan oleh-Nya.</span></div></div>
+</div>
+
+<!-- 20. PROSES MENJADI AWAN -->
+<div class="slide bg-mid" data-section="Awan & Orang Kudus">
+  <div class="label a1">Proses Transformasi</div>
+  <div class="slide-title a2">Dari Air Laut<br>Menjadi Awan</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Ayub 36:27–28</span>Ia menarik ke atas titik-titik air, dan memekatkan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">kabut menjadi hujan</span>, yang dicurahkan oleh mendung, dan disiramkan ke atas banyak manusia.</div>
+  <div class="num-list a4">
+    <div class="num-item"><div class="num">1</div><div class="num-text"><span class="strong">Air (manusia berdosa)</span> + Sinar Matahari (Firman Allah) → mulai naik</div></div>
+    <div class="num-item"><div class="num">2</div><div class="num-text">Naik ke atas — tapi bertemu <span class="strong">roh jahat di udara</span> (Ef 6:12) → jadi kabut dulu</div></div>
+    <div class="num-item"><div class="num">3</div><div class="num-text">Kabut yang terus naik → <span class="accent">menjadi awan</span> — proses pemurnian yang bertahap</div></div>
+    <div class="num-item"><div class="num">4</div><div class="num-text">Awan yang menerima firman → <span class="accent">menghasilkan hujan pengajaran bagi orang lain</span> (Ul 32:2)</div></div>
+  </div>
+</div>
+
+<!-- 21. DUA JENIS AWAN -->
+<div class="slide bg-dark" data-section="Awan & Orang Kudus">
+  <div class="label a1">Peringatan</div>
+  <div class="slide-title a2">Dua Jenis Awan</div>
+  <div class="gold-line a2"></div>
+  <div class="contrast-row a3">
+    <div class="contrast-bad"><div class="c-icon">🌫️</div><div class="c-bad">Awan Kering</div><div class="c-text">Imam dan ahli Taurat di zaman Yesus. 24.000 imam — tapi tidak mengenal Mesias. Posisi tinggi, tampil rohani, tidak menghasilkan apa-apa. (Ams 25:14, Yud 1:12)</div></div>
+    <div class="contrast-good"><div class="c-icon">🌧️</div><div class="c-good">Awan Berhujan</div><div class="c-text">Menerima firman dan menghasilkan buah. Mengajarkan, memberi, membangun orang lain. Firman yang diterima mengalir keluar. (Ul 32:2)</div></div>
+  </div>
+  <div class="scripture a4"><span class="ref">Yudas 1:11–12</span>Mereka bagaikan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">awan yang tak berair</span>, yang berlalu ditiup angin... mengikuti jalan Kain, menceburkan diri ke kesesatan Bileam, binasa seperti Korah — posisi rohani tapi tidak menghasilkan apa-apa bagi orang lain.</div>
+</div>
+
+<!-- 22. AWAN SPESIAL: PELANGI DI KEPALA -->
+<div class="slide bg-blue" data-section="Awan & Orang Kudus">
+  <div class="label a1">Awan yang Paling Spesial</div>
+  <div class="slide-title a2">Satu Awan dengan<br>Pelangi di Atas Kepala</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Wahyu 10:1</span>Dan aku melihat seorang malaikat lain yang kuat turun dari sorga, berselubungkan awan, dan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">pelangi ada di atas kepalanya</span> dan mukanya sama seperti matahari...</div>
+  <div class="scripture a4"><span class="ref">Wahyu 14:14</span>Ada suatu awan putih, dan di atas awan itu duduk seorang seperti Anak Manusia dengan sebuah mahkota emas di atas kepala-Nya...</div>
+  <div class="truth a5"><div class="truth-text">Awan tunggal dengan pelangi = Yesus Kristus sendiri. Pelangi di kepala-Nya = terang yang terlihat = Allah yang menjadi manusia.</div></div>
+</div>
+
+<!-- 23. MENARA BABEL -->
+<div class="slide bg-red" data-section="Respons Iman">
+  <div class="label a1">Kontras Iman</div>
+  <div class="slide-title a2">Keturunan Nuh yang<br>Tidak Percaya Pelangi</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Kejadian 11 — Menara Babel</span>Mereka membangun menara yang tinggi agar selamat jika banjir datang lagi. Mereka sudah menerima perjanjian pelangi, tapi tidak percaya.</div>
+  <div class="bullet-list a4">
+    <div class="bullet-item"><div class="bullet-dot" style="background:#E07070;"></div><div class="bullet-text"><span class="strong">Tahu tapi tidak percaya</span> — sudah menerima janji Allah tapi tetap membangun rencana sendiri</div></div>
+    <div class="bullet-item"><div class="bullet-dot" style="background:#E07070;"></div><div class="bullet-text">Bergantung pada <span class="strong">teknologi, kekuatan, dan persatuan manusia</span></div></div>
+    <div class="bullet-item"><div class="bullet-dot"></div><div class="bullet-text">Keturunan yang setia <span class="accent">meninggalkan Babel</span> — dari merekalah <span class="strong">Abraham dipanggil keluar dari Ur</span> (Kej 12:1) untuk menjadi awal perjanjian berikutnya</div></div>
+  </div>
+  <div class="truth a5" style="margin-top:var(--sp-xs);"><div class="truth-text" style="font-size:var(--fs-body-sm);">Babel → keturunan tidak setia. Abraham → keturunan setia yang meninggalkan Babel. <span style="color:var(--gold);">Perjanjian Allah tidak berhenti — Ia memanggil orang baru.</span></div></div>
+</div>
+
+<!-- 24. PELANGI vs BABEL -->
+<div class="slide bg-dark" data-section="Respons Iman">
+  <div class="label a1">Dua Pilihan</div>
+  <div class="slide-title a2">Pegang Pelangi<br>atau Bangun Babel?</div>
+  <div class="gold-line a2"></div>
+  <div class="contrast-row a3">
+    <div class="contrast-bad"><div class="c-icon">🏗️</div><div class="c-bad">Babel</div><div class="c-text">Tidak percaya perjanjian. Membangun rencana sendiri. Bergantung pada kekuatan, uang, kontrol, reputasi sebagai jaminan utama.</div></div>
+    <div class="contrast-good"><div class="c-icon">🌈</div><div class="c-good">Pegang Pelangi</div><div class="c-text">Percaya penuh pada perjanjian Allah. Bergantung kepada-Nya. Hidup dari iman, bukan dari kekuatan sendiri.</div></div>
+  </div>
+  <div class="truth a4"><div class="truth-text">Hari ini pun sama: apa "Menara Babel"mu? Apa yang kamu bangun sebagai rencana cadangan karena takut Allah tidak cukup?</div></div>
+</div>
+
+<!-- 25. 3 KUNCI SETIAP PERJANJIAN -->
+<div class="slide bg-mid" data-section="Sintesis">
+  <div class="label a1">Sintesis</div>
+  <div class="slide-title a2">3 Kebenaran di Balik<br>Setiap Perjanjian Allah</div>
+  <div class="gold-line a2"></div>
+  <div class="num-list a3">
+    <div class="num-item"><div class="num">1</div><div class="num-text"><span class="strong">Penyelamatan manusia</span> — setiap perjanjian selalu berkaitan dengan rencana penyelamatan Allah.</div></div>
+    <div class="num-item"><div class="num">2</div><div class="num-text"><span class="strong">Kasih Allah yang lebih dahulu</span> — bukan karena kita layak, tapi Allah mengasihi lebih dahulu (1 Yoh 4:10,19).</div></div>
+    <div class="num-item"><div class="num">3</div><div class="num-text"><span class="strong">Pesan Mesias yang tersembunyi</span> — setiap perjanjian secara progresif menyatakan Yesus Kristus.</div></div>
+  </div>
+</div>
+
+<!-- 26. PELITA YANG TIDAK TERPADAMKAN -->
+<div class="slide bg-dark" data-section="Sintesis">
+  <div class="label a1">Pelita Perjanjian</div>
+  <div class="slide-title a2">Tidak Pernah<br>Benar-Benar Padam</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">2 Tawarikh 21:7</span>Namun TUHAN tidak mau membinasakan keluarga Daud, karena perjanjian yang telah diikat-Nya dengan Daud, dan karena Ia telah berjanji untuk memberikan <span style="color:var(--gold-light);font-style:normal;font-weight:700;">pelita</span> kepadanya dan kepada anak-anaknya untuk selama-lamanya.</div>
+  <div class="truth a4"><div class="truth-text">Pelita perjanjian tidak padam karena kecemburuan kasih Allah (qin'ah) — kasih yang tidak bisa menyerah dan tidak menerima kekalahan.</div></div>
+  <div class="scripture a5"><span class="ref">Yesaya 9:6</span>Kecemburuan TUHAN semesta alam akan melakukan hal ini.</div>
+</div>
+
+<!-- 27. KAMU BAGIAN DARI SILSILAH INI -->
+<div class="slide bg-close" data-section="Penutup">
+  <div class="ornament a1">✦</div>
+  <div class="label a2">Penutup</div>
+  <div class="slide-title a2">Perjanjian Ini<br>Berlaku Bagimu</div>
+  <div class="gold-line a2"></div>
+  <div class="scripture a3"><span class="ref">Ulangan 29:14–15</span>Bukan dengan kamu sajalah aku mengadakan perjanjian... tetapi baik dengan orang yang ada di sini bersama kita... maupun dengan orang yang tidak ada di sini bersama kita pada hari ini.</div>
+  <div class="truth a4"><div class="truth-text">Perjanjian yang berlaku bagi Adam, Nuh, Abraham, Daud — berlaku juga bagimu hari ini. Kamu bukan penonton sejarah penebusan. Kamu bagian dari silsilah iman yang sama.</div></div>
+  <div class="truth a5" style="margin-top:var(--sp-sm);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.06));"><div class="truth-text" style="font-size:var(--fs-body-sm);">Karena itu — <span style="color:var(--gold-light);font-weight:700;">percayakan hidupmu sepenuhnya kepada Yesus.</span> Bukan pada kekuatan, rencana, atau "Menara Babel"mu sendiri. Bergantung penuh pada Allah saja — karena Dialah Pelangi itu.</div></div>
+</div>
+
+<!-- 28. PERTANYAAN REFLEKSI -->
+<div class="slide bg-green" data-section="Penutup">
+  <div class="label a1">Refleksi & Diskusi</div>
+  <div class="slide-title a2">Pertanyaan untuk<br>Kita Renungkan</div>
+  <div class="gold-line a2"></div>
+  <div class="qbox a3">
+    <div class="qmark">💬</div>
+    <div class="qtext">Di titik mana dalam hidupmu pelita hampir padam — tapi Allah ternyata mempertahankannya?</div>
+  </div>
+  <div class="qbox a4" style="margin-top:var(--sp-sm);">
+    <div class="qmark" style="font-size:clamp(32px,4.5vw,70px);margin-bottom:var(--sp-xs);">🏗️</div>
+    <div class="qtext" style="font-size:var(--fs-body-sm);">Apa "Menara Babel"mu hari ini? Apa yang kamu andalkan selain Allah?</div>
+  </div>
+</div>
+
+</div>
+<div id="swipe-overlay"></div>
+<div id="bottom-bar">
+  <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>‹</button>
+  <button id="note-btn" onclick="toggleNote()">📋 CATATAN</button>
+  <button class="nav-btn" id="next-btn" onclick="navigate(1)">›</button>
+</div>
+<div id="note-panel">
+  <div class="note-handle"></div>
+  <div class="note-header">
+    <span class="note-label">📋 Catatan Pengajar</span>
+    <button class="note-close" onclick="toggleNote()">×</button>
+  </div>
+  <div class="note-body" id="note-body"></div>
+</div>
+<script>
+const N=[
+  {t:"Cover",s:[{h:"Orientasi",t:"Sambut anggota sel. Ada 3 bagian besar: (1) Fondasi — mengapa Allah membuat perjanjian; (2) Studi kasus — Perjanjian Nuh, termasuk alegoris pelangi dan awan; (3) Aplikasi — bagaimana kita merespons."},{h:"Waktu",t:"Total 1.5–2 jam. Rencanakan 3–4 momen diskusi singkat. Jangan terburu-buru di bagian alegoris pelangi dan awan — itu bagian yang paling dalam dan sering paling berkesan."}]},
+  {t:"Pertanyaan Pembuka",s:[{h:"Tujuan",t:"Jangan langsung jawab. Beri 3–5 menit diskusi berpasangan atau ke grup. Biarkan 2–3 orang menjawab dulu."},{h:"Pertanyaan Pendukung",t:"Bisa tambahkan: 'Coba ingat satu momen kamu merasa tidak layak datang kepada Allah — apa yang terjadi setelah itu?'"}],tip:"Jawaban baru terjawab di slide 4. Biarkan ketegangan itu ada dulu — itu yang membuat pelajaran hidup."},
+  {t:"Allah yang Besar",s:[{h:"Poin Utama",t:"Fondasi dari seluruh pelajaran. Allah yang Mahakuasa memilih memperhatikan manusia yang kecil dan berdosa. Ini bukan kewajiban-Nya — ini pilihan kasih-Nya."},{h:"Ilustrasi",t:"100 miliar galaksi × ratusan miliar bintang ≈ 10²⁵ bintang. Allah memanggil nama masing-masing. Allah yang sama tahu namamu dan situasimu hari ini."}],tip:"Beri jeda hening setelah kalimat terakhir: 'Allah yang sebesar itu memperhatikan kamu satu per satu.' Biarkan meresap."},
+  {t:"Mengapa Allah Membuat Perjanjian",s:[{h:"Jawaban dari Slide 2",t:"Ini jawaban resmi dari pertanyaan pembuka. Bukan karena manusia layak — tapi karena kecemburuan kasih Allah yang tidak bisa berhenti."},{h:"Kata Kunci: Qin'ah",t:"Kecemburuan Allah (qin'ah) bukan iri hati negatif. Ini kasih yang tidak bisa menyerah, kasih yang tidak menerima kekalahan. Ini yang menggerakkan seluruh sejarah penebusan."}],tip:"Tanyakan: 'Apa perbedaannya jika Allah membuat perjanjian karena kita layak vs karena Ia mengasihi lebih dahulu?'"},
+  {t:"3 Jenis Perjanjian",s:[{h:"Fokus",t:"Dari 3 jenis, fokuskan pada Perjanjian KK. Dua lainnya hanya konteks."},{h:"Penekanan Kunci",t:"Perjanjian Perbuatan: manusia harus memenuhi syarat → gagal total. Perjanjian KK: Allah yang memenuhi syarat untuk manusia → inilah kasih karunia."}],tip:"Tanyakan: 'Dalam hidupmu sehari-hari, apakah kamu lebih sering hidup dalam Perjanjian Perbuatan atau Perjanjian KK?'"},
+  {t:"Sifat Perjanjian KK",s:[{h:"Tiga Sifat",t:"Berdaulat = Allah yang mulai. Sepihak = Allah yang menanggung. Kekal = tidak tergantung kesetiaan manusia. Ketiganya terhubung: karena berdaulat maka sepihak, karena sepihak maka kekal."},{h:"Implikasi",t:"Kalau perjanjian tergantung kesetiaan kita, kita tidak punya jaminan. Tapi karena Allah yang menanggung — perjanjian ini aman sepenuhnya."}]},
+  {t:"Perjanjian Suluh",s:[{h:"Konteks",t:"Ritual perjanjian kuno: yang melanggar perjanjian harus menanggung nasib binatang yang dipotong. Itu sebabnya binatang dipotong dua — sebagai sumpah dengan taruhan nyawa."},{h:"Yang Mengejutkan",t:"Abraham tertidur. Hanya Allah yang berjalan. Artinya: Allah menanggung sumpah dari KEDUA PIHAK. Jika perjanjian dilanggar — Allah sendiri yang menanggung konsekuensinya."},{h:"Penggenapan",t:"Di kayu salib, Allah menanggung konsekuensi perjanjian yang dilanggar manusia — melalui kematian Yesus Kristus."}]},
+  {t:"Pola yang Terulang",s:[{h:"Poin Utama",t:"Setiap kali manusia gagal, Allah datang lagi. Bukan siklus melemahnya Allah — ini bukti kasih yang tidak pernah menyerah."},{h:"Mzm 105:8",t:"'Ia ingat untuk selama-lamanya' — bukan berarti Allah pernah lupa. Artinya Allah secara aktif terus memelihara perjanjian itu."}],tip:"Tanyakan: 'Berapa kali Allah datang kembali dengan perjanjian baru meskipun manusia gagal? Apa artinya ini bagi kamu secara pribadi?'"},
+  {t:"7 Perjanjian Timeline",s:[{h:"Cara Mempresentasikan",t:"Jangan baca cepat. Berhenti di setiap perjanjian dan beri satu kalimat konteks: 'Apa yang sedang terjadi di dunia ketika Allah memberikan perjanjian ini?' Contoh: Sinai — Israel baru 11 bulan keluar dari Mesir, masih di padang gurun."},{h:"Pola Progresif",t:"Setiap perjanjian lebih spesifik dari sebelumnya: Adam (benih perempuan) → Nuh (penghakiman ditahan) → Abraham (bangsa & tanah) → Sinai (hukum & identitas) → Daud (raja kekal) → Yeremia (firman di hati) → Yehezkiel (Gembala yang satu). Makin lama makin jelas siapa Mesias itu."},{h:"Yehezkiel — Perjanjian Kekal",t:"Sering terlewat tapi penting. Yeh 34:24–31 menjanjikan 'Daud' sebagai gembala — ini bukan Raja Daud yang sudah mati, tapi Mesias yang akan datang. Yoh 10:3–5 menggenapi ini: domba-domba mendengar suara-Nya."}]},
+  {t:"Mesias Tersembunyi",s:[{h:"Prinsip Hermeneutis",t:"Di balik setiap perjanjian yang tampak historis, tersembunyi pesan tentang Kristus. Bukan dipaksakan — ini rancangan Allah sendiri dari awal."},{h:"Contoh Konkret",t:"Kej 3:15: keturunan perempuan yang meremukkan kepala ular = Yesus. Pelangi: siapa yang menanggung sehingga penghakiman ditahan? Yesus di salib. Perjanjian Daud: raja yang membangun bait kekal = Yesus (Yoh 2:19–21)."}],tip:"Ini momen 'ah-ha' yang penting. Beri waktu anggota merespons secara spontan."},
+  {t:"Dunia di Zaman Nuh",s:[{h:"Konteks",t:"Kej 6:5 adalah salah satu pernyataan paling gelap dalam Alkitab: 'segala kecenderungan hatinya selalu membuahkan kejahatan.' Bukan kadang-kadang — selalu."},{h:"Paradoks Allah",t:"Allah bersedih (Kej 6:6) — tapi tidak langsung menghakimi. Masih mencari satu orang. Ini gambaran kasih yang tidak mau menyerah bahkan di kegelapan paling total."}],tip:"Tanyakan: 'Mengapa Allah tidak langsung menghukum? Apa itu mengatakanmu tentang karakter Allah?'"},
+  {t:"Perjanjian Sebelum Bahtera",s:[{h:"Urutan yang Penting",t:"Allah membuat perjanjian SEBELUM Nuh membangun bahtera. Inisiatif selalu dari Allah — bukan Nuh yang layak lalu Allah merespons."},{h:"Isi Perjanjian",t:"Sederhana tapi serius: masuk bahtera dan kamu akan selamat. Allah menyediakan jalan keluar — Nuh hanya perlu percaya dan melangkah masuk."}]},
+  {t:"Bahtera = Gambaran Mesias",s:[{h:"Paralel Kristologis",t:"Nuh membangun bahtera = Yesus membangun jalan keselamatan. Dunia tidak peduli pada Nuh = dunia tidak mengenal Yesus (Yoh 1:10). Bahtera satu-satunya jalan = Yesus satu-satunya jalan (Yoh 14:6)."},{h:"Pewarisan Iman",t:"Dari Adam → Set → Nuh, perjanjian Proto Injil diwariskan melalui garis iman. Bukan garis darah semata — garis iman kepada janji Allah."}],tip:"Kaitkan dengan buku sebelumnya: silsilah bukan sekadar catatan biologis, tapi pewarisan iman kepada janji Allah."},
+  {t:"Perjanjian Pelangi — Teks",s:[{h:"Dua Perjanjian Nuh",t:"Ada yang menyebut ini dua perjanjian: (1) Kej 6:18 sebelum bahtera; (2) Kej 9:8–12 setelah keluar bahtera. Keduanya satu kesatuan dengan intensitas berbeda."},{h:"Cakupan",t:"Tidak hanya untuk Nuh — tapi untuk seluruh keturunannya dan seluruh makhluk hidup. Ini perjanjian universal yang masih berlaku sampai hari ini."},{h:"Implikasi",t:"Perjanjian pelangi masih berlaku saat ini. Allah masih menahan penghakiman selama sejarah penebusan belum selesai."}]},
+  {t:"Makna Teologis Pelangi",s:[{h:"Poin Mengejutkan",t:"'Apabila Aku melihat busur itu' — Allah yang melihat pelangi sebagai pengingat perjanjian-Nya sendiri. Bukan untuk mengingatkan manusia, tapi diri-Nya sendiri tentang sumpah yang dibuat."},{h:"Aplikasi",t:"Setiap ada pelangi hari ini — Allah sedang memilih lagi untuk tidak menghakimi, meskipun kita layak dihakimi. Ini terjadi setiap hari."}],tip:"'Lain kali kamu lihat pelangi — ingat itu bukan sekadar fenomena alam. Itu Allah yang memperbarui perjanjian-Nya untuk tidak menghakimi kamu.'"},
+  {t:"Fisika Cahaya — Fondasi Alegoris",s:[{h:"Mengapa Slide Ini Penting",t:"Sebelum masuk ke alegoris, anggota perlu mengerti prinsip dasarnya: cahaya itu tidak kelihatan, tapi bisa menjadi kelihatan ketika dipantulkan air bersih. Tanpa fondasi ini, alegoris pelangi akan terasa dipaksakan."},{h:"Cara Menyampaikan",t:"Bisa pakai ilustrasi langsung: 'Coba lihat sinar matahari yang masuk lewat jendela — kamu bisa lihat sinarnya atau tidak? Tidak terlihat langsung. Tapi kalau ada debu atau uap air, tiba-tiba sinarnya terlihat.' Prinsip yang sama."}],tip:"Pastikan anggota paham ini dulu sebelum lanjut ke slide berikutnya. Tanya: 'Sudah paham prinsipnya?' Baru lanjut."},
+  {t:"Alegoris: Unsur Pelangi",s:[{h:"Cara Menyampaikan",t:"Bagian ini lebih dalam dan alegoris. Bangun satu per satu — matahari, air, cahaya, pelangi — sebelum menyimpulkan. Jangan tergesa-gesa."},{h:"Logika Alegoris",t:"Pelangi terbentuk ketika cahaya memantul dari air yang bersih. Cahaya yang tadinya tidak terlihat menjadi terlihat. Ini gambaran: Firman Allah yang tadinya tidak kelihatan, menjadi kelihatan dalam diri Yesus."}]},
+  {t:"Pelangi = Yesus Kristus",s:[{h:"Poin Sentral",t:"Ini climax dari seluruh bagian pelangi. Pelangi = terang yang terlihat = Yesus yang menjadi manusia. Inilah mengapa Allah berkata 'ketika Aku melihat pelangi, Aku menahan penghakiman.'"},{h:"Kapan Allah Melihat Pelangi?",t:"Saat Yesus tergantung di kayu salib. Di situlah 'pelangi' itu muncul — dan Allah menahan penghakiman yang seharusnya jatuh kepada kita."}],tip:"Ini momen emosional dan teologis sekaligus. Beri ruang hening setelah penjelasan ini sebelum lanjut."},
+  {t:"7 Warna = 7 Firman",s:[{h:"7 Firman Yesus di Salib",t:"(1) Bapa ampunilah mereka. (2) Hari ini kamu bersama Aku di surga. (3) Perempuan inilah anakmu. (4) Allahku mengapa Engkau meninggalkan Aku. (5) Aku haus. (6) Sudah selesai. (7) Ya Bapa ke dalam tangan-Mu Kuserahkan nyawa-Ku."},{h:"Esensi",t:"7 firman ini adalah rangkuman dari seluruh kehidupan dan misi Yesus — semuanya diucapkan di titik paling kritis. Inilah esensi dari 'pelangi' itu."}]},
+  {t:"Awan = Orang Kudus",s:[{h:"Dasar Alkitabiah",t:"Ibr 12:1 — 'banyak saksi bagaikan awan.' Yud 1:14 — 'beribu-ribu orang kudus.' Mat 24:30, Why 1:7 — 'datang dengan awan-awan.' Semuanya terhubung: awan = orang kudus."},{h:"Implikasi",t:"Kedatangan Yesus bersama awan-awan bukan hanya meteorologis — tapi tentang kedatangan-Nya bersama seluruh umat yang telah dikuduskan oleh-Nya."}],tip:"Tanyakan: 'Apakah kamu mau menjadi bagian dari awan-awan itu? Apa artinya itu bagi hidupmu sekarang?'"},
+  {t:"Proses Menjadi Awan",s:[{h:"Proses Transformasi",t:"Bukan proses instan. Air (manusia berdosa) menerima sinar (firman) → mulai naik → ada gangguan (Ef 6:12) → jadi kabut dulu → terus naik → jadi awan. Jadi kabut dulu bukan kegagalan — itu bagian dari proses."},{h:"Tujuan Akhir",t:"Awan yang menghasilkan hujan — firman yang telah diterima mengalir keluar kepada orang lain. Ini tanda kedewasaan rohani."}]},
+  {t:"Dua Jenis Awan",s:[{h:"Awan Kering",t:"Imam dan ahli Taurat di zaman Yesus: 24.000 imam, posisi tinggi, tapi tidak mengenal Mesias. Mereka adalah 'awan kering' yang tidak menghasilkan apa-apa bagi orang lain."},{h:"Self-Check",t:"Pertanyaan untuk diri sendiri: apakah hidupku 'menghasilkan hujan' bagi orang-orang di sekitarku? Atau aku hanya lewat seperti awan yang ditiup angin?"}],tip:"Yak 4:14 — bukan tentang keselamatan, tapi tentang buah dan pengaruh hidup kita bagi orang lain."},
+  {t:"Awan dengan Pelangi",s:[{h:"Why 10:1 — Detail Penting",t:"'Awan tunggal' (bukan awan-awan) dengan pelangi di atas kepala. Awan tunggal + pelangi = satu pribadi yang sangat spesial: Yesus Kristus."},{h:"Why 14:14",t:"Di atas awan putih ada Anak Manusia dengan mahkota emas — konfirmasi bahwa 'awan' ini adalah Yesus yang akan datang kembali untuk menghakimi."}]},
+  {t:"Menara Babel",s:[{h:"Ironi Terbesar",t:"Pembangun Menara Babel adalah keturunan langsung Nuh. Mereka sudah menerima perjanjian pelangi. Tapi membangun menara 'agar selamat dari banjir' — artinya tidak percaya pelangi cukup."},{h:"Pola",t:"Ini pola yang terus berulang: manusia menerima janji Allah, tapi tetap membangun rencana cadangan karena tidak percaya sepenuhnya."}],tip:"Tanyakan: 'Apa hal yang paling sulit untuk dipercayakan sepenuhnya kepada Allah dalam hidupmu sekarang?'"},
+  {t:"Pelangi vs Babel",s:[{h:"Aplikasi Personal",t:"'Menara Babel' bisa berbeda bagi setiap orang: tabungan sebagai jaminan utama, karir sebagai sumber identitas, kontrol atas masa depan, hubungan manusia sebagai penopang."},{h:"Bukan Anti Perencanaan",t:"Bukan berarti tidak boleh menabung atau bekerja keras. Pertanyaannya: di mana letak kepercayaan utamamu? Bukan pada apa — tapi pada siapa."}],tip:"Ini momen paling aplikatif. Beri ruang anggota mengidentifikasi 'Menara Babel' mereka sendiri secara jujur."},
+  {t:"3 Kebenaran di Balik Setiap Perjanjian",s:[{h:"Sintesis",t:"Tiga prinsip ini berlaku untuk SETIAP perjanjian dalam Alkitab. Gunakan ini sebagai 'kacamata' saat membaca PL ke depannya."},{h:"Penekanan Nomor 3",t:"Yesus tersembunyi di setiap perjanjian — bukan ditambahkan, Ia memang ada di sana dari awal. Inilah yang dimaksud 'progresif': Allah makin lama makin jelas menyatakan-Nya."}],tip:"Pertanyaan sintesis: 'Dari pelajaran hari ini, apa satu hal yang paling mengubah cara pandangmu tentang Allah atau tentang dirimu?'"},
+  {t:"Pelita yang Tidak Terpadamkan",s:[{h:"Kata Kunci Qin'ah",t:"Kecemburuan (qin'ah) Allah bukan iri hati — ini kasih yang tidak bisa menerima bahwa umat-Nya binasa. Kecemburuan inilah yang menjamin pelita tidak padam."},{h:"Implikasi Personal",t:"Pelita di hidupmu tidak tergantung pada performamu. Ia tergantung pada kecemburuan kasih Allah yang tidak bisa menyerah."}]},
+  {t:"Perjanjian Ini Berlaku Bagimu",s:[{h:"Pesan Penutup",t:"Tegaskan: ini bukan sejarah yang jauh. Perjanjian yang sama berlaku bagi kita hari ini. Kita bukan penonton — kita peserta."},{h:"Ul 29:14–15",t:"Perjanjian ini dibuat bagi 'orang yang tidak ada di sini bersama kita pada hari ini' — itu kita. Perjanjian Nuh berlaku bagimu hari ini."}]},
+  {t:"Pertanyaan Refleksi",s:[{h:"Waktu Sharing",t:"Berikan 8–12 menit sharing. Mulai pertanyaan pertama (pelita hampir padam). Biarkan sukarela — jangan paksa."},{h:"Pertanyaan Babel",t:"Pertanyaan kedua lebih personal. Bisa dijawab dalam hati dulu, baru dibagikan jika mau. Ini momen jujur dengan Tuhan."},{h:"Doa Penutup",t:"Tutup dengan doa: (1) Syukur atas perjanjian yang tidak pernah padam; (2) Akui 'Menara Babel' masing-masing; (3) Mohon iman untuk pegang pelangi — percaya penuh kepada Allah saja."}]}
+];
+
+let cur=0,noteOpen=false,tx=0,ty=0;
+const TOTAL=29;
+const slides=document.querySelectorAll('.slide');
+const counter=document.getElementById('slide-counter');
+const badge=document.getElementById('section-badge');
+const bar=document.getElementById('progress-bar');
+const prevBtn=document.getElementById('prev-btn');
+const nextBtn=document.getElementById('next-btn');
+
+function go(next){
+  if(next<0||next>=TOTAL)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit');
+  const p=cur;
+  setTimeout(()=>slides[p].classList.remove('exit'),450);
+  slides[next].classList.add('active');
+  cur=next;
+  counter.textContent=`${cur+1} / ${TOTAL}`;
+  bar.style.width=`${((cur+1)/TOTAL)*100}%`;
+  prevBtn.disabled=cur===0;
+  nextBtn.disabled=cur===TOTAL-1;
+  badge.textContent=slides[cur].dataset.section||'';
+  if(noteOpen)buildNote();
+}
+function navigate(d){if(noteOpen){closeNote();return;}go(cur+d);}
+function buildNote(){
+  const n=N[cur];if(!n)return;
+  let h='';
+  n.s.forEach(s=>{h+=`<div class="note-sec"><div class="note-sec-title">${s.h}</div><div class="note-sec-text">${s.t}</div></div>`;});
+  if(n.tip)h+=`<div class="note-tip">💡 ${n.tip}</div>`;
+  document.getElementById('note-body').innerHTML=h;
+}
+function toggleNote(){noteOpen?closeNote():openNote();}
+function openNote(){noteOpen=true;buildNote();document.getElementById('note-panel').classList.add('open');}
+function closeNote(){noteOpen=false;document.getElementById('note-panel').classList.remove('open');}
+const ov=document.getElementById('swipe-overlay');
+ov.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+ov.addEventListener('touchend',e=>{
+  if(noteOpen)return;
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40)go(cur+(dx<0?1:-1));
+},{passive:true});
+ov.addEventListener('click',e=>{
+  if(noteOpen){closeNote();return;}
+  const w=window.innerWidth;
+  if(e.clientX>w*.62)go(cur+1);
+  else if(e.clientX<w*.38)go(cur-1);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
+  if(e.key==='Escape')closeNote();
+});
+bar.style.width=`${(1/TOTAL)*100}%`;
+badge.textContent=slides[0].dataset.section||'';
+</script>
+</body>
+</html>
