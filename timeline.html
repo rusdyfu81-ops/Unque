@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kronologi Kerajaan Israel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090d;--sf:#0f1118;--sf2:#161923;
+  --gold:#c9a84c;--gold-dim:rgba(201,168,76,.13);--gold-dim2:rgba(201,168,76,.06);--gold-b:rgba(201,168,76,.25);
+  --text:#f5f3ef;--text2:#c8c4bc;--muted:#7a7770;--dim:#3a3835;
+  --red:#c0604a;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  /* font scale — all sizes reference this */
+  --fz:18px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:var(--fz);line-height:1.65;min-height:100vh;overflow-x:hidden}
+
+/* PHASES */
+.phase{display:none;min-height:100vh;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:72px 24px 88px}
+.phase.active{display:flex}
+#ph5{padding-left:40px;padding-right:40px}
+
+/* ATOMS */
+.lbl{font-size:calc(var(--fz) * 0.65);font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:16px}
+.hl{font-family:var(--serif);font-size:calc(var(--fz) * 2.4);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:10px}
+.hl span{color:var(--gold)}
+.sub{font-size:calc(var(--fz) * 0.85);color:var(--muted);max-width:560px;line-height:1.7}
+.gline{width:44px;height:2px;background:var(--gold);margin:18px auto;opacity:.4}
+
+/* STEP CARDS */
+.sc{background:var(--sf2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:20px 28px;max-width:640px;width:100%;margin:7px auto;text-align:left;opacity:0;transform:translateY(10px);transition:opacity .32s ease,transform .32s ease}
+.sc.show{opacity:1;transform:translateY(0)}
+.sc.anchor{border-color:var(--gold-b);background:var(--gold-dim2)}
+.sc-top{display:flex;align-items:flex-start;gap:20px}
+.sc-yr{font-family:var(--mono);font-size:calc(var(--fz) * 1.7);font-weight:500;color:var(--gold);line-height:1;min-width:110px;flex-shrink:0}
+.sc-b{flex:1}
+.sc-tag{font-size:calc(var(--fz) * 0.6);font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.sc-title{font-family:var(--serif);font-size:calc(var(--fz) * 1.15);font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.2}
+.sc-ref{font-family:var(--mono);font-size:calc(var(--fz) * 0.6);color:var(--gold);opacity:.65}
+.sc-verse{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-family:var(--serif);font-size:calc(var(--fz) * 0.85);font-style:italic;color:var(--text2);line-height:1.55}
+.sc-arrow{font-size:calc(var(--fz) * 0.7);color:var(--muted);margin-top:5px;font-family:var(--mono)}
+
+/* TEASER (phase 0) */
+.teaser{display:flex;gap:20px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.t-node{background:var(--sf2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:18px 26px;min-width:110px;text-align:center}
+.t-yr{font-family:var(--mono);font-size:calc(var(--fz) * 1.6);font-weight:500;color:var(--gold);line-height:1;margin-bottom:5px}
+.t-name{font-size:calc(var(--fz) * 0.72);color:var(--muted);font-weight:500;letter-spacing:.05em}
+
+/* TIMELINE */
+.tl-wrap{width:100%;max-width:1200px;margin:24px auto 0;opacity:0;transition:opacity .4s ease}
+.tl-wrap.show{opacity:1}
+
+/* tick rows */
+.tl-ticks{position:relative;height:28px;margin-left:84px;margin-bottom:4px}
+.tl-tick{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;top:8px}
+.tl-tick-line{position:absolute;top:0;width:1px;height:7px;background:rgba(255,255,255,.12);transform:translateX(-50%)}
+
+/* bar rows */
+.tl-bars{display:flex;flex-direction:column;gap:0}
+.tl-row{display:flex;align-items:center;gap:14px;margin-bottom:0}
+.tl-row+.tl-row{margin-top:8px}
+.tl-rlbl{width:70px;flex-shrink:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:right}
+
+/* track: tall enough for labels above AND below simultaneously */
+.tl-track{flex:1;position:relative;height:96px}
+
+/* bar sits in exact middle of track */
+.tl-seg{position:absolute;top:36px;height:24px;border-radius:4px;opacity:0;transition:opacity .4s ease}
+.tl-seg.show{opacity:1}
+
+/* dots sit on bar centre-line */
+.tl-dot{position:absolute;top:48px;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;border:3px solid var(--bg);z-index:4;opacity:0;transition:opacity .3s ease}
+.tl-dot.show{opacity:1}
+
+/* dot labels — positioned via JS, no overlap */
+.tl-dot-lbl{position:absolute;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%);opacity:0;transition:opacity .3s ease;pointer-events:none;line-height:1}
+.tl-dot-lbl.show{opacity:1}
+
+/* highlight zone */
+.tl-zone{position:absolute;top:32px;height:32px;border-radius:4px;border:2px solid var(--gold);background:rgba(201,168,76,.1);opacity:0;transition:opacity .5s ease;z-index:3}
+.tl-zone.show{opacity:1}
+.tl-zone-lbl{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+
+/* legend */
+.tl-legend{display:flex;gap:20px;justify-content:center;margin-top:16px;flex-wrap:wrap;opacity:0;transition:opacity .4s ease}
+.tl-legend.show{opacity:1}
+.leg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.leg-swatch{width:18px;height:12px;border-radius:3px;flex-shrink:0}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+
+/* NAV */
+.nav-bar{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:rgba(10,12,18,.95);border:1px solid rgba(201,168,76,.2);border-radius:40px;padding:10px 22px;z-index:100;backdrop-filter:blur(10px);white-space:nowrap}
+.nav-btn{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;padding:6px 14px;border-radius:20px;transition:color .15s,background .15s}
+.nav-btn:hover:not(:disabled){color:var(--text);background:rgba(255,255,255,.06)}
+.nav-btn.primary{background:var(--gold);color:#000;font-weight:600}
+.nav-btn.primary:hover{background:#d4b45a}
+.nav-btn:disabled{opacity:.2;cursor:default}
+.nav-phase{font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center;min-width:160px}
+
+/* FONT CTRL */
+#fc{position:fixed;top:14px;right:14px;display:flex;gap:2px;z-index:200;background:rgba(10,12,18,.9);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:5px 8px;align-items:center}
+#fc button{background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:13px;cursor:pointer;padding:3px 7px;border-radius:4px;transition:color .15s,background .15s;font-weight:500}
+#fc button:hover{color:var(--gold);background:rgba(201,168,76,.1)}
+#fc .fc-cur{font-family:var(--mono);font-size:11px;color:var(--dim);padding:0 4px}
+
+.fade{opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
+.fade.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- 0: PEMBUKA -->
+<div class="phase active" id="ph0">
+  <div class="lbl">Kronologi Kerajaan Israel</div>
+  <div class="hl">Dari mana kita tahu<br><span>kapan semua ini terjadi?</span></div>
+  <div class="gline"></div>
+  <div class="sub">Kita mulai dari satu titik yang bisa diverifikasi secara historis — lalu hitung mundur.</div>
+  <div class="teaser">
+    <div class="t-node"><div class="t-yr">930</div><div class="t-name">Salomo</div></div>
+    <div class="t-node" style="opacity:.5"><div class="t-yr">970</div><div class="t-name">Daud</div></div>
+    <div class="t-node" style="opacity:.28"><div class="t-yr">1010</div><div class="t-name">Saul</div></div>
+    <div class="t-node" style="opacity:.12"><div class="t-yr">1050</div><div class="t-name">—</div></div>
+  </div>
+</div>
+
+<!-- 1: SALOMO -->
+<div class="phase" id="ph1">
+  <div class="lbl">Langkah 1 dari 4 — Titik Awal</div>
+  <div class="hl">Salomo</div>
+  <div class="gline"></div>
+  <div class="sc" id="c-s1">
+    <div class="sc-top">
+      <div class="sc-yr">930 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Titik anchor sejarah</div>
+        <div class="sc-title">Salomo wafat — bisa diverifikasi</div>
+        <div class="sc-ref">Dikonfirmasi catatan sejarah Mesir &amp; Asyur</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-s2">
+    <div class="sc-top">
+      <div class="sc-yr">40 thn</div>
+      <div class="sc-b">
+        <div class="sc-tag">Durasi pemerintahan · 1 Raja-raja 11:42</div>
+        <div class="sc-title">Salomo memerintah 40 tahun</div>
+        <div class="sc-verse">"Lamanya Salomo memerintah di Yerusalem atas seluruh Israel ialah empat puluh tahun."</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-s3">
+    <div class="sc-top">
+      <div class="sc-yr">970 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Kesimpulan · 930 + 40 = 970 SM</div>
+        <div class="sc-title">Salomo mulai memerintah</div>
+        <div class="sc-arrow">= Daud wafat tahun 970 SM &nbsp;↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2: DAUD -->
+<div class="phase" id="ph2">
+  <div class="lbl">Langkah 2 dari 4 — Mundur ke Daud</div>
+  <div class="hl">Daud</div>
+  <div class="gline"></div>
+  <div class="sc anchor show" id="c-d0">
+    <div class="sc-top">
+      <div class="sc-yr">970 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Dari langkah sebelumnya</div>
+        <div class="sc-title">Daud wafat — Salomo naik takhta</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-d1">
+    <div class="sc-top">
+      <div class="sc-yr">40 thn</div>
+      <div class="sc-b">
+        <div class="sc-tag">Durasi pemerintahan · 2 Samuel 5:4</div>
+        <div class="sc-title">Daud memerintah 40 tahun</div>
+        <div class="sc-verse">"Daud berumur tiga puluh tahun, pada waktu ia menjadi raja; empat puluh tahun lamanya ia memerintah."</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-d2">
+    <div class="sc-top">
+      <div class="sc-yr">1010 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Kesimpulan · 970 + 40 = 1010 SM</div>
+        <div class="sc-title">Daud mulai memerintah</div>
+        <div class="sc-arrow">= Saul wafat tahun 1010 SM &nbsp;↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3: SAUL -->
+<div class="phase" id="ph3">
+  <div class="lbl">Langkah 3 dari 4 — Mundur ke Saul</div>
+  <div class="hl">Saul</div>
+  <div class="gline"></div>
+  <div class="sc anchor show" id="c-u0">
+    <div class="sc-top">
+      <div class="sc-yr">1010 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Dari langkah sebelumnya</div>
+        <div class="sc-title">Saul wafat — Daud naik takhta</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-u1">
+    <div class="sc-top">
+      <div class="sc-yr">40 thn</div>
+      <div class="sc-b">
+        <div class="sc-tag">Durasi pemerintahan · Kisah Para Rasul 13:21</div>
+        <div class="sc-title">Saul memerintah 40 tahun</div>
+        <div class="sc-verse">"Allah memberikan kepada mereka Saul bin Kish dari suku Benyamin, empat puluh tahun lamanya."</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-u2">
+    <div class="sc-top">
+      <div class="sc-yr">1050 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Kesimpulan · 1010 + 40 = 1050 SM</div>
+        <div class="sc-title">Saul mulai memerintah</div>
+        <div class="sc-arrow">Sekarang kita bisa letakkan semua peristiwa &nbsp;↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4: PERISTIWA -->
+<div class="phase" id="ph4">
+  <div class="lbl">Langkah 4 dari 4 — Peristiwa dalam 40 Tahun Saul</div>
+  <div class="hl">Apa yang terjadi<br><span>di dalamnya?</span></div>
+  <div class="gline"></div>
+  <div class="sc" id="c-e1">
+    <div class="sc-top">
+      <div class="sc-yr">1048 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Tahun ke-2 · 1 Samuel 13:1</div>
+        <div class="sc-title">Ketidaktaatan pertama</div>
+        <div class="sc-verse">"Dua tahun ia memerintah atas Israel." — awal dari kurva kejatuhan.</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-e2">
+    <div class="sc-top">
+      <div class="sc-yr">1025 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Tahun ke-25 · 1050 − 25 = 1025 SM · 1 Samuel 15:35</div>
+        <div class="sc-title">Ketidaktaatan Amalek — Samuel pergi</div>
+        <div class="sc-verse">"Sampai hari matinya Samuel tidak melihat Saul lagi."</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-e3">
+    <div class="sc-top">
+      <div class="sc-yr">1025 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">Tahun yang sama · Usia Daud ±15 tahun · 1 Samuel 16:12</div>
+        <div class="sc-title">Daud diurapi di Betlehem</div>
+        <div class="sc-verse">"Bangkitlah, urapilah dia, sebab inilah dia."</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc" id="c-e4">
+    <div class="sc-top">
+      <div class="sc-yr">1020 SM</div>
+      <div class="sc-b">
+        <div class="sc-tag">±5 tahun kemudian · Usia Daud ±20 tahun · 1 Samuel 17</div>
+        <div class="sc-title">Daud melawan Goliat</div>
+        <div class="sc-verse">"Aku mendatangi engkau dengan nama TUHAN semesta alam."</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5: TIMELINE -->
+<div class="phase" id="ph5">
+  <div class="lbl fade" id="tl-lbl">Gambaran Lengkap · 1050 – 930 SM</div>
+  <div class="hl fade" id="tl-hl" style="transition-delay:.1s">Kronologi <span>Kerajaan Israel</span></div>
+  <div class="gline fade" id="tl-gl" style="transition-delay:.18s"></div>
+
+  <div class="tl-wrap" id="tl-wrap">
+    <!-- top ticks -->
+    <div class="tl-ticks" id="tl-ticks-top"></div>
+
+    <div class="tl-bars">
+      <!-- SAUL row: labels ABOVE bar -->
+      <div class="tl-row">
+        <div class="tl-rlbl" style="color:#b89050">Saul</div>
+        <div class="tl-track" id="trk-saul">
+          <div class="tl-seg" id="seg-saul" style="background:#7a5828"></div>
+          <!-- dot labels go above (top:6px) -->
+          <div class="tl-dot" id="dot-e1" style="background:var(--red)"></div>
+          <div class="tl-dot-lbl" id="lbl-e1" style="color:var(--red);top:6px">Thn ke-2</div>
+          <div class="tl-dot" id="dot-e2" style="background:var(--red)"></div>
+          <div class="tl-dot-lbl" id="lbl-e2" style="color:var(--red);top:6px">Amalek</div>
+        </div>
+      </div>
+
+      <!-- DAUD: satu bar, Diurapi label atas, Goliat label bawah -->
+      <div class="tl-row">
+        <div class="tl-rlbl" style="color:var(--gold)">Daud</div>
+        <div class="tl-track" id="trk-daud">
+          <div class="tl-seg" id="seg-dlife" style="background:rgba(201,168,76,.15)"></div>
+          <div class="tl-seg" id="seg-dreign" style="background:#9e7828"></div>
+          <!-- Diurapi: dot di tengah bar, label di ATAS -->
+          <div class="tl-dot" id="dot-e3" style="background:var(--gold);border-color:var(--bg)"></div>
+          <div class="tl-dot-lbl" id="lbl-e3" style="color:var(--gold);top:4px">Diurapi</div>
+          <!-- Goliat: dot di tengah bar, label di BAWAH -->
+          <div class="tl-dot" id="dot-e4" style="background:var(--gold);border-color:var(--bg)"></div>
+          <div class="tl-dot-lbl" id="lbl-e4" style="color:var(--gold);bottom:4px">Goliat</div>
+          <div class="tl-zone" id="tl-zone">
+            <div class="tl-zone-lbl">Pelajaran 7</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALOMO row -->
+      <div class="tl-row">
+        <div class="tl-rlbl" style="color:#7aaecc">Salomo</div>
+        <div class="tl-track" id="trk-sal">
+          <div class="tl-seg" id="seg-sal" style="background:#3a6a8a"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom ticks -->
+    <div class="tl-ticks" id="tl-ticks-bot" style="margin-top:4px"></div>
+
+    <!-- legend -->
+    <div class="tl-legend" id="tl-legend">
+      <div class="leg"><div class="leg-swatch" style="background:#7a5828"></div>Saul (40 thn)</div>
+      <div class="leg"><div class="leg-swatch" style="background:#9e7828"></div>Daud (40 thn)</div>
+      <div class="leg"><div class="leg-swatch" style="background:#3a6a8a"></div>Salomo (40 thn)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--red)"></div>Dosa Saul</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--gold)"></div>Peristiwa Daud</div>
+      <div class="leg"><div class="leg-swatch" style="background:none;border:2px solid var(--gold)"></div>Pelajaran 7</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="go(-1)">← Kembali</button>
+  <span class="nav-phase" id="nav-phase"></span>
+  <button class="nav-btn primary" id="btn-next" onclick="go(1)">Lanjut →</button>
+</div>
+
+<!-- FONT CTRL -->
+<div id="fc">
+  <button onclick="adjFont(-1)">A−</button>
+  <span class="fc-cur" id="fc-cur">18</span>
+  <button onclick="adjFont(0)">A</button>
+  <button onclick="adjFont(1)">A+</button>
+</div>
+
+<script>
+/* ── CONSTANTS ── */
+const S=1050,E=930,SP=S-E;
+function pct(y){return((S-y)/SP*100).toFixed(3)+'%'}
+function wpct(a,b){return((a-b)/SP*100).toFixed(3)+'%'}
+
+/* ── PHASES ── */
+const PHASES=[
+  {id:'ph0', label:'Pengantar',              cards:[],                        pre:[]},
+  {id:'ph1', label:'Langkah 1 — Salomo',    cards:['c-s1','c-s2','c-s3'],   pre:[]},
+  {id:'ph2', label:'Langkah 2 — Daud',      cards:['c-d1','c-d2'],           pre:['c-d0']},
+  {id:'ph3', label:'Langkah 3 — Saul',      cards:['c-u1','c-u2'],           pre:['c-u0']},
+  {id:'ph4', label:'Langkah 4 — Peristiwa', cards:['c-e1','c-e2','c-e3','c-e4'], pre:[]},
+  {id:'ph5', label:'Gambaran Lengkap',       cards:[],                        pre:[], tl:true},
+];
+
+/* Timeline steps — each click in ph5 reveals one group */
+const TL_STEPS=[
+  ()=>{ showE('seg-saul'); },
+  ()=>{ showE('seg-dlife'); showE('seg-dreign'); },
+  ()=>{ showE('seg-sal'); },
+  ()=>{ showE('dot-e1'); showE('lbl-e1'); showE('dot-e2'); showE('lbl-e2'); },
+  ()=>{ showE('dot-e3'); showE('lbl-e3'); showE('dot-e4'); showE('lbl-e4'); },
+  ()=>{ showE('tl-zone'); showE('tl-legend'); },
+];
+
+let ph=0, card=-1, tlStep=-1;
+
+/* ── NAV ── */
+function go(dir){ if(dir===1) fwd(); else bwd(); render(); }
+
+function fwd(){
+  const p=PHASES[ph];
+  if(p.tl){
+    if(tlStep<TL_STEPS.length-1){ tlStep++; TL_STEPS[tlStep](); }
+    return;
+  }
+  if(card<p.cards.length-1){ card++; showE(p.cards[card]); }
+  else if(ph<PHASES.length-1){ ph++; card=-1; tlStep=-1; activatePhase(ph); }
+}
+
+function bwd(){
+  const p=PHASES[ph];
+  if(p.tl){ resetTl(); ph--; card=PHASES[ph].cards.length-1; activatePhase(ph,true); return; }
+  if(card>=0){ hideE(p.cards[card]); card--; }
+  else if(ph>0){ ph--; card=PHASES[ph].cards.length-1; activatePhase(ph,true); }
+}
+
+function activatePhase(idx, restoreAll=false){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById(PHASES[idx].id).classList.add('active');
+  const p=PHASES[idx];
+  (p.pre||[]).forEach(id=>showE(id));
+  p.cards.forEach(id=>restoreAll?showE(id):hideE(id));
+  if(p.tl) initTl();
+}
+
+/* ── TIMELINE ── */
+function initTl(){
+  positionAll();
+  buildTicks();
+  setTimeout(()=>{
+    ['tl-lbl','tl-hl','tl-gl'].forEach((id,i)=>setTimeout(()=>showE(id),i*90));
+    setTimeout(()=>document.getElementById('tl-wrap').classList.add('show'),200);
+  },60);
+}
+
+function resetTl(){
+  const els=['seg-saul','seg-dlife','seg-dreign','seg-sal',
+             'dot-e1','lbl-e1','dot-e2','lbl-e2',
+             'dot-e3','lbl-e3','dot-e4','lbl-e4','tl-zone','tl-legend',
+             'tl-lbl','tl-hl','tl-gl'];
+  els.forEach(hideE);
+  document.getElementById('tl-wrap').classList.remove('show');
+}
+
+function positionAll(){
+  setBar('seg-saul',   1050,1010);
+  setBar('seg-dlife',  1040,970);
+  setBar('seg-dreign', 1010,970);
+  setBar('seg-dreign2',1010,970);
+  setBar('seg-sal',    970, 930);
+
+  // Saul dots
+  setDot('dot-e1',1048); setDotLbl('lbl-e1',1048);
+  setDot('dot-e2',1025); setDotLbl('lbl-e2',1025);
+
+  // Daud dots — now on separate rows, no overlap possible
+  setDot('dot-e3',1025); setDotLbl('lbl-e3',1025);
+  setDot('dot-e4',1020); setDotLbl('lbl-e4',1020);
+
+  // zone — on first daud row
+  const z=document.getElementById('tl-zone');
+  if(z){ z.style.left=pct(1025); z.style.width=wpct(1025,1010); }
+}
+
+function setBar(id,a,b){
+  const e=document.getElementById(id); if(!e)return;
+  e.style.left=pct(a); e.style.width=wpct(a,b);
+}
+function setDot(id,y){
+  const e=document.getElementById(id); if(!e)return;
+  e.style.left=pct(y);
+}
+function setDotLbl(id,y){
+  const e=document.getElementById(id); if(!e)return;
+  e.style.left=pct(y);
+}
+
+function buildTicks(){
+  const major=[1050,1025,1010,970,930];
+  const minor=[1040,1030,1020,1000,990,980,960,950,940];
+  ['tl-ticks-top','tl-ticks-bot'].forEach(rid=>{
+    const row=document.getElementById(rid); if(!row)return;
+    row.innerHTML='';
+    // tick lines for all
+    [...major,...minor].forEach(y=>{
+      const line=document.createElement('div');
+      line.className='tl-tick-line';
+      line.style.left=pct(y);
+      row.appendChild(line);
+    });
+    // labels for major only
+    major.forEach(y=>{
+      const d=document.createElement('div');
+      d.className='tl-tick';
+      d.style.left=pct(y);
+      d.textContent=y+' SM';
+      row.appendChild(d);
+    });
+  });
+}
+
+/* ── RENDER NAV ── */
+function render(){
+  const p=PHASES[ph];
+  const atStart=ph===0&&card===-1;
+  const isLast=ph===PHASES.length-1;
+  const tlDone=isLast&&tlStep>=TL_STEPS.length-1;
+
+  document.getElementById('btn-prev').disabled=atStart;
+
+  const btn=document.getElementById('btn-next');
+  if(tlDone){
+    btn.textContent='↺ Mulai Ulang';
+    btn.onclick=reset;
+  } else {
+    btn.textContent='Lanjut →';
+    btn.onclick=()=>go(1);
+  }
+  btn.disabled=false;
+
+  let lbl=p.label;
+  if(p.tl) lbl+=' · '+(tlStep+1)+'/'+TL_STEPS.length;
+  else if(p.cards.length>0) lbl+=' · '+Math.max(0,card+1)+'/'+p.cards.length;
+  document.getElementById('nav-phase').textContent=lbl;
+}
+
+function reset(){
+  resetTl(); tlStep=-1; ph=0; card=-1;
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('ph0').classList.add('active');
+  PHASES.forEach(p=>{ (p.cards||[]).forEach(hideE); });
+  document.getElementById('btn-next').onclick=()=>go(1);
+  render();
+}
+
+function showE(id){ const e=document.getElementById(id); if(e) e.classList.add('show'); }
+function hideE(id){ const e=document.getElementById(id); if(e) e.classList.remove('show'); }
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(-1);}
+});
+
+/* ── FONT CONTROL ── */
+const FK='kron_fz';
+let fz=parseInt(localStorage.getItem(FK))||18;
+function adjFont(dir){
+  if(dir===0){ fz=18; }
+  else if(dir===1){ fz=Math.min(28,fz+2); }
+  else { fz=Math.max(12,fz-2); }
+  document.documentElement.style.setProperty('--fz', fz+'px');
+  document.getElementById('fc-cur').textContent=fz;
+  localStorage.setItem(FK,fz);
+}
+adjFont(0);
+render();
+</script>
+</body>
+</html>
