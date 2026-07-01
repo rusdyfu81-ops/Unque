@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penawaran Harga</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDF0F2; --surface:#FFFFFF; --ink:#16222E; --ink-2:#54636E; --ink-3:#84939C;
+    --line:#DCE2E7; --line-soft:#E9EDF0; --cobalt:#2B57F0; --cobalt-bg:#EAEFFE;
+    --ready:#1F8A54; --ready-bg:#E4F3EA; --limited:#B0740A; --limited-bg:#F7EEDC;
+    --indent:#6B7780; --indent-bg:#EDEFF1;
+    --shadow:0 1px 2px rgba(22,34,46,.04),0 8px 24px rgba(22,34,46,.06);
+    --shadow-bar:0 -2px 16px rgba(22,34,46,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:128px;}
+  .wrap{max-width:560px;margin:0 auto}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+
+  /* States */
+  .state{max-width:440px;margin:0 auto;padding:80px 28px;text-align:center}
+  .state .ic{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px}
+  .state h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:600;margin-bottom:8px}
+  .state p{font-size:13.5px;color:var(--ink-2);line-height:1.6}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--cobalt);border-radius:50%;
+    margin:0 auto 16px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  header{background:var(--ink);color:#fff;padding:22px 20px 20px;position:relative;overflow:hidden}
+  .ruler{position:absolute;left:0;right:0;bottom:0;height:9px;
+    background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.28) 0 1px,transparent 1px 9px)}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;letter-spacing:.14em}
+  .brand span{color:var(--cobalt)}
+  .doctag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:#9FB0BE;
+    text-transform:uppercase;border:1px solid rgba(255,255,255,.18);padding:5px 9px;border-radius:6px;white-space:nowrap}
+  .lede{margin-top:16px}
+  .lede .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cobalt)}
+  .lede h1{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.25;margin-top:6px;color:#F4F7F9;letter-spacing:-.01em}
+  .lede h1 b{font-weight:700;color:#fff}
+  .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:#A9B8C4}
+  .meta b{color:#DCE6ED;font-weight:600}
+
+  .banner{padding:9px 20px;font-size:12.5px;font-weight:500;display:flex;gap:8px;align-items:center}
+  .banner.info{background:#FBF4E4;color:#7A5610;border-bottom:1px solid #F0E4C8}
+  .banner.warn{background:#FDEBEC;color:#8A2B2E;border-bottom:1px solid #F4CFD0}
+
+  .list{padding:14px 14px 6px}
+  .card{background:var(--surface);border:1px solid var(--line-soft);border-left:3px solid var(--line);
+    border-radius:12px;padding:13px 14px;margin-bottom:9px;box-shadow:var(--shadow);transition:border-color .18s}
+  .card.active{border-left-color:var(--cobalt)}
+  .card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .code{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--ink)}
+  .price{text-align:right;flex-shrink:0}
+  .price .amt{font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .price .per{font-size:10.5px;color:var(--ink-3);margin-top:1px}
+  .desc{font-size:12.5px;color:var(--ink-2);margin-top:8px;line-height:1.45}
+  .dim{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink);background:#F3F5F7;
+    padding:1px 6px;border-radius:4px;white-space:nowrap}
+  .card-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;
+    padding-top:11px;border-top:1px dashed var(--line)}
+  .stock{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600}
+  .stock .pip{width:7px;height:7px;border-radius:50%}
+  .s-ready{color:var(--ready)} .s-ready .pip{background:var(--ready)}
+  .s-limited{color:var(--limited)} .s-limited .pip{background:var(--limited)}
+  .s-indent{color:var(--indent)} .s-indent .pip{background:var(--indent)}
+  .moqtag{display:inline-block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
+    color:var(--cobalt);background:var(--cobalt-bg);padding:2px 7px;border-radius:5px}
+
+  .stepper{display:flex;align-items:center;flex-shrink:0}
+  .stepper button{width:38px;height:38px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .12s;-webkit-tap-highlight-color:transparent}
+  .stepper button:first-child{border-radius:9px 0 0 9px}
+  .stepper button:last-child{border-radius:0 9px 9px 0;background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper button:first-child:disabled{color:var(--line);cursor:default}
+  .stepper input{width:52px;height:38px;border:1px solid var(--line);border-left:0;border-right:0;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--ink);background:#fff;-moz-appearance:textfield}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .stepper input:focus{outline:2px solid var(--cobalt);outline-offset:-2px;position:relative;z-index:1}
+
+  .linetotal{display:none;margin-top:11px;padding-top:10px;border-top:1px solid var(--line-soft);
+    align-items:center;justify-content:space-between;font-size:12px;color:var(--ink-2)}
+  .linetotal.show{display:flex}
+  .linetotal .lt{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13.5px;color:var(--ink)}
+  .linetotal .indent-note{color:var(--limited);font-weight:600}
+
+  .footnote{text-align:center;font-size:11px;color:var(--ink-3);padding:6px 20px 20px}
+  .footnote .mono{font-size:10.5px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:var(--shadow-bar);border-top:1px solid var(--line);z-index:20;display:none}
+  .bar.show{display:block}
+  .bar-inner{max-width:560px;margin:0 auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .bar-sum{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px;cursor:pointer}
+  .bar-sum .l{font-size:12px;color:var(--ink-2)} .bar-sum .l b{color:var(--ink);font-weight:600}
+  .bar-sum .r{text-align:right}
+  .bar-sum .r .k{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  .bar-sum .r .v{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
+  .chev{display:inline-block;transition:transform .2s;margin-left:5px;color:var(--ink-3)}
+  .bar.open .chev{transform:rotate(180deg)}
+  .breakdown{display:none;font-size:12.5px;padding:2px 2px 12px;border-top:1px dashed var(--line);margin-bottom:10px}
+  .bar.open .breakdown{display:block}
+  .brow{display:flex;justify-content:space-between;padding:5px 0;color:var(--ink-2)}
+  .brow .mono{color:var(--ink);font-weight:500}
+  .brow.indent-row{color:var(--limited)}
+  .brow.grand{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;font-weight:700;color:var(--ink);font-size:14px}
+  .cta{width:100%;border:0;border-radius:11px;background:var(--cobalt);color:#fff;font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:16px;padding:15px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:9px}
+  .cta:active{transform:scale(.99)} .cta:disabled{background:#C3CCD6;cursor:default}
+  .cta .n{font-family:'IBM Plex Mono',monospace;background:rgba(255,255,255,.2);padding:1px 8px;border-radius:20px;font-size:13px}
+
+  .overlay{position:fixed;inset:0;background:rgba(22,34,46,.55);z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .overlay.show{display:flex}
+  .sheet{background:#fff;width:100%;max-width:560px;border-radius:20px 20px 0 0;
+    padding:24px 22px calc(24px + env(safe-area-inset-bottom))}
+  .sheet h3{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:600}
+  .sheet p{font-size:13.5px;color:var(--ink-2);margin-top:6px;line-height:1.55}
+  .sumbox{background:var(--paper);border-radius:12px;padding:12px 14px;margin:16px 0;font-size:13px}
+  .sumbox .r{display:flex;justify-content:space-between;padding:3px 0;color:var(--ink-2)}
+  .sumbox .r .mono{color:var(--ink);font-weight:600}
+  .sumbox .r.big{font-size:15px;color:var(--ink);font-weight:700;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+  .notefld{margin:14px 0}
+  .notefld label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+  .notefld textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:'Hanken Grotesk';
+    font-size:14px;color:var(--ink);resize:vertical;min-height:56px}
+  .notefld textarea:focus{outline:2px solid var(--cobalt);outline-offset:-1px;border-color:var(--cobalt)}
+  .sheet-actions{display:flex;gap:10px;margin-top:8px}
+  .btn-ghost{flex:0 0 auto;padding:14px 20px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;font-weight:600;font-size:14px;cursor:pointer}
+  .sheet-err{background:#FDEBEC;color:#8A2B2E;border-radius:9px;padding:10px 12px;font-size:12.5px;margin-bottom:12px;display:none}
+
+  .checkwrap{width:56px;height:56px;border-radius:50%;background:var(--ready-bg);display:grid;place-items:center;margin-bottom:16px}
+  .steps{margin:18px 0;border:1px solid var(--line-soft);border-radius:12px;overflow:hidden}
+  .step{display:flex;gap:11px;padding:12px 14px;align-items:center;font-size:13px}
+  .step+.step{border-top:1px solid var(--line-soft)}
+  .step .num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+  .step.done .num{background:var(--ready);color:#fff}
+  .step.now .num{background:var(--cobalt);color:#fff} .step.now b{color:var(--cobalt)}
+  .step.wait .num{background:var(--indent-bg);color:var(--ink-3)}
+  .step .st{color:var(--ink-2)} .step b{color:var(--ink);font-weight:600}
+  .close-full{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:13px;font-weight:600;font-size:14px;cursor:pointer}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- CONFIG -->
+<script>
+const SB_CONFIG = {
+  url:  'https://ulwiljcwwitaekbeuanp.supabase.co',
+  anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsd2lsamN3d2l0YWVrYmV1YW5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTUyMDMsImV4cCI6MjA5ODQ5MTIwM30.-nFyLeSvGKgsigIxTabHfmQZqGWNC1g1jfWLVMbX_RU'
+};
+</script>
+
+<div id="app">
+  <div class="state" id="loadingState">
+    <div class="spinner"></div>
+    <p>Memuat penawaran…</p>
+  </div>
+</div>
+
+<script>
+const sb = window.supabase.createClient(SB_CONFIG.url, SB_CONFIG.anon);
+const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+const qs = new URLSearchParams(location.search);
+const CODE = qs.get('q');
+
+let QUOTE = null, ITEMS = [], PPN = 0.11;
+const order = {};   // item.id -> qty (pcs)
+
+function stateCard(icon, color, bg, title, msg){
+  document.getElementById('app').innerHTML =
+    `<div class="state"><div class="ic" style="background:${bg}">${icon}</div>
+     <h2>${title}</h2><p>${msg}</p></div>`;
+}
+const iconX = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8A2B2E" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const iconClock = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B0740A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const iconCheck = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F8A54" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+async function load(){
+  if(!CODE){ stateCard(iconX,'#8A2B2E','#FDEBEC','Link tidak lengkap','Kode penawaran tidak ditemukan pada link. Minta link baru ke sales.'); return; }
+  let q, items;
+  try{
+    const r1 = await sb.from('quotes').select('*').eq('code', CODE).maybeSingle();
+    if(r1.error) throw r1.error;
+    q = r1.data;
+    if(!q){ stateCard(iconX,'#8A2B2E','#FDEBEC','Penawaran tidak ditemukan','Kode ini tidak ada atau sudah dihapus. Silakan hubungi sales.'); return; }
+    const r2 = await sb.from('quote_items').select('*').eq('quote_id', q.id).order('sort_order',{ascending:true});
+    if(r2.error) throw r2.error;
+    items = r2.data || [];
+  }catch(err){
+    stateCard(iconX,'#8A2B2E','#FDEBEC','Gagal memuat','Terjadi masalah koneksi. Coba buka ulang link, atau hubungi sales.<br><br><span style="font-size:11px;color:#9AA">'+(err.message||'')+'</span>');
+    return;
+  }
+  QUOTE = q; ITEMS = items; PPN = (q.ppn_pct||11)/100;
+
+  if(q.status === 'diterima'){
+    render(true);   // read-only, sudah dikonfirmasi
+    return;
+  }
+  render(false);
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+}
+function isExpired(){
+  if(!QUOTE.valid_until) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(QUOTE.valid_until) < today;
+}
+
+function render(readOnly){
+  const expired = isExpired();
+  const locked = readOnly || expired;
+  const who = QUOTE.customer_name
+    ? (QUOTE.customer_name + (QUOTE.customer_company ? ' — ' + QUOTE.customer_company : ''))
+    : (QUOTE.customer_company || 'Anda');
+
+  let banner = '';
+  if(readOnly)      banner = `<div class="banner warn">Penawaran ini sudah dikonfirmasi sales. Untuk perubahan, hubungi sales.</div>`;
+  else if(expired)  banner = `<div class="banner warn">Masa berlaku penawaran ini sudah lewat (${fmtDate(QUOTE.valid_until)}). Hubungi sales untuk penawaran baru.</div>`;
+  else              banner = `<div class="banner info">Harga <b>belum termasuk PPN 11%</b>. Atur jumlah pada barang yang Anda butuhkan.</div>`;
+
+  document.getElementById('app').innerHTML = `
+    <div class="wrap">
+      <header>
+        <div class="brandrow">
+          <div class="brand">PRE<span>·</span>SISI</div>
+          <div class="doctag">${QUOTE.code}</div>
+        </div>
+        <div class="lede">
+          <div class="eyebrow">Penawaran Harga</div>
+          <h1>Disiapkan untuk <b>${esc(who)}</b></h1>
+          <div class="meta">
+            <span>Tanggal <b>${fmtDate(QUOTE.created_at)}</b></span>
+            <span>Berlaku s/d <b>${fmtDate(QUOTE.valid_until)}</b></span>
+            ${QUOTE.sales_name ? `<span>Sales <b>${esc(QUOTE.sales_name)}</b></span>` : ''}
+          </div>
+        </div>
+        <div class="ruler"></div>
+      </header>
+      ${banner}
+      <div class="list" id="list"></div>
+      <div class="footnote">
+        Ini penawaran, bukan tagihan. Sales kami cek stok &amp; harga sebelum konfirmasi.
+      </div>
+    </div>
+    ${locked ? '' : `
+    <div class="bar" id="bar">
+      <div class="bar-inner">
+        <div class="bar-sum" id="barSum">
+          <div class="l"><b id="barItems">0 barang</b> dipilih<span class="chev">▲</span></div>
+          <div class="r"><div class="k">Total + PPN</div><div class="v" id="barTotal">Rp 0</div></div>
+        </div>
+        <div class="breakdown" id="breakdown">
+          <div class="brow"><span>Subtotal</span><span class="mono" id="bSub">Rp 0</span></div>
+          <div class="brow"><span>PPN 11%</span><span class="mono" id="bPpn">Rp 0</span></div>
+          <div class="brow indent-row" id="bIndentRow" style="display:none"><span>Termasuk barang indent</span><span class="mono" id="bIndent">0 item</span></div>
+          <div class="brow grand"><span>Total</span><span class="mono" id="bGrand">Rp 0</span></div>
+        </div>
+        <button class="cta" id="cta" disabled>Lanjutkan pesanan <span class="n" id="ctaN" style="display:none">0</span></button>
+      </div>
+    </div>`}
+  `;
+
+  renderList(locked);
+  if(!locked){
+    document.getElementById('barSum').addEventListener('click',()=>document.getElementById('bar').classList.toggle('open'));
+    document.getElementById('cta').addEventListener('click', openReview);
+    updateBar();
+  }
+}
+
+function stockHTML(it){
+  if(it.stock_status === 'ready')
+    return `<div class="stock s-ready"><span class="pip"></span>Ready${it.qty_pusat && it.qty_pusat!=='0' ? ' · '+it.qty_pusat+' pcs' : ''}</div>`;
+  if(it.stock_status === 'ltc')
+    return `<div class="stock s-limited"><span class="pip"></span>Stok cabang (LTC)${it.qty_ltc && it.qty_ltc!=='0' ? ' · '+it.qty_ltc+' pcs' : ''}</div>`;
+  return `<div class="stock s-indent"><span class="pip"></span>Kosong · bisa indent</div>`;
+}
+
+function renderList(locked){
+  const list = document.getElementById('list');
+  list.innerHTML = ITEMS.map(it=>{
+    const hasPrice = it.unit_idr !== null && it.unit_idr !== undefined;
+    const priceStr = hasPrice ? rp(it.unit_idr) : '—';
+    const moq = it.moq_pack && it.moq_pack>1 ? it.moq_pack : null;
+    const preset = locked ? (it.qty_ordered||0) : 0;
+    const stepper = locked
+      ? `<div class="mono" style="font-size:14px;font-weight:600">${preset>0? preset+' pcs':'—'}</div>`
+      : `<div class="stepper">
+          <button aria-label="Kurangi" data-act="dec" data-id="${it.id}" disabled>−</button>
+          <input type="number" inputmode="numeric" min="0" value="0" aria-label="Jumlah ${it.edp}" data-id="${it.id}">
+          <button aria-label="Tambah" data-act="inc" data-id="${it.id}">+</button>
+        </div>`;
+    return `
+    <div class="card" data-card="${it.id}">
+      <div class="card-top">
+        <div>
+          <div class="code">${esc(it.edp)}</div>
+          ${moq ? `<span class="moqtag">isi per pack: ${moq}</span>` : ''}
+        </div>
+        <div class="price"><div class="amt">${priceStr}</div><div class="per">/ unit</div></div>
+      </div>
+      <div class="desc">${esc(it.name||'')} ${it.size ? `<span class="dim">${esc(it.size)}</span>`:''}</div>
+      <div class="card-bottom">
+        <div>${stockHTML(it)}</div>
+        ${stepper}
+      </div>
+      <div class="linetotal ${locked && preset>0?'show':''}" data-line="${it.id}">
+        <span class="ltlabel">${locked && preset>0 ? preset+' × '+priceStr : ''}</span>
+        <span class="lt">${locked && preset>0 ? rp(it.unit_idr*preset) : ''}</span>
+      </div>
+    </div>`;
+  }).join('');
+  ITEMS.forEach(it=>order[it.id]=0);
+}
+
+function packOf(id){ const it=ITEMS.find(x=>x.id===id); return (it.moq_pack && it.moq_pack>1)?it.moq_pack:1; }
+
+function setQty(id, val){
+  const pack = packOf(id);
+  let v = parseInt(val)||0;
+  if(v<0) v=0;
+  if(pack>1 && v>0) v = Math.ceil(v/pack)*pack;   // bulatkan ke atas ke pack penuh
+  v = Math.min(v, 999999);
+  order[id]=v;
+  const it = ITEMS.find(x=>x.id===id);
+  const card = document.querySelector(`.card[data-card="${id}"]`);
+  const inp = card.querySelector('input');
+  inp.value = v;
+  card.querySelector('[data-act="dec"]').disabled = v===0;
+  card.classList.toggle('active', v>0);
+  const line = card.querySelector('.linetotal');
+  if(v>0 && it.unit_idr!=null){
+    line.classList.add('show');
+    const packStr = pack>1 ? ` · ${v/pack} pack` : '';
+    line.querySelector('.ltlabel').innerHTML =
+      `${v} × ${rp(it.unit_idr)}${packStr}` + (it.stock_status==='kosong' ? ' <span class="indent-note">· indent</span>':'');
+    line.querySelector('.lt').textContent = rp(it.unit_idr*v);
+  } else {
+    line.classList.remove('show');
+  }
+  updateBar();
+}
+
+function updateBar(){
+  let sub=0, lines=0, units=0, indent=0;
+  ITEMS.forEach(it=>{
+    const q=order[it.id]||0;
+    if(q>0 && it.unit_idr!=null){ sub+=it.unit_idr*q; lines++; units+=q; if(it.stock_status==='kosong') indent++; }
+  });
+  const ppn=Math.round(sub*PPN), grand=sub+ppn;
+  document.getElementById('barItems').textContent = lines? `${lines} barang · ${units} unit` : '0 barang';
+  document.getElementById('barTotal').textContent = rp(grand);
+  document.getElementById('bSub').textContent = rp(sub);
+  document.getElementById('bPpn').textContent = rp(ppn);
+  document.getElementById('bGrand').textContent = rp(grand);
+  const ir=document.getElementById('bIndentRow');
+  if(indent>0){ ir.style.display='flex'; document.getElementById('bIndent').textContent=`${indent} item`; } else ir.style.display='none';
+  const cta=document.getElementById('cta'), ctaN=document.getElementById('ctaN');
+  cta.disabled = lines===0;
+  if(lines>0){ ctaN.style.display='inline-block'; ctaN.textContent=lines; } else ctaN.style.display='none';
+  document.getElementById('bar').classList.add('show');
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]');
+  if(!b) return;
+  const id=b.dataset.id, pack=packOf(id), cur=order[id]||0;
+  setQty(id, b.dataset.act==='inc' ? cur+pack : cur-pack);
+});
+document.addEventListener('input',e=>{
+  if(e.target.matches('input[data-id]')) order[e.target.dataset.id]=parseInt(e.target.value)||0;
+});
+document.addEventListener('change',e=>{
+  if(e.target.matches('input[data-id]')) setQty(e.target.dataset.id, e.target.value);
+});
+
+/* ── Review + submit ── */
+function openReview(){
+  let sub=0, lines=0, units=0, indent=0;
+  ITEMS.forEach(it=>{ const q=order[it.id]||0; if(q>0&&it.unit_idr!=null){sub+=it.unit_idr*q;lines++;units+=q;if(it.stock_status==='kosong')indent++;} });
+  const ppn=Math.round(sub*PPN), grand=sub+ppn;
+  const ov=document.createElement('div'); ov.className='overlay show'; ov.id='reviewOv';
+  ov.innerHTML=`<div class="sheet">
+    <h3>Kirim pesanan?</h3>
+    <p>Pesanan Anda dikirim ke sales untuk dicek stok &amp; harga terkini, lalu dikonfirmasi.</p>
+    <div class="sheet-err" id="submitErr"></div>
+    <div class="sumbox">
+      <div class="r"><span>${lines} barang · ${units} unit</span><span></span></div>
+      <div class="r"><span>Subtotal</span><span class="mono">${rp(sub)}</span></div>
+      <div class="r"><span>PPN 11%</span><span class="mono">${rp(ppn)}</span></div>
+      ${indent?`<div class="r" style="color:var(--limited)"><span>Termasuk ${indent} barang indent</span><span></span></div>`:''}
+      <div class="r big"><span>Total</span><span class="mono">${rp(grand)}</span></div>
+    </div>
+    <div class="notefld">
+      <label>Catatan untuk sales (opsional)</label>
+      <textarea id="custNote" placeholder="mis. alamat kirim, minta franco, dll"></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-ghost" onclick="closeReview()">Batal</button>
+      <button class="cta" id="btnSubmit" style="flex:1" onclick="submitOrder()">Kirim ke sales</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{ if(e.target===ov) closeReview(); });
+}
+function closeReview(){ const o=document.getElementById('reviewOv'); if(o) o.remove(); }
+
+async function submitOrder(){
+  const btn=document.getElementById('btnSubmit');
+  const errBox=document.getElementById('submitErr');
+  btn.disabled=true; btn.textContent='Mengirim…'; errBox.style.display='none';
+  const note=document.getElementById('custNote').value.trim();
+  try{
+    const updates = ITEMS.map(it => sb.from('quote_items').update({ qty_ordered: order[it.id]||0 }).eq('id', it.id));
+    const results = await Promise.all(updates);
+    const bad = results.find(r=>r.error);
+    if(bad) throw bad.error;
+    const r = await sb.from('quotes').update({
+      status:'disubmit', submitted_at:new Date().toISOString(), customer_note: note || null
+    }).eq('id', QUOTE.id);
+    if(r.error) throw r.error;
+    closeReview();
+    showSuccess();
+  }catch(err){
+    errBox.textContent = 'Gagal mengirim: ' + (err.message||'coba lagi'); errBox.style.display='block';
+    btn.disabled=false; btn.textContent='Kirim ke sales';
+  }
+}
+
+function showSuccess(){
+  const ov=document.createElement('div'); ov.className='overlay show';
+  ov.innerHTML=`<div class="sheet">
+    <div class="checkwrap">${iconCheck}</div>
+    <h3>Pesanan terkirim</h3>
+    <p>Terima kasih. Pesanan Anda masuk ke sales untuk dicek ketersediaan dan harga terkini. Anda akan dikabari lewat WhatsApp.</p>
+    <div class="steps">
+      <div class="step done"><span class="num">✓</span><span class="st"><b>Pesanan dikirim</b> — barusan</span></div>
+      <div class="step now"><span class="num">2</span><span class="st"><b>Dicek sales</b> — stok &amp; harga divalidasi</span></div>
+      <div class="step wait"><span class="num">3</span><span class="st">Konfirmasi &amp; proforma invoice</span></div>
+      <div class="step wait"><span class="num">4</span><span class="st">Pembayaran</span></div>
+    </div>
+    <button class="close-full" onclick="location.reload()">Selesai</button>
+  </div>`;
+  document.body.appendChild(ov);
+  const bar=document.getElementById('bar'); if(bar) bar.classList.remove('show');
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+load();
+</script>
+</body>
+</html>
