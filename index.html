@@ -860,20 +860,46 @@ function parseHarga(rows, fileName) {
     const r = rows[i].map(c => String(c).toLowerCase());
     if (r.some(c => c.includes('edp') || c.includes('list') || c.includes('price') || c.includes('harga'))) { hi = i; break; }
   }
+
+  // Deteksi posisi kolom dari header, bukan index tetap.
+  // Beberapa pricelist punya kolom Nama + 2 kolom harga (harga lama/baru),
+  // sementara pricelist lain (mis. format terbaru) cuma punya EDP + 1 kolom harga.
+  const header = (rows[hi] || []).map(c => String(c ?? '').toLowerCase().trim());
+  let edpIdx = header.findIndex(c => c.includes('edp'));
+  if (edpIdx === -1) edpIdx = 1; // fallback ke posisi lama
+  const nameIdx = header.findIndex(c => c.includes('nama') || c.includes('name') || c.includes('deskripsi') || c.includes('desc'));
+  const priceIdxs = header.reduce((acc, c, idx) => {
+    if (c.includes('price') || c.includes('harga')) acc.push(idx);
+    return acc;
+  }, []);
+
   const map = new Map();
   for (let i = hi + 1; i < rows.length; i++) {
     const row = rows[i];
-    const edp = String(row[1] ?? '').trim();
+    const edp = String(row[edpIdx] ?? '').trim();
     if (!edp) continue;
-    const priceD = parseFloat(row[3]) || 0;
-    const priceE_raw = row[4];
-    const priceE_str = String(priceE_raw ?? '').trim();
-    const priceE = (priceE_str && priceE_str !== '#N/A' && priceE_str !== '' && !isNaN(parseFloat(priceE_raw))) ? parseFloat(priceE_raw) : null;
-    const listPrice = (priceE !== null && priceE > priceD) ? priceE : priceD;
-    const hasNew    = (priceE !== null && priceE > priceD);
-    const entry = { edp, listPrice, hasNew, name: String(row[2] ?? '').trim() };
+
+    let listPrice = 0, hasNew = false;
+    if (priceIdxs.length >= 2) {
+      // Format lama: kolom harga lama (D) + kolom harga baru/special (E)
+      const priceD = parseFloat(row[priceIdxs[0]]) || 0;
+      const priceE_raw = row[priceIdxs[1]];
+      const priceE_str = String(priceE_raw ?? '').trim();
+      const priceE = (priceE_str && priceE_str !== '#N/A' && priceE_str !== '' && !isNaN(parseFloat(priceE_raw))) ? parseFloat(priceE_raw) : null;
+      listPrice = (priceE !== null && priceE > priceD) ? priceE : priceD;
+      hasNew = (priceE !== null && priceE > priceD);
+    } else if (priceIdxs.length === 1) {
+      // Format baru: cuma satu kolom "List Price (USD)"
+      listPrice = parseFloat(row[priceIdxs[0]]) || 0;
+    } else {
+      // Fallback terakhir: pakai kolom paling kanan yang terisi
+      listPrice = parseFloat(row[row.length - 1]) || 0;
+    }
+
+    const name = nameIdx !== -1 ? String(row[nameIdx] ?? '').trim() : '';
+    const entry = { edp, listPrice, hasNew, name };
     map.set(edp, entry);
-    if (!isNaN(row[1])) map.set(String(Number(row[1])), entry);
+    if (!isNaN(row[edpIdx])) map.set(String(Number(row[edpIdx])), entry);
   }
   state.harga.data = map; state.harga.loaded = true; state.harga.fileName = fileName;
   updateChip('harga', fileName); checkReady(); hideLoading();
