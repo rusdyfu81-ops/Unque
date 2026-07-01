@@ -6,6 +6,8 @@
 <title>Dashboard Sales — Pesanan Masuk</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -167,6 +169,19 @@ const SB_CONFIG = {
 };
 const sb = window.supabase.createClient(SB_CONFIG.url, SB_CONFIG.anon);
 const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+
+/* ┌─────────────────────────────────────────┐
+   │  ISI DATA PERUSAHAAN UNTUK PROFORMA INVOICE │
+   └─────────────────────────────────────────┘ */
+const COMPANY_CONFIG = {
+  name:    'Nama Perusahaan Anda',
+  address: 'Alamat lengkap, Kota, Kode Pos',
+  phone:   '021-xxxxxxx',
+  email:   'sales@perusahaan.com',
+  bank_name:         'Nama Bank',
+  bank_account_no:   '0000000000',
+  bank_account_name: 'PT Nama Perusahaan'
+};
 
 let QUOTES = [];       // all quotes fetched
 let ITEMS_BY_Q = {};   // quote_id -> [items]
@@ -398,6 +413,8 @@ function renderDetail(){
           <button class="btn-reject" onclick="rejectQuote()">✕ Tolak</button>
           <button class="btn-revise" onclick="startEdit()">✏️ Edit &amp; Revisi</button>
           <button class="btn-approve" onclick="approveQuote()">✓ Setujui Pesanan</button>
+        ` : q.status==='diterima' ? `
+          <button class="btn-approve" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button>
         ` : ''}
       </div>
     </div>
@@ -469,6 +486,100 @@ function applyQuoteUpdate(data){
   if(idx>=0) QUOTES[idx] = data;
   CUR = data;
   renderTabs(); renderList();
+}
+
+/* ── Fase 4: Proforma Invoice (PDF, dibuat langsung di browser) ── */
+function terbilang(n){
+  n = Math.floor(Math.max(0,n));
+  const satuan = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
+  function w(num){
+    if(num < 12) return satuan[num];
+    if(num < 20) return w(num-10) + ' belas';
+    if(num < 100) return w(Math.floor(num/10)) + ' puluh' + (num%10 ? ' ' + w(num%10) : '');
+    if(num < 200) return 'seratus' + (num-100 ? ' ' + w(num-100) : '');
+    if(num < 1000) return w(Math.floor(num/100)) + ' ratus' + (num%100 ? ' ' + w(num%100) : '');
+    if(num < 2000) return 'seribu' + (num-1000 ? ' ' + w(num-1000) : '');
+    if(num < 1e6) return w(Math.floor(num/1000)) + ' ribu' + (num%1000 ? ' ' + w(num%1000) : '');
+    if(num < 1e9) return w(Math.floor(num/1e6)) + ' juta' + (num%1e6 ? ' ' + w(num%1e6) : '');
+    if(num < 1e12) return w(Math.floor(num/1e9)) + ' miliar' + (num%1e9 ? ' ' + w(num%1e9) : '');
+    return w(Math.floor(num/1e12)) + ' triliun' + (num%1e12 ? ' ' + w(num%1e12) : '');
+  }
+  if(n===0) return 'nol';
+  const s = w(n).trim().replace(/\s+/g,' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function generateProformaPDF(q, items){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const pw = doc.internal.pageSize.getWidth();
+  const invoiceNo = q.code.replace(/^QT-/,'PI-');
+  const rows = items.filter(it=>it.qty_ordered>0).map((it,i)=>[
+    i+1, it.edp, it.name||'', it.qty_ordered,
+    it.unit_idr!=null ? rp(it.unit_idr) : '-',
+    it.unit_idr!=null ? rp(it.unit_idr*it.qty_ordered) : '-'
+  ]);
+  const sub = items.reduce((s,it)=> s + (it.unit_idr!=null && it.qty_ordered ? it.unit_idr*it.qty_ordered : 0), 0);
+  const ppn = Math.round(sub * ((q.ppn_pct||11)/100));
+  const grand = sub + ppn;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text(COMPANY_CONFIG.name, 14, 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90);
+  doc.text(COMPANY_CONFIG.address, 14, 24);
+  doc.text(COMPANY_CONFIG.phone + '  ·  ' + COMPANY_CONFIG.email, 14, 29);
+
+  doc.setTextColor(20); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+  doc.text('PROFORMA INVOICE', pw-14, 18, { align:'right' });
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90);
+  doc.text('No.  ' + invoiceNo, pw-14, 24, { align:'right' });
+  doc.text('Tanggal  ' + fmtDate(q.decided_at||new Date()), pw-14, 29, { align:'right' });
+
+  doc.setDrawColor(220); doc.line(14, 34, pw-14, 34);
+
+  doc.setTextColor(20); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+  doc.text('Kepada:', 14, 42);
+  doc.setFont('helvetica','normal');
+  doc.text(q.customer_name || '-', 14, 47);
+  if(q.customer_company) doc.text(q.customer_company, 14, 52);
+
+  doc.autoTable({
+    startY: 58,
+    head: [['No','EDP','Nama Barang','Qty','Harga Satuan','Subtotal']],
+    body: rows,
+    styles: { font:'helvetica', fontSize: 8.5, cellPadding: 2.4 },
+    headStyles: { fillColor: [26,86,219], textColor: 255, fontStyle:'bold' },
+    columnStyles: { 0:{cellWidth:9}, 3:{halign:'right',cellWidth:14}, 4:{halign:'right',cellWidth:32}, 5:{halign:'right',cellWidth:32} },
+    margin: { left:14, right:14 }
+  });
+
+  let y = doc.lastAutoTable.finalY + 8;
+  doc.setFontSize(9.5);
+  doc.text('Subtotal', pw-70, y); doc.text(rp(sub), pw-14, y, { align:'right' }); y+=6;
+  doc.text('PPN 11%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
+  doc.setDrawColor(200); doc.line(pw-70, y-3.5, pw-14, y-3.5);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('TOTAL', pw-70, y); doc.text(rp(grand), pw-14, y, { align:'right' });
+  y += 8;
+  doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(90);
+  doc.text('Terbilang: ' + terbilang(grand) + ' rupiah', 14, y);
+
+  y += 12;
+  doc.setDrawColor(220); doc.line(14, y, pw-14, y); y += 7;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(20);
+  doc.text('Instruksi Pembayaran', 14, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70);
+  doc.text(`Transfer ke ${COMPANY_CONFIG.bank_name} — ${COMPANY_CONFIG.bank_account_no} a.n. ${COMPANY_CONFIG.bank_account_name}`, 14, y); y += 10;
+
+  doc.setFontSize(7.5); doc.setTextColor(140);
+  doc.text('Dokumen ini adalah proforma invoice (bukan faktur pajak resmi), diterbitkan berdasarkan pesanan yang telah dikonfirmasi.', 14, 285);
+
+  doc.save('Proforma_' + q.code + '.pdf');
+}
+
+function downloadProforma(){
+  if(!CUR) return;
+  generateProformaPDF(CUR, ITEMS_BY_Q[CUR.id]||[]);
 }
 
 /* ── Validasi opsional: load pricelist / stok terkini ── */
