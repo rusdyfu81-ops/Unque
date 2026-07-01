@@ -662,6 +662,10 @@
       <label>Catatan (opsional)</label>
       <input type="text" id="fNote" placeholder="mis. franco Jakarta">
     </div>
+    <div class="fld" style="display:flex;align-items:center;gap:8px;flex-direction:row">
+      <input type="checkbox" id="fIsNewCust" style="width:16px;height:16px">
+      <label style="margin:0;font-weight:500">🆕 Customer baru (belum pernah transaksi — perlu cek pembayaran sebelum kirim)</label>
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeSaveModal()">Batal</button>
       <button class="btn-primary" id="btnDoSave" onclick="doSaveQuote()">Simpan &amp; Buat Link</button>
@@ -1624,6 +1628,7 @@ async function doSaveQuote() {
       kurs, tier: state.diskon, tier_pct: diskonPct, ppn_pct: 11,
       status: 'terkirim',
       note: document.getElementById('fNote').value.trim() || null,
+      is_new_customer: document.getElementById('fIsNewCust').checked,
       valid_until: validUntil
     };
 

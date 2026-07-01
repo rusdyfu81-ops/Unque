@@ -62,23 +62,30 @@
   .empty { text-align: center; padding: 80px 20px; color: var(--muted); }
   .empty .ic { font-size: 40px; margin-bottom: 10px; }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
-  .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.07); border-color: var(--border2); }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-  .card-code { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .qtable-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table.qtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.qtable th { text-align: left; padding: 10px 12px; background: var(--surface2); color: var(--muted); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; border-bottom: 1px solid var(--border); }
+  table.qtable td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.qtable tbody tr { cursor: pointer; transition: background .1s; }
+  table.qtable tbody tr:hover { background: var(--surface2); }
+  table.qtable tbody tr:last-child td { border-bottom: none; }
+  table.qtable td.right, table.qtable th.right { text-align: right; }
+  .row-code { font-family: var(--mono); font-weight: 700; font-size: 12.5px; }
+  .row-cust { font-weight: 600; }
+  .row-total { font-family: var(--mono); font-weight: 700; }
+  .row-time { color: var(--muted); font-size: 12px; }
+  .new-badge { font-size: 10px; font-weight: 700; background: var(--yellow-s); color: var(--yellow); padding: 2px 7px; border-radius: 10px; margin-left: 6px; white-space: nowrap; }
+  .late-badge { font-size: 10px; font-weight: 700; background: var(--red-s); color: var(--red); padding: 2px 7px; border-radius: 10px; margin-left: 6px; white-space: nowrap; }
+
   .badge { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: .02em; }
   .b-terkirim { background: var(--surface2); color: var(--muted); }
   .b-disubmit { background: var(--yellow-s); color: var(--yellow); }
   .b-review   { background: var(--accent-s); color: var(--accent); }
   .b-direvisi { background: var(--purple-s); color: var(--purple); }
-  .b-diterima { background: var(--green-s); color: var(--green); }
+  .b-diterima { background: #E0F2FE; color: #0369A1; }
+  .b-dikonfirmasi { background: var(--accent-s); color: var(--accent); }
+  .b-dikirim  { background: var(--green-s); color: var(--green); }
   .b-ditolak  { background: var(--red-s); color: var(--red); }
-  .card-cust { font-size: 14px; font-weight: 600; margin-top: 8px; }
-  .card-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
-  .card-items { font-size: 12px; color: var(--text2); }
-  .card-total { font-family: var(--mono); font-weight: 700; font-size: 14px; }
 
   /* Overlay + detail sheet */
   .overlay { position: fixed; inset: 0; background: rgba(17,25,40,.5); z-index: 200; display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 30px 16px; }
@@ -105,16 +112,25 @@
   .file-chip input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .file-chip.loaded { border-style: solid; border-color: var(--green); background: var(--green-s); color: var(--green); }
   .validate-hint { font-size: 11px; color: var(--muted); }
+  .validate-warn { background: var(--yellow-s); color: var(--yellow); border-radius: 8px; padding: 8px 11px; font-size: 12px; font-weight: 600; margin-bottom: 14px; }
 
-  table.items { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 640px; }
   table.items th { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .02em; }
   table.items td { padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.items td.right, table.items th.right { text-align: right; }
-  .diff { color: var(--red); font-weight: 700; }
-  .diff-ok { color: var(--green); }
+  .diff { display: inline-block; color: var(--red); font-weight: 700; font-size: 12px; background: var(--red-s); padding: 2px 7px; border-radius: 6px; margin-top: 3px; }
+  .diff-ok { display: inline-block; color: var(--green); font-weight: 700; font-size: 12px; background: var(--green-s); padding: 2px 7px; border-radius: 6px; margin-top: 3px; }
+  .qty-ref { font-size: 11px; color: var(--text2); margin-top: 3px; }
   .pip { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; }
   .p-ready{background:var(--green)} .p-ltc{background:var(--yellow)} .p-kosong{background:var(--muted)}
   input.edit-num { width: 70px; border: 1px solid var(--border2); border-radius: 6px; padding: 4px 6px; font-family: var(--mono); font-size: 12px; text-align: right; }
+
+  .ship-box { background: var(--surface2); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  .ship-box .r { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12.5px; }
+  .ship-box .r .k { color: var(--text2); } .ship-box .r .v { font-weight: 600; text-align: right; max-width: 65%; }
+  .ship-fields { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .ship-fields input { flex: 1; min-width: 140px; border: 1px solid var(--border2); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: var(--sans); }
 
   .totals { margin-top: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 12.5px; }
   .totals .grand { font-size: 15px; font-weight: 700; font-family: var(--mono); }
@@ -126,6 +142,7 @@
   .sheet-actions { display: flex; gap: 8px; padding: 16px 22px; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .btn { border: none; border-radius: 9px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
   .btn-approve { background: var(--green); color: #fff; }
+  .btn-ship    { background: var(--accent); color: #fff; }
   .btn-revise  { background: var(--purple); color: #fff; }
   .btn-reject  { background: var(--red-s); color: var(--red); }
   .btn-ghost   { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
@@ -174,18 +191,18 @@ const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
    │  ISI DATA PERUSAHAAN UNTUK PROFORMA INVOICE │
    └─────────────────────────────────────────┘ */
 const COMPANY_CONFIG = {
-  name:    'Nama Perusahaan Anda',
-  address: 'Alamat lengkap, Kota, Kode Pos',
-  phone:   '021-xxxxxxx',
-  email:   'sales@perusahaan.com',
+  name:    'PT Gofir Sarana Sejahtera',
+  address: 'LTC Glodok Lantai 2 C30 No 30B, Jakarta Barat',
+  phone:   '021 22684320',
+  email:   'sales@gofirsarana.com',
   bank_name:         'Nama Bank',
   bank_account_no:   '0000000000',
-  bank_account_name: 'PT Nama Perusahaan'
+  bank_account_name: 'PT Gofir Sarana Sejahtera'
 };
 
 let QUOTES = [];       // all quotes fetched
 let ITEMS_BY_Q = {};   // quote_id -> [items]
-let TAB = 'aksi';
+let TAB = 'perlu_sales';
 let hargaMap = null;   // optional validation source: edp -> listPrice(USD)
 let stokMap  = null;   // optional validation source: edp -> qty pusat
 let kursNow  = 16700;
@@ -221,25 +238,34 @@ function computeTotals(q){
   return { sub, ppn, grand: sub+ppn, lines };
 }
 
+function lastActivity(q){
+  const dates = [q.created_at, q.submitted_at, q.reviewed_at, q.decided_at, q.confirmed_at, q.shipped_at].filter(Boolean).map(d=>new Date(d).getTime());
+  return dates.length ? Math.max(...dates) : 0;
+}
+function isPastDeadline(q){
+  return q.status==='diterima' && q.confirm_deadline && new Date(q.confirm_deadline).getTime() < Date.now();
+}
+
+function groupOf(status){
+  if(status==='terkirim') return 'baru';
+  if(status==='disubmit' || status==='review' || status==='dikonfirmasi') return 'perlu_sales';
+  if(status==='direvisi' || status==='diterima') return 'nunggu_customer';
+  if(status==='dikirim') return 'selesai';
+  if(status==='ditolak') return 'ditolak';
+  return 'lainnya';
+}
+
 function tabFilter(status){
-  if(TAB==='aksi')     return status==='disubmit' || status==='review';
-  if(TAB==='direvisi') return status==='direvisi';
-  if(TAB==='diterima') return status==='diterima';
-  if(TAB==='ditolak')  return status==='ditolak';
-  return true; // semua
+  if(TAB==='semua') return true;
+  return groupOf(status) === TAB;
 }
 
 function renderTabs(){
-  const counts = { aksi:0, direvisi:0, diterima:0, ditolak:0, semua: QUOTES.length };
-  QUOTES.forEach(q=>{
-    if(q.status==='disubmit'||q.status==='review') counts.aksi++;
-    else if(q.status==='direvisi') counts.direvisi++;
-    else if(q.status==='diterima') counts.diterima++;
-    else if(q.status==='ditolak') counts.ditolak++;
-  });
+  const counts = { perlu_sales:0, nunggu_customer:0, baru:0, selesai:0, ditolak:0, semua: QUOTES.length };
+  QUOTES.forEach(q=>{ const g=groupOf(q.status); if(counts[g]!=null) counts[g]++; });
   const defs = [
-    ['aksi','Perlu Ditindak'], ['direvisi','Menunggu Customer'],
-    ['diterima','Diterima'], ['ditolak','Ditolak'], ['semua','Semua']
+    ['perlu_sales','🔵 Perlu Sales'], ['nunggu_customer','🟡 Nunggu Customer'],
+    ['baru','⚪ Baru Ditawarkan'], ['selesai','🟢 Selesai'], ['ditolak','🔴 Ditolak'], ['semua','Semua']
   ];
   document.getElementById('tabs').innerHTML = defs.map(([k,label])=>
     `<button class="tab ${TAB===k?'active':''}" onclick="setTab('${k}')">${label} <span class="cnt">${counts[k]}</span></button>`
@@ -250,28 +276,29 @@ function setTab(t){ TAB=t; renderTabs(); renderList(); }
 function fmtDate(d){ if(!d) return '—'; return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
 function fmtDateTime(d){ if(!d) return '—'; return new Date(d).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
 
-const STATUS_LABEL = { terkirim:'Terkirim', disubmit:'Disubmit', review:'Review', direvisi:'Direvisi', diterima:'Diterima', ditolak:'Ditolak' };
+const STATUS_LABEL = { terkirim:'Terkirim', disubmit:'Disubmit', review:'Review', direvisi:'Direvisi', diterima:'Diterima', dikonfirmasi:'Menunggu Pengiriman', dikirim:'Dikirim', ditolak:'Ditolak' };
 
 function renderList(){
-  const list = QUOTES.filter(q=>tabFilter(q.status));
+  const list = QUOTES.filter(q=>tabFilter(q.status)).slice().sort((a,b)=>lastActivity(b)-lastActivity(a));
   const el = document.getElementById('content');
   if(!list.length){ el.innerHTML = `<div class="empty"><div class="ic">📭</div>Tidak ada pesanan di kategori ini.</div>`; return; }
-  el.innerHTML = `<div class="grid">${list.map(q=>{
-    const t = computeTotals(q);
-    const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
-    return `<div class="card" onclick="openDetail('${q.id}')">
-      <div class="card-top">
-        <div class="card-code">${esc(q.code)}</div>
-        <span class="badge b-${q.status}">${STATUS_LABEL[q.status]||q.status}</span>
-      </div>
-      <div class="card-cust">${esc(who)}</div>
-      <div class="card-meta">Sales ${esc(q.sales_name||'—')} · ${fmtDateTime(q.submitted_at||q.created_at)}</div>
-      <div class="card-bottom">
-        <div class="card-items">${t.lines} barang</div>
-        <div class="card-total">${rp(t.grand)}</div>
-      </div>
-    </div>`;
-  }).join('')}</div>`;
+  el.innerHTML = `<div class="qtable-wrap"><div class="table-scroll"><table class="qtable">
+    <thead><tr>
+      <th>Kode</th><th>Customer</th><th>Status</th><th class="right">Barang</th><th class="right">Total</th><th>Aktivitas</th>
+    </tr></thead>
+    <tbody>${list.map(q=>{
+      const t = computeTotals(q);
+      const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
+      return `<tr onclick="openDetail('${q.id}')">
+        <td class="row-code">${esc(q.code)}</td>
+        <td class="row-cust">${esc(who)}${q.is_new_customer?'<span class="new-badge">🆕 Baru</span>':''}${isPastDeadline(q)?'<span class="late-badge">⚠ Lewat waktu</span>':''}</td>
+        <td><span class="badge b-${q.status}">${STATUS_LABEL[q.status]||q.status}</span></td>
+        <td class="right">${t.lines}</td>
+        <td class="right row-total">${rp(t.grand)}</td>
+        <td class="row-time">${fmtDateTime(lastActivity(q))}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div></div>`;
 }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -315,11 +342,14 @@ function renderDetail(){
   const t = computeTotals(q);
   const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
   const canAct = q.status==='disubmit' || q.status==='review';
+  const canShip = q.status==='dikonfirmasi';
   const link = /:\/\//.test(SB_CONFIG.customerLinkBase) ? SB_CONFIG.customerLinkBase+encodeURIComponent(q.code) : new URL(SB_CONFIG.customerLinkBase+encodeURIComponent(q.code), location.href).href;
 
   let banner = '';
   if(q.status==='direvisi') banner = `<div class="banner purple">Menunggu customer mengecek &amp; kirim ulang. Catatan revisi: ${esc(q.revision_note||'-')}</div>`;
-  if(q.status==='diterima') banner = `<div class="banner green">Pesanan sudah diterima${q.decided_at?' · '+fmtDateTime(q.decided_at):''}.</div>`;
+  if(q.status==='diterima') banner = `<div class="banner green">Menunggu customer isi alamat &amp; klik Confirm Order${isPastDeadline(q) ? ' — <b>⚠ sudah lewat batas 1 jam, cek ulang stok sebelum lanjut</b>' : (q.confirm_deadline ? ' (batas '+fmtDateTime(q.confirm_deadline)+')' : '')}.</div>`;
+  if(q.status==='dikonfirmasi') banner = `<div class="banner green">Customer sudah konfirmasi${q.confirmed_at?' · '+fmtDateTime(q.confirmed_at):''}. Proses SJ/invoice di Accurate, kirim barang, lalu isi resi di bawah.</div>`;
+  if(q.status==='dikirim') banner = `<div class="banner green">✓ Selesai — dikirim${q.shipped_at?' · '+fmtDateTime(q.shipped_at):''} via ${esc(q.courier_name||'-')}, resi ${esc(q.tracking_no||'-')}.</div>`;
   if(q.status==='ditolak')  banner = `<div class="banner red">Pesanan ditolak${q.decided_at?' · '+fmtDateTime(q.decided_at):''}. Alasan: ${esc(q.reject_reason||'-')}</div>`;
   if(q.status==='review')   banner = `<div class="banner warn">Sedang direview. Cek stok &amp; harga di bawah sebelum memutuskan.</div>`;
 
@@ -334,6 +364,14 @@ function renderDetail(){
         <input type="file" accept=".xlsx,.xls" onchange="loadValidateFile('stok',this)">
         📊 ${stokMap? stokMap.size+' stok dimuat' : 'Stok pusat terbaru'}
       </div>
+    </div>
+    ${(!hargaMap && !stokMap) ? `<div class="validate-warn">⚠ Belum ada file divalidasi — harga/stok di bawah masih data saat quote dibuat, belum tentu masih sama sekarang.</div>` : ''}` : '';
+
+  const shipInfoBox = (canShip || q.status==='dikirim') ? `
+    <div class="ship-box">
+      <div class="r"><span class="k">Penerima</span><span class="v">${esc(q.shipping_name||'-')}</span></div>
+      <div class="r"><span class="k">No. HP</span><span class="v">${esc(q.shipping_phone||'-')}</span></div>
+      <div class="r"><span class="k">Alamat</span><span class="v">${esc(q.shipping_address||'-')}</span></div>
     </div>` : '';
 
   const rows = items.map(it=>{
@@ -344,21 +382,21 @@ function renderDetail(){
     let priceDiffHtml = '';
     if(live && it.list_usd!=null){
       const changed = Math.abs(live.listUsd - it.list_usd) > 0.0001;
-      priceDiffHtml = changed ? ` <span class="diff">(list kini $${live.listUsd.toFixed(2)})</span>` : ` <span class="diff-ok">✓ sama</span>`;
+      priceDiffHtml = changed ? `<div class="diff">list kini $${live.listUsd.toFixed(2)}</div>` : `<div class="diff-ok">✓ harga sama</div>`;
     }
     const custQty = it.qty_customer!=null ? it.qty_customer : it.qty_ordered;
-    const qtyChangedNote = (EDIT_MODE && custQty!=null && qty!==custQty) ? `<div style="font-size:10.5px;color:var(--muted)">customer minta ${custQty}</div>` : '';
+    const qtyRef = (EDIT_MODE && custQty!=null) ? `<div class="qty-ref">diminta customer: ${custQty}</div>` : '';
     return `<tr>
       <td class="mono">${esc(it.edp)}</td>
       <td>${esc(it.name||'')}</td>
       <td>${itemStockBadge(it, liveStok)}</td>
       <td class="right">
         ${EDIT_MODE ? `<input class="edit-num" type="number" min="0" value="${qty}" onchange="setEditVal('${it.id}','qty',this.value)">` : (qty||'—')}
-        ${qtyChangedNote}
+        ${qtyRef}
       </td>
       <td class="right">
         ${EDIT_MODE ? `<input class="edit-num" type="number" min="0" value="${unit||0}" onchange="setEditVal('${it.id}','unit_idr',this.value)">` : (unit!=null?rp(unit):'—')}
-        <div style="font-size:10.5px;color:var(--muted)">${priceDiffHtml}</div>
+        ${priceDiffHtml}
       </td>
       <td class="right mono">${(unit!=null && qty)?rp(unit*qty):'—'}</td>
     </tr>`;
@@ -368,7 +406,7 @@ function renderDetail(){
     <div class="sheet">
       <div class="sheet-head">
         <div>
-          <h2>${esc(q.code)} <span class="badge b-${q.status}" style="margin-left:8px">${STATUS_LABEL[q.status]}</span></h2>
+          <h2>${esc(q.code)} <span class="badge b-${q.status}" style="margin-left:8px">${STATUS_LABEL[q.status]}</span>${q.is_new_customer?'<span class="new-badge">🆕 Baru</span>':''}</h2>
           <div class="sub">${esc(who)}</div>
         </div>
         <button class="btn-x" onclick="closeDetail()">✕</button>
@@ -384,7 +422,9 @@ function renderDetail(){
         ${q.note ? `<div class="note-box"><b>Catatan sales:</b> ${esc(q.note)}</div>` : ''}
         ${q.customer_note ? `<div class="note-box"><b>Catatan customer:</b> ${esc(q.customer_note)}</div>` : ''}
         ${banner}
+        ${shipInfoBox}
         ${validateRow}
+        <div class="table-scroll">
         <table class="items">
           <thead><tr>
             <th>EDP</th><th>Nama</th><th>Stok</th>
@@ -392,6 +432,7 @@ function renderDetail(){
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
+        </div>
         <div class="totals">
           <div>Subtotal <b class="mono">${rp(t.sub)}</b></div>
           <div>PPN 11% <b class="mono">${rp(t.ppn)}</b></div>
@@ -401,6 +442,14 @@ function renderDetail(){
         <div class="revise-note">
           <label>Catatan revisi untuk customer (jelaskan apa yang berubah)</label>
           <textarea id="reviseNote" placeholder="mis. EDP 12000201 stok kosong, qty disesuaikan jadi indent"></textarea>
+        </div>` : ''}
+        ${canShip ? `
+        <div class="revise-note">
+          <label>No. Resi &amp; Nama Kurir (isi setelah barang benar-benar dikirim)</label>
+          <div class="ship-fields">
+            <input type="text" id="fCourier" placeholder="Nama kurir / ekspedisi">
+            <input type="text" id="fTracking" placeholder="No. resi">
+          </div>
         </div>` : ''}
       </div>
       <div class="sheet-actions">
@@ -413,7 +462,9 @@ function renderDetail(){
           <button class="btn-reject" onclick="rejectQuote()">✕ Tolak</button>
           <button class="btn-revise" onclick="startEdit()">✏️ Edit &amp; Revisi</button>
           <button class="btn-approve" onclick="approveQuote()">✓ Setujui Pesanan</button>
-        ` : q.status==='diterima' ? `
+        ` : canShip ? `
+          <button class="btn-ship" onclick="markShipped()">🚚 Tandai Terkirim</button>
+        ` : (q.status==='diterima' || q.status==='dikonfirmasi' || q.status==='dikirim') ? `
           <button class="btn-approve" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button>
         ` : ''}
       </div>
@@ -440,11 +491,27 @@ function setEditVal(itemId, field, val){
 }
 
 async function approveQuote(){
-  if(!confirm('Setujui pesanan '+CUR.code+' apa adanya (tanpa perubahan)?')) return;
-  const { data, error } = await sb.from('quotes').update({ status:'diterima', decided_at:new Date().toISOString() }).eq('id', CUR.id).select().single();
+  let msg = 'Setujui pesanan '+CUR.code+' apa adanya (tanpa perubahan)?';
+  if(!hargaMap && !stokMap) msg = '⚠ Kamu belum muat file validasi harga/stok terbaru.\n\n' + msg + '\n\n(Data harga masih dari saat quote dibuat, belum tentu masih sama sekarang)';
+  if(!confirm(msg)) return;
+  const deadline = new Date(Date.now() + 60*60*1000).toISOString();
+  const { data, error } = await sb.from('quotes').update({ status:'diterima', decided_at:new Date().toISOString(), confirm_deadline: deadline }).eq('id', CUR.id).select().single();
   if(error){ alert('Gagal: '+error.message); return; }
   applyQuoteUpdate(data);
-  showToast('✓ Pesanan diterima');
+  showToast('✓ Pesanan diterima — customer punya 1 jam untuk konfirmasi');
+  closeDetail();
+}
+
+async function markShipped(){
+  const courier = document.getElementById('fCourier').value.trim();
+  const tracking = document.getElementById('fTracking').value.trim();
+  if(!courier || !tracking){ alert('Isi nama kurir dan no. resi dulu.'); return; }
+  const { data, error } = await sb.from('quotes').update({
+    status:'dikirim', courier_name:courier, tracking_no:tracking, shipped_at:new Date().toISOString()
+  }).eq('id', CUR.id).select().single();
+  if(error){ alert('Gagal: '+error.message); return; }
+  applyQuoteUpdate(data);
+  showToast('✓ Ditandai terkirim');
   closeDetail();
 }
 
@@ -520,7 +587,8 @@ function generateProformaPDF(q, items){
     it.unit_idr!=null ? rp(it.unit_idr*it.qty_ordered) : '-'
   ]);
   const sub = items.reduce((s,it)=> s + (it.unit_idr!=null && it.qty_ordered ? it.unit_idr*it.qty_ordered : 0), 0);
-  const ppn = Math.round(sub * ((q.ppn_pct||11)/100));
+  const dpp = sub * (11/12);
+  const ppn = Math.round(dpp * 0.12);
   const grand = sub + ppn;
 
   doc.setFont('helvetica','bold'); doc.setFontSize(13);
@@ -556,7 +624,8 @@ function generateProformaPDF(q, items){
   let y = doc.lastAutoTable.finalY + 8;
   doc.setFontSize(9.5);
   doc.text('Subtotal', pw-70, y); doc.text(rp(sub), pw-14, y, { align:'right' }); y+=6;
-  doc.text('PPN 11%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
+  doc.text('DPP Nilai Lain', pw-70, y); doc.text(rp(dpp), pw-14, y, { align:'right' }); y+=6;
+  doc.text('PPN 12%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
   doc.setDrawColor(200); doc.line(pw-70, y-3.5, pw-14, y-3.5);
   doc.setFont('helvetica','bold'); doc.setFontSize(11);
   doc.text('TOTAL', pw-70, y); doc.text(rp(grand), pw-14, y, { align:'right' });

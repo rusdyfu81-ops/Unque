@@ -50,9 +50,19 @@
   .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:#A9B8C4}
   .meta b{color:#DCE6ED;font-weight:600}
 
-  .banner{padding:9px 20px;font-size:12.5px;font-weight:500;display:flex;gap:8px;align-items:center}
+  .banner{padding:12px 20px;font-size:13.5px;font-weight:500}
+  .banner .b-title{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:7px;margin-bottom:3px}
+  .banner .b-note{background:rgba(255,255,255,.55);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px;font-weight:500;line-height:1.5}
+  .banner .b-sub{font-size:12.5px;font-weight:500;opacity:.9}
   .banner.info{background:#FBF4E4;color:#7A5610;border-bottom:1px solid #F0E4C8}
   .banner.warn{background:#FDEBEC;color:#8A2B2E;border-bottom:1px solid #F4CFD0}
+  .banner.revise{background:#EFEAFB;color:#4B3593;border-bottom:1px solid #DED4F5}
+  .banner.good{background:var(--ready-bg);color:var(--ready);border-bottom:1px solid #CFE8DA}
+
+  .deadline-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.24);border-radius:8px;padding:5px 10px;font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;font-weight:600;color:#fff;margin-top:10px}
+  .deadline-pill.urgent{background:rgba(220,80,80,.22);border-color:rgba(255,140,140,.4)}
 
   .list{padding:14px 14px 6px}
   .card{background:var(--surface);border:1px solid var(--line-soft);border-left:3px solid var(--line);
@@ -68,13 +78,14 @@
     padding:1px 6px;border-radius:4px;white-space:nowrap}
   .card-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;
     padding-top:11px;border-top:1px dashed var(--line)}
-  .stock{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600}
+  .stock{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:4px 9px;border-radius:7px;width:fit-content}
   .stock .pip{width:7px;height:7px;border-radius:50%}
-  .s-ready{color:var(--ready)} .s-ready .pip{background:var(--ready)}
-  .s-limited{color:var(--limited)} .s-limited .pip{background:var(--limited)}
-  .s-indent{color:var(--indent)} .s-indent .pip{background:var(--indent)}
-  .moqtag{display:inline-block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
-    color:var(--cobalt);background:var(--cobalt-bg);padding:2px 7px;border-radius:5px}
+  .s-ready{color:var(--ready);background:var(--ready-bg)} .s-ready .pip{background:var(--ready)}
+  .s-limited{color:var(--limited);background:var(--limited-bg)} .s-limited .pip{background:var(--limited)}
+  .s-indent{color:var(--indent);background:var(--indent-bg)} .s-indent .pip{background:var(--indent)}
+  .moqtag{display:inline-block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:700;
+    color:var(--cobalt);background:var(--cobalt-bg);padding:3px 8px;border-radius:5px}
+  .moq-hint{font-size:10.5px;color:var(--cobalt);font-weight:600;text-align:center;margin-top:4px}
 
   .stepper{display:flex;align-items:center;flex-shrink:0}
   .stepper button{width:38px;height:38px;border:1px solid var(--line);background:#fff;color:var(--ink);
@@ -99,7 +110,9 @@
   .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:var(--shadow-bar);border-top:1px solid var(--line);z-index:20;display:none}
   .bar.show{display:block}
   .bar-inner{max-width:560px;margin:0 auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
-  .bar-sum{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px;cursor:pointer}
+  .bar-sum{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px;cursor:pointer}
+  .bar-indent-note{font-size:11.5px;color:var(--limited);font-weight:700;margin-bottom:8px;display:none}
+  .bar-indent-note.show{display:block}
   .bar-sum .l{font-size:12px;color:var(--ink-2)} .bar-sum .l b{color:var(--ink);font-weight:600}
   .bar-sum .r{text-align:right}
   .bar-sum .r .k{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
@@ -147,6 +160,30 @@
   .step .st{color:var(--ink-2)} .step b{color:var(--ink);font-weight:600}
   .close-full{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:13px;font-weight:600;font-size:14px;cursor:pointer}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* Fase 6: shipping form, confirm, tracking */
+  .ship-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;padding:18px 16px;margin:0 14px 16px;box-shadow:var(--shadow)}
+  .ship-card h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:4px}
+  .ship-card .sub{font-size:12.5px;color:var(--ink-2);margin-bottom:14px;line-height:1.5}
+  .ship-fld{margin-bottom:12px}
+  .ship-fld label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+  .ship-fld input, .ship-fld textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    font-family:'Hanken Grotesk',sans-serif;font-size:14px;color:var(--ink)}
+  .ship-fld textarea{min-height:64px;resize:vertical}
+  .ship-fld input:focus, .ship-fld textarea:focus{outline:2px solid var(--cobalt);outline-offset:-1px;border-color:var(--cobalt)}
+  .ship-err{background:#FDEBEC;color:#8A2B2E;border-radius:9px;padding:10px 12px;font-size:12.5px;margin-bottom:12px;display:none}
+
+  .track-card{background:var(--surface);border:1px solid var(--line-soft);border-left:3px solid var(--ready);border-radius:14px;
+    padding:16px;margin:0 14px 16px;box-shadow:var(--shadow)}
+  .track-card h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .track-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-top:1px dashed var(--line-soft)}
+  .track-row:first-of-type{border-top:none}
+  .track-row .k{color:var(--ink-2)} .track-row .v{font-weight:600;font-family:'IBM Plex Mono',monospace}
+
+  .confirmed-card{background:var(--ready-bg);border-radius:14px;padding:16px;margin:0 14px 16px;text-align:center}
+  .confirmed-card .ic{font-size:26px;margin-bottom:4px}
+  .confirmed-card b{color:var(--ready);font-size:14.5px}
+  .confirmed-card p{font-size:12.5px;color:var(--ink-2);margin-top:4px}
 </style>
 </head>
 <body>
@@ -172,13 +209,13 @@ const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
 
 /* Samakan dengan COMPANY_CONFIG di dashboard.html */
 const COMPANY_CONFIG = {
-  name:    'Nama Perusahaan Anda',
-  address: 'Alamat lengkap, Kota, Kode Pos',
-  phone:   '021-xxxxxxx',
-  email:   'sales@perusahaan.com',
+  name:    'PT Gofir Sarana Sejahtera',
+  address: 'LTC Glodok Lantai 2 C30 No 30B, Jakarta Barat',
+  phone:   '021 22684320',
+  email:   'sales@gofirsarana.com',
   bank_name:         'Nama Bank',
   bank_account_no:   '0000000000',
-  bank_account_name: 'PT Nama Perusahaan'
+  bank_account_name: 'PT Gofir Sarana Sejahtera'
 };
 const qs = new URLSearchParams(location.search);
 const CODE = qs.get('q');
@@ -224,45 +261,135 @@ function isExpired(){
   return new Date(QUOTE.valid_until) < today;
 }
 
+function bannerBlock(variant, title, note, sub){
+  return `<div class="banner ${variant}">
+    <div class="b-title">${title}</div>
+    ${note ? `<div class="b-note">${esc(note)}</div>` : ''}
+    ${sub ? `<div class="b-sub">${esc(sub)}</div>` : ''}
+  </div>`;
+}
+
+function eyebrowText(status){
+  if(status === 'terkirim') return 'Penawaran Harga';
+  if(status === 'ditolak') return 'Pesanan Ditolak';
+  if(status === 'dikirim') return 'Pesanan Selesai';
+  return 'Detail Pesanan';
+}
+
+let COUNTDOWN_TIMER = null;
+function stopCountdown(){ if(COUNTDOWN_TIMER){ clearInterval(COUNTDOWN_TIMER); COUNTDOWN_TIMER=null; } }
+function fmtCountdown(ms){
+  if(ms<=0) return '00:00';
+  const totalSec = Math.floor(ms/1000);
+  const m = Math.floor(totalSec/60), s = totalSec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function startCountdown(deadlineIso){
+  stopCountdown();
+  const tick = () => {
+    const el = document.getElementById('countdownTxt'), pill = document.getElementById('deadlinePill');
+    if(!el || !pill) { stopCountdown(); return; }
+    const diff = new Date(deadlineIso).getTime() - Date.now();
+    if(diff <= 0){
+      el.textContent = 'Waktu tunggu sudah lewat';
+      pill.classList.remove('urgent');
+      el.previousElementSibling && (el.previousElementSibling.textContent='⏱');
+      stopCountdown();
+    } else {
+      el.textContent = fmtCountdown(diff) + ' lagi';
+      pill.classList.toggle('urgent', diff < 10*60*1000);
+    }
+  };
+  tick();
+  COUNTDOWN_TIMER = setInterval(tick, 1000);
+}
+
+function shipFormHTML(){
+  const deadline = QUOTE.confirm_deadline;
+  return `
+    ${deadline ? `<div style="padding:0 14px"><div class="deadline-pill" id="deadlinePill">⏱ <span id="countdownTxt">menghitung…</span> — stok ditahan sales sementara</div></div>` : ''}
+    <div class="ship-card" style="margin-top:14px">
+      <h3>🚚 Lengkapi Data Pengiriman</h3>
+      <div class="sub">Isi data ini supaya sales bisa langsung proses pengiriman begitu Anda konfirmasi.</div>
+      <div class="ship-err" id="shipErr"></div>
+      <div class="ship-fld"><label>Nama penerima</label><input type="text" id="fShipName" placeholder="mis. Budi (gudang)"></div>
+      <div class="ship-fld"><label>No. HP penerima</label><input type="text" id="fShipPhone" placeholder="mis. 08123456789"></div>
+      <div class="ship-fld"><label>Alamat kirim lengkap</label><textarea id="fShipAddr" placeholder="Jalan, no, kota, kode pos, patokan"></textarea></div>
+      <button class="cta" style="width:100%" id="btnConfirmOrder" onclick="submitShipping()">Confirm Order</button>
+    </div>`;
+}
+
+function confirmedInfoHTML(){
+  return `
+    <div class="confirmed-card">
+      <div class="ic">✅</div>
+      <b>Order Dikonfirmasi</b>
+      <p>Menunggu diproses &amp; dikirim oleh sales.</p>
+    </div>
+    <div class="track-card" style="border-left-color:var(--cobalt)">
+      <h3>📍 Dikirim ke</h3>
+      <div class="track-row"><span class="k">Penerima</span><span class="v" style="font-family:inherit">${esc(QUOTE.shipping_name||'-')}</span></div>
+      <div class="track-row"><span class="k">No. HP</span><span class="v">${esc(QUOTE.shipping_phone||'-')}</span></div>
+      <div class="track-row"><span class="k">Alamat</span><span class="v" style="font-family:inherit;text-align:right;max-width:65%">${esc(QUOTE.shipping_address||'-')}</span></div>
+    </div>`;
+}
+
+function trackInfoHTML(){
+  return `
+    <div class="track-card">
+      <h3>🚚 Pesanan Terkirim</h3>
+      <div class="track-row"><span class="k">Kurir</span><span class="v" style="font-family:inherit">${esc(QUOTE.courier_name||'-')}</span></div>
+      <div class="track-row"><span class="k">No. Resi</span><span class="v">${esc(QUOTE.tracking_no||'-')}</span></div>
+      <div class="track-row"><span class="k">Dikirim</span><span class="v" style="font-family:inherit">${fmtDate(QUOTE.shipped_at)}</span></div>
+      <div class="track-row"><span class="k">Penerima</span><span class="v" style="font-family:inherit">${esc(QUOTE.shipping_name||'-')}</span></div>
+    </div>`;
+}
+
 function render(){
-  const expired = isExpired();
+  stopCountdown();
   const status = QUOTE.status;
-  const editable = (status === 'terkirim' || status === 'direvisi') && !expired;
+  const editable = status === 'terkirim' ? !isExpired() : status === 'direvisi';
   const locked = !editable;
   const who = QUOTE.customer_name
     ? (QUOTE.customer_name + (QUOTE.customer_company ? ' — ' + QUOTE.customer_company : ''))
     : (QUOTE.customer_company || 'Anda');
 
   let banner = '';
-  if(expired && status !== 'diterima' && status !== 'ditolak'){
-    banner = `<div class="banner warn">Masa berlaku penawaran ini sudah lewat (${fmtDate(QUOTE.valid_until)}). Hubungi sales untuk penawaran baru.</div>`;
+  if(status === 'terkirim'){
+    banner = isExpired()
+      ? bannerBlock('warn','⏱️ Masa berlaku penawaran ini sudah lewat', '', `Berlaku sampai ${fmtDate(QUOTE.valid_until)}. Hubungi sales untuk penawaran baru.`)
+      : bannerBlock('info','💬 Harga belum termasuk PPN 11%', '', 'Atur jumlah pada barang yang Anda butuhkan.');
   } else if(status === 'disubmit'){
-    banner = `<div class="banner info">Pesanan sudah terkirim. Menunggu sales mengecek stok &amp; harga terkini.</div>`;
+    banner = bannerBlock('info','✅ Pesanan sudah terkirim', '', 'Menunggu sales mengecek stok & harga terkini.');
   } else if(status === 'review'){
-    banner = `<div class="banner info">Sales sedang mengecek pesanan Anda. Mohon tunggu konfirmasi.</div>`;
+    banner = bannerBlock('info','👀 Sedang dicek sales', '', 'Mohon tunggu konfirmasi, tidak perlu melakukan apa pun.');
   } else if(status === 'direvisi'){
-    banner = `<div class="banner warn">Sales merevisi pesanan ini${QUOTE.revision_note ? ': ' + esc(QUOTE.revision_note) : '.'} Silakan cek ulang jumlah &amp; harga di bawah, lalu kirim ulang.</div>`;
+    banner = bannerBlock('revise','📝 Sales merevisi pesanan ini', QUOTE.revision_note, 'Cek ulang jumlah & harga di bawah, lalu kirim ulang.');
   } else if(status === 'diterima'){
-    banner = `<div class="banner info">Penawaran ini sudah dikonfirmasi sales. Untuk perubahan, hubungi sales.</div>`;
+    banner = bannerBlock('good','🎉 Pesanan dikonfirmasi sales!', '', 'Lengkapi data pengiriman di bawah untuk melanjutkan.');
+  } else if(status === 'dikonfirmasi'){
+    banner = bannerBlock('good','📦 Pesanan Anda sedang diproses', '', 'Menunggu diproses & dikirim oleh sales.');
+  } else if(status === 'dikirim'){
+    banner = bannerBlock('good','🚚 Pesanan sudah dikirim', '', 'Terima kasih sudah berbelanja bersama kami.');
   } else if(status === 'ditolak'){
-    banner = `<div class="banner warn">Pesanan ini ditolak sales${QUOTE.reject_reason ? ': ' + esc(QUOTE.reject_reason) : '.'} Hubungi sales untuk info lebih lanjut.</div>`;
-  } else {
-    banner = `<div class="banner info">Harga <b>belum termasuk PPN 11%</b>. Atur jumlah pada barang yang Anda butuhkan.</div>`;
+    banner = bannerBlock('warn','✕ Pesanan ini ditolak sales', QUOTE.reject_reason, 'Hubungi sales untuk info lebih lanjut.');
   }
+
+  const showProforma = ['diterima','dikonfirmasi','dikirim'].includes(status);
 
   document.getElementById('app').innerHTML = `
     <div class="wrap">
       <header>
         <div class="brandrow">
-          <div class="brand">PRE<span>·</span>SISI</div>
+          <div class="brand">${esc(COMPANY_CONFIG.name)}</div>
           <div class="doctag">${QUOTE.code}</div>
         </div>
         <div class="lede">
-          <div class="eyebrow">Penawaran Harga</div>
+          <div class="eyebrow">${eyebrowText(status)}</div>
           <h1>Disiapkan untuk <b>${esc(who)}</b></h1>
           <div class="meta">
             <span>Tanggal <b>${fmtDate(QUOTE.created_at)}</b></span>
-            <span>Berlaku s/d <b>${fmtDate(QUOTE.valid_until)}</b></span>
+            ${status==='terkirim' ? `<span>Berlaku s/d <b>${fmtDate(QUOTE.valid_until)}</b></span>` : ''}
             ${QUOTE.sales_name ? `<span>Sales <b>${esc(QUOTE.sales_name)}</b></span>` : ''}
           </div>
         </div>
@@ -270,9 +397,12 @@ function render(){
       </header>
       ${banner}
       <div class="list" id="list"></div>
-      ${status==='diterima' ? `<div style="padding:0 14px 4px"><button class="cta" style="width:100%" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button></div>` : ''}
+      ${status==='diterima' ? shipFormHTML() : ''}
+      ${status==='dikonfirmasi' ? confirmedInfoHTML() : ''}
+      ${status==='dikirim' ? trackInfoHTML() : ''}
+      ${showProforma ? `<div style="padding:0 14px 4px"><button class="cta" style="width:100%;background:var(--ink)" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button></div>` : ''}
       <div class="footnote">
-        Ini penawaran, bukan tagihan. Sales kami cek stok &amp; harga sebelum konfirmasi.
+        Dokumen ini bukan faktur pajak resmi. Sales kami cek stok &amp; harga sebelum konfirmasi.
       </div>
     </div>
     ${locked ? '' : `
@@ -282,6 +412,7 @@ function render(){
           <div class="l"><b id="barItems">0 barang</b> dipilih<span class="chev">▲</span></div>
           <div class="r"><div class="k">Total + PPN</div><div class="v" id="barTotal">Rp 0</div></div>
         </div>
+        <div class="bar-indent-note" id="barIndentNote">⚠ Termasuk barang indent — cek rincian di bawah</div>
         <div class="breakdown" id="breakdown">
           <div class="brow"><span>Subtotal</span><span class="mono" id="bSub">Rp 0</span></div>
           <div class="brow"><span>PPN 11%</span><span class="mono" id="bPpn">Rp 0</span></div>
@@ -299,14 +430,40 @@ function render(){
     document.getElementById('cta').addEventListener('click', openReview);
     updateBar();
   }
+  if(status==='diterima' && QUOTE.confirm_deadline) startCountdown(QUOTE.confirm_deadline);
+}
+
+async function submitShipping(){
+  const btn = document.getElementById('btnConfirmOrder');
+  const errBox = document.getElementById('shipErr');
+  const name = document.getElementById('fShipName').value.trim();
+  const phone = document.getElementById('fShipPhone').value.trim();
+  const addr = document.getElementById('fShipAddr').value.trim();
+  if(!name || !phone || !addr){
+    errBox.textContent = 'Nama, No. HP, dan alamat wajib diisi.'; errBox.style.display='block';
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Mengirim…'; errBox.style.display='none';
+  try{
+    const { data, error } = await sb.from('quotes').update({
+      status:'dikonfirmasi', confirmed_at:new Date().toISOString(),
+      shipping_name:name, shipping_phone:phone, shipping_address:addr
+    }).eq('id', QUOTE.id).select().single();
+    if(error) throw error;
+    QUOTE = data;
+    render();
+  }catch(err){
+    errBox.textContent = 'Gagal mengirim: '+(err.message||'coba lagi'); errBox.style.display='block';
+    btn.disabled=false; btn.textContent='Confirm Order';
+  }
 }
 
 function stockHTML(it){
   if(it.stock_status === 'ready')
     return `<div class="stock s-ready"><span class="pip"></span>Ready${it.qty_pusat && it.qty_pusat!=='0' ? ' · '+it.qty_pusat+' pcs' : ''}</div>`;
   if(it.stock_status === 'ltc')
-    return `<div class="stock s-limited"><span class="pip"></span>Stok cabang (LTC)${it.qty_ltc && it.qty_ltc!=='0' ? ' · '+it.qty_ltc+' pcs' : ''}</div>`;
-  return `<div class="stock s-indent"><span class="pip"></span>Kosong · bisa indent</div>`;
+    return `<div class="stock s-limited"><span class="pip"></span>Ready di cabang${it.qty_ltc && it.qty_ltc!=='0' ? ' · '+it.qty_ltc+' pcs' : ''}</div>`;
+  return `<div class="stock s-indent"><span class="pip"></span>Kosong · pesan dulu, kirim menyusul (indent)</div>`;
 }
 
 function renderList(locked){
@@ -333,9 +490,12 @@ function renderList(locked){
         <div class="price"><div class="amt">${priceStr}</div><div class="per">/ unit</div></div>
       </div>
       <div class="desc">${esc(it.name||'')} ${it.size ? `<span class="dim">${esc(it.size)}</span>`:''}</div>
-      <div class="card-bottom">
-        <div>${stockHTML(it)}</div>
-        ${stepper}
+      <div style="margin-top:10px">${stockHTML(it)}</div>
+      <div class="card-bottom" style="justify-content:flex-end;border-top:none;padding-top:2px;margin-top:10px">
+        <div style="text-align:right">
+          ${stepper}
+          ${(!locked && moq) ? `<div class="moq-hint">kelipatan ${moq}</div>` : ''}
+        </div>
       </div>
       <div class="linetotal ${locked && preset>0?'show':''}" data-line="${it.id}">
         <span class="ltlabel">${locked && preset>0 ? preset+' × '+priceStr : ''}</span>
@@ -392,6 +552,8 @@ function updateBar(){
   document.getElementById('bGrand').textContent = rp(grand);
   const ir=document.getElementById('bIndentRow');
   if(indent>0){ ir.style.display='flex'; document.getElementById('bIndent').textContent=`${indent} item`; } else ir.style.display='none';
+  const barIndentNote = document.getElementById('barIndentNote');
+  if(barIndentNote) barIndentNote.classList.toggle('show', indent>0);
   const cta=document.getElementById('cta'), ctaN=document.getElementById('ctaN');
   cta.disabled = lines===0;
   if(lines>0){ ctaN.style.display='inline-block'; ctaN.textContent=lines; } else ctaN.style.display='none';
@@ -469,12 +631,12 @@ function showSuccess(){
   ov.innerHTML=`<div class="sheet">
     <div class="checkwrap">${iconCheck}</div>
     <h3>Pesanan terkirim</h3>
-    <p>Terima kasih. Pesanan Anda masuk ke sales untuk dicek ketersediaan dan harga terkini. Anda akan dikabari lewat WhatsApp.</p>
+    <p>Terima kasih. Pesanan Anda masuk ke sales untuk dicek ketersediaan dan harga terkini. Buka kembali link ini sewaktu-waktu untuk lihat perkembangannya.</p>
     <div class="steps">
       <div class="step done"><span class="num">✓</span><span class="st"><b>Pesanan dikirim</b> — barusan</span></div>
       <div class="step now"><span class="num">2</span><span class="st"><b>Dicek sales</b> — stok &amp; harga divalidasi</span></div>
-      <div class="step wait"><span class="num">3</span><span class="st">Konfirmasi &amp; proforma invoice</span></div>
-      <div class="step wait"><span class="num">4</span><span class="st">Pembayaran</span></div>
+      <div class="step wait"><span class="num">3</span><span class="st">Konfirmasi, proforma invoice &amp; data pengiriman</span></div>
+      <div class="step wait"><span class="num">4</span><span class="st">Barang dikirim</span></div>
     </div>
     <button class="close-full" onclick="location.reload()">Selesai</button>
   </div>`;
@@ -517,7 +679,8 @@ function downloadProforma(){
     it.unit_idr!=null ? rp(it.unit_idr*it.qty_ordered) : '-'
   ]);
   const sub = items.reduce((s,it)=> s + (it.unit_idr!=null && it.qty_ordered ? it.unit_idr*it.qty_ordered : 0), 0);
-  const ppn = Math.round(sub * ((q.ppn_pct||11)/100));
+  const dpp = sub * (11/12);
+  const ppn = Math.round(dpp * 0.12);
   const grand = sub + ppn;
 
   doc.setFont('helvetica','bold'); doc.setFontSize(13);
@@ -553,7 +716,8 @@ function downloadProforma(){
   let y = doc.lastAutoTable.finalY + 8;
   doc.setFontSize(9.5);
   doc.text('Subtotal', pw-70, y); doc.text(rp(sub), pw-14, y, { align:'right' }); y+=6;
-  doc.text('PPN 11%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
+  doc.text('DPP Nilai Lain', pw-70, y); doc.text(rp(dpp), pw-14, y, { align:'right' }); y+=6;
+  doc.text('PPN 12%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
   doc.setDrawColor(200); doc.line(pw-70, y-3.5, pw-14, y-3.5);
   doc.setFont('helvetica','bold'); doc.setFontSize(11);
   doc.text('TOTAL', pw-70, y); doc.text(rp(grand), pw-14, y, { align:'right' });
