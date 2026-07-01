@@ -3,480 +3,1666 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pelajaran 7 — Daud Muda</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Stock & Harga Search</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+  :root {
+    --bg:       #f0f2f5;
+    --surface:  #ffffff;
+    --surface2: #f7f8fa;
+    --border:   #e2e6eb;
+    --border2:  #d0d7df;
+    --accent:   #1a56db;
+    --accent-h: #1648c0;
+    --accent-s: #e8effe;
+    --green:    #057a55;
+    --green-s:  #def7ec;
+    --red:      #c81e1e;
+    --red-s:    #fde8e8;
+    --yellow:   #b45309;
+    --yellow-s: #fef3c7;
+    --purple:   #6b21a8;
+    --purple-s: #f3e8ff;
+    --text:     #111928;
+    --text2:    #4b5563;
+    --muted:    #9ca3af;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
 
-:root{
-  --bg:#08090d;--sf:#0f1118;--sf2:#161923;--sf3:#1c2030;
-  --gold:#c9a84c;--gold-dim:rgba(201,168,76,.13);--gold-dim2:rgba(201,168,76,.06);--gold-b:rgba(201,168,76,.25);
-  --text:#f5f3ef;--text2:#c8c4bc;--muted:#7a7770;--dim:#3a3835;
-  --red:#c0604a;--red-dim:rgba(192,96,74,.12);
-  --green:#5a9e7a;--green-dim:rgba(90,158,122,.12);
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --fs:clamp(18px,2.5vw,26px);
-  --fs-sm:clamp(14px,1.8vw,19px);
-  --fs-xs:clamp(12px,1.4vw,16px);
-  --fs-kw:clamp(30px,5vw,62px);
-  --fs-title:clamp(34px,7vw,84px);
-  --fs-sub:clamp(18px,3.2vw,38px);
-}
+  /* ── LOADING ── */
+  .loading-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(255,255,255,0.85); z-index: 999;
+    align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text2); font-family: var(--mono); }
 
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:var(--fs);line-height:1.65;overflow-x:hidden}
+  /* ── HEADER ── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 28px; height: 58px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+  .brand-icon {
+    width: 32px; height: 32px; background: var(--accent);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .brand-name { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,13,.93);backdrop-filter:blur(8px);border-bottom:1px solid rgba(201,168,76,.15);display:flex;align-items:center;gap:clamp(4px,1.2vw,14px);padding:10px clamp(10px,3vw,28px);overflow-x:auto;scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-nav a{color:var(--muted);text-decoration:none;font-size:var(--fs-xs);font-weight:500;white-space:nowrap;padding:4px 8px;border-radius:4px;transition:color .2s,background .2s;letter-spacing:.03em;text-transform:uppercase}
-nav a:hover{color:var(--gold)}
-nav a.active{color:var(--gold);background:var(--gold-dim)}
+  /* File chips */
+  .header-chips { display: flex; gap: 8px; align-items: center; flex: 1; overflow-x: auto; }
+  .file-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    border: 1.5px dashed var(--border2); background: var(--surface2);
+    transition: all 0.15s; font-family: var(--mono); font-size: 12px;
+    color: var(--text2); position: relative; overflow: hidden; flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .file-chip input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .file-chip:hover { border-color: var(--accent); background: var(--accent-s); color: var(--accent); }
+  .file-chip.loaded { border-style: solid; border-color: var(--green); background: var(--green-s); color: var(--green); }
+  .file-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .file-chip.loaded .file-chip-dot { background: var(--green); animation: pulse-dot 2s infinite; }
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 0 rgba(5,122,85,0.4); }
+    50%      { box-shadow: 0 0 0 4px rgba(5,122,85,0); }
+  }
+  .file-chip-name { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip-reload {
+    background: none; border: none; color: inherit; cursor: pointer;
+    font-size: 14px; padding: 0 0 0 4px; opacity: 0.6; display: none; position: relative; z-index: 2;
+  }
+  .file-chip.loaded .chip-reload { display: block; }
+  .chip-reload:hover { opacity: 1; }
 
-/* SECTIONS */
-section{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(72px,10vh,110px) clamp(20px,6vw,80px) clamp(56px,8vh,96px);position:relative}
-section:nth-child(even){background:var(--sf)}
+  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .last-update {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    padding: 4px 10px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px; white-space: nowrap;
+  }
 
-/* ATOMS */
-.label{font-family:var(--sans);font-size:var(--fs-xs);font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:clamp(10px,2vh,22px);opacity:.85}
-.kw{font-family:var(--serif);font-size:var(--fs-kw);font-weight:700;color:var(--gold);line-height:1.1}
-.kw-lg{font-size:var(--fs-title);line-height:1.0}
-.sub{font-size:var(--fs-sm);color:var(--muted);max-width:680px;line-height:1.7;margin-top:clamp(6px,1.2vh,14px)}
-.sub strong{color:var(--text);font-weight:500}
-.gold-line{width:56px;height:2px;background:var(--gold);margin:clamp(14px,2.5vh,26px) auto;opacity:.5}
-.big-quote{font-family:var(--serif);font-size:var(--fs-sub);font-style:italic;color:var(--text2);max-width:780px;line-height:1.4;margin-top:clamp(14px,2.5vh,28px)}
-.big-quote .qref{display:block;font-family:var(--sans);font-size:var(--fs-xs);font-style:normal;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:14px;opacity:.8}
+  /* Settings button */
+  .btn-settings {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; transition: all 0.15s; color: var(--text2);
+  }
+  .btn-settings:hover { border-color: var(--accent); background: var(--accent-s); }
 
-/* VERSE */
-.verse{background:var(--gold-dim2);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:clamp(12px,2vh,26px) clamp(14px,3vw,36px);text-align:left;max-width:800px;width:100%;margin:clamp(8px,1.5vh,18px) auto}
-.verse .ref{font-size:var(--fs-xs);font-weight:600;letter-spacing:.1em;color:var(--gold);margin-bottom:7px;text-transform:uppercase}
-.verse p{font-family:var(--serif);font-size:clamp(15px,2vw,22px);font-style:italic;color:var(--text2);line-height:1.6}
+  /* Settings popover */
+  .settings-popover {
+    position: fixed; top: 66px; right: 28px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    z-index: 200; min-width: 260px;
+    display: none;
+  }
+  .settings-popover.show { display: block; animation: fadeSlide 0.15s ease both; }
+  .settings-popover h4 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); margin-bottom: 14px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 16px; }
+  .settings-row:last-child { margin-bottom: 0; }
+  .settings-label { font-size: 13px; color: var(--text2); }
+  .settings-input {
+    width: 100px; padding: 6px 10px; border: 1.5px solid var(--border);
+    border-radius: 7px; font-family: var(--mono); font-size: 13px;
+    font-weight: 600; color: var(--accent); text-align: right; outline: none;
+    transition: border-color 0.15s;
+  }
+  .settings-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+  .settings-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 
-/* NOTE */
-.note{background:var(--gold-dim);border:1px solid var(--gold-b);border-radius:8px;padding:clamp(10px,1.8vh,22px) clamp(14px,2.5vw,28px);font-size:var(--fs-sm);color:var(--text2);font-style:italic;max-width:700px;margin-top:clamp(14px,2.5vh,28px)}
+  /* ── MAIN ── */
+  .main { max-width: 1500px; margin: 0 auto; padding: 20px 28px; }
 
-/* SP-GRID cards */
-.sp-grid{display:flex;flex-wrap:wrap;gap:clamp(10px,1.8vw,18px);justify-content:center;width:100%;max-width:980px;margin-top:clamp(14px,2.5vh,28px)}
-.sp{background:var(--sf2);border:1px solid rgba(201,168,76,.18);border-radius:10px;padding:clamp(14px,2.2vw,26px);flex:1 1 200px;text-align:left}
-.sp .sp-label{font-size:var(--fs-xs);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-.sp .sp-title{font-family:var(--serif);font-size:clamp(15px,1.9vw,21px);font-weight:600;color:var(--text);margin-bottom:5px}
-.sp p{font-size:var(--fs-xs);color:var(--muted);line-height:1.6}
-.sp.red{border-color:rgba(192,96,74,.3)}
-.sp.red .sp-label{color:var(--red)}
-.sp.green{border-color:rgba(90,158,122,.3)}
-.sp.green .sp-label{color:var(--green)}
+  /* ── EMPTY STATE (replaces setup panel) ── */
+  .empty-state {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 48px 32px; text-align: center; margin-bottom: 20px;
+  }
+  .empty-state.hidden { display: none; }
+  .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .empty-state-steps {
+    display: flex; gap: 16px; justify-content: center; margin-top: 24px; flex-wrap: wrap;
+  }
+  .empty-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 12px; color: var(--text2); font-family: var(--mono);
+  }
+  .empty-step-num {
+    width: 22px; height: 22px; background: var(--accent); color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
 
-/* PTS numbered */
-.pts{display:flex;flex-direction:column;gap:clamp(8px,1.2vh,14px);max-width:780px;width:100%;margin-top:clamp(14px,2.5vh,24px);text-align:left}
-.pt{display:flex;gap:clamp(10px,1.8vw,18px);align-items:flex-start;background:var(--sf2);border-radius:8px;padding:clamp(10px,1.6vh,18px) clamp(12px,1.8vw,22px)}
-.pt .num{font-family:var(--serif);font-size:clamp(18px,2.8vw,30px);font-weight:700;color:var(--gold);line-height:1;min-width:32px}
-.pt .pt-body{flex:1}
-.pt .pt-title{font-size:var(--fs-sm);font-weight:600;color:var(--text);margin-bottom:3px}
-.pt .pt-ref{font-size:var(--fs-xs);color:var(--muted)}
+  /* Ready state */
+  .ready-state {
+    background: linear-gradient(135deg, var(--green-s), #f0fff8);
+    border: 1px solid #6ee7b7; border-radius: 12px;
+    padding: 14px 20px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .ready-state.hidden { display: none; }
+  .ready-state-icon { font-size: 22px; }
+  .ready-state-text { flex: 1; }
+  .ready-state-text strong { font-size: 13px; color: var(--green); font-weight: 700; }
+  .ready-state-text p { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
 
-/* CMP compare */
-.cmp{display:flex;gap:clamp(10px,1.8vw,18px);max-width:940px;width:100%;margin-top:clamp(14px,2.5vh,28px);flex-wrap:wrap}
-.cmp-col{flex:1 1 260px;background:var(--sf2);border-radius:10px;overflow:hidden}
-.cmp-col.bad{border:1px solid rgba(192,96,74,.3)}
-.cmp-col.good{border:1px solid rgba(90,158,122,.3)}
-.cmp-head{padding:clamp(8px,1.2vh,14px) clamp(12px,1.8vw,22px);font-family:var(--serif);font-size:clamp(15px,2vw,22px);font-weight:700;text-align:center}
-.cmp-col.bad .cmp-head{background:var(--red-dim);color:#d07868}
-.cmp-col.good .cmp-head{background:var(--green-dim);color:#7ec89a}
-.cmp-row{padding:clamp(6px,1vh,12px) clamp(12px,1.8vw,22px);border-top:1px solid rgba(255,255,255,.05);font-size:var(--fs-xs);color:var(--muted);line-height:1.5}
-.cmp-row .ck{font-size:clamp(9px,1.1vw,11px);font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:2px}
+  /* ── SEARCH PANEL ── */
+  .search-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 16px;
+  }
+  .search-panel.hidden { display: none; }
+  .search-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--muted); font-family: var(--mono);
+  }
 
-/* CHAIN — nada flow */
-.chain{display:flex;align-items:center;gap:clamp(8px,1.5vw,16px);flex-wrap:wrap;justify-content:center;margin-top:clamp(16px,3vh,30px)}
-.chain-node{background:var(--sf2);border:1px solid var(--gold-b);border-radius:8px;padding:clamp(10px,1.5vh,18px) clamp(12px,2vw,22px);font-family:var(--serif);font-size:clamp(14px,1.9vw,20px);color:var(--text);text-align:center;min-width:120px}
-.chain-arr{font-size:clamp(16px,2.5vw,28px);color:var(--gold);opacity:.6}
+  /* EDP textarea */
+  .edp-input-wrap { display: flex; gap: 10px; align-items: flex-start; }
+  .edp-textarea {
+    flex: 1; min-height: 72px; max-height: 200px;
+    border: 1.5px solid var(--border); border-radius: 9px;
+    padding: 10px 14px; font-family: var(--mono); font-size: 13px;
+    color: var(--text); background: var(--surface); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s; resize: none;
+    line-height: 1.6; overflow-y: auto;
+  }
+  .edp-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+  .edp-textarea::placeholder { color: var(--muted); }
+  .search-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .btn-primary {
+    padding: 11px 22px; background: var(--accent); color: #fff;
+    border: none; border-radius: 9px; cursor: pointer;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--accent-h); }
+  .btn-secondary {
+    padding: 11px 22px; background: var(--surface); color: var(--text2);
+    border: 1.5px solid var(--border); border-radius: 9px; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-s); }
 
-/* FONT CTRL */
-#fc{position:fixed;bottom:18px;right:18px;display:flex;gap:5px;z-index:200;background:rgba(15,17,24,.9);border:1px solid rgba(201,168,76,.22);border-radius:8px;padding:5px 8px}
-#fc button{background:none;border:none;color:var(--muted);font-size:13px;font-family:var(--sans);cursor:pointer;padding:2px 5px;border-radius:4px;transition:color .15s,background .15s}
-#fc button:hover{color:var(--gold);background:var(--gold-dim)}
+  .search-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px; flex-wrap: wrap; gap: 8px;
+  }
+  .search-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .edp-counter {
+    font-size: 11px; font-family: var(--mono); color: var(--muted);
+    padding: 3px 9px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px; transition: all 0.2s;
+  }
+  .edp-counter.has-items { color: var(--accent); border-color: var(--accent); background: var(--accent-s); }
 
-@media(max-width:600px){.cmp,.sp-grid{flex-direction:column}.chain{flex-direction:column}}
+  /* ── DISKON CONTROL (inside search panel as secondary row) ── */
+  .diskon-row {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+  }
+  .diskon-row.hidden { display: none; }
+  .diskon-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); flex-shrink: 0; }
+  .diskon-tabs { display: flex; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .diskon-tab {
+    padding: 7px 16px; border: none; background: var(--surface);
+    color: var(--text2); cursor: pointer; font-family: var(--mono);
+    font-size: 12px; font-weight: 500; transition: all 0.15s;
+    border-right: 1px solid var(--border);
+  }
+  .diskon-tab:last-child { border-right: none; }
+  .diskon-tab.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .diskon-tab:hover:not(.active) { background: var(--accent-s); color: var(--accent); }
+  .diskon-special-wrap { display: flex; align-items: center; gap: 8px; }
+  .diskon-special-wrap.hidden { display: none; }
+  .diskon-input {
+    width: 72px; padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-family: var(--mono); font-size: 13px;
+    font-weight: 600; color: var(--purple); text-align: center; outline: none;
+    transition: border-color 0.15s;
+  }
+  .diskon-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(107,33,168,0.1); }
+  .diskon-input-label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .kurs-info { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+  .kurs-info span { color: var(--text2); font-weight: 600; }
+
+  /* ── NOT FOUND BANNER ── */
+  .not-found-banner {
+    background: var(--red-s); border: 1px solid #fca5a5;
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 12px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .not-found-banner.hidden { display: none; }
+  .nfb-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .nfb-content { flex: 1; }
+  .nfb-title { font-size: 12px; font-weight: 700; color: var(--red); font-family: var(--mono); margin-bottom: 5px; }
+  .nfb-codes { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nfb-code {
+    display: inline-block; padding: 2px 8px;
+    background: #fff; border: 1px solid #fca5a5;
+    border-radius: 4px; font-family: var(--mono); font-size: 11px; color: var(--red);
+  }
+
+  /* ── RESULTS BAR ── */
+  .results-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; padding: 0 2px;
+  }
+  .results-bar.hidden { display: none; }
+  .results-count { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+  .results-count strong { color: var(--accent); }
+  .results-meta { display: flex; align-items: center; gap: 10px; }
+
+  /* Column toggle */
+  .col-toggle-btn {
+    padding: 5px 12px; background: var(--surface); color: var(--text2);
+    border: 1.5px solid var(--border); border-radius: 7px; cursor: pointer;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .col-toggle-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-s); }
+  .col-toggle-btn.active { background: var(--accent-s); color: var(--accent); border-color: var(--accent); }
+
+  /* ── TABLE ── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .table-wrap.hidden { display: none; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--surface2); border-bottom: 1.5px solid var(--border); }
+  th {
+    padding: 11px 14px; text-align: left; font-family: var(--mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; cursor: pointer; user-select: none;
+    transition: color 0.15s;
+  }
+  th:hover { color: var(--accent); }
+  th.right { text-align: right; }
+  th.sorted-asc::after  { content: ' ▲'; font-size: 9px; }
+  th.sorted-desc::after { content: ' ▼'; font-size: 9px; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.08s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8f9ff; }
+  td { padding: 11px 14px; font-size: 13px; vertical-align: middle; }
+  td.col-modal-usd { /* hidden by default */ }
+
+  .td-edp { font-family: var(--mono); font-weight: 600; font-size: 12px; color: var(--accent); white-space: nowrap; }
+  .td-name { font-family: var(--mono); font-size: 11.5px; color: var(--text); }
+  .td-num { font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+
+  .qty-badge {
+    display: inline-flex; align-items: center; padding: 3px 10px;
+    border-radius: 20px; font-family: var(--mono); font-size: 11.5px;
+    font-weight: 700; min-width: 48px; justify-content: center;
+  }
+  .qty-zero   { background: var(--red-s);    color: var(--red);    border: 1px solid #fca5a5; }
+  .qty-low    { background: var(--yellow-s);  color: var(--yellow); border: 1px solid #fcd34d; }
+  .qty-ok     { background: var(--green-s);   color: var(--green);  border: 1px solid #6ee7b7; }
+  .qty-high   { background: var(--accent-s);  color: var(--accent); border: 1px solid #93c5fd; }
+  .qty-na     { background: var(--surface2);  color: var(--muted);  border: 1px solid var(--border); }
+
+  .price-usd { color: var(--text2); }
+  .price-modal { color: var(--red); font-weight: 600; }
+  .price-jual { color: var(--green); font-weight: 700; }
+  .price-special { color: var(--purple); font-weight: 700; }
+  .price-na { color: var(--muted); }
+
+  .new-price-badge {
+    display: inline-block; font-size: 9px; background: var(--yellow-s);
+    color: var(--yellow); border: 1px solid #fcd34d; border-radius: 4px;
+    padding: 1px 5px; font-family: var(--mono); margin-left: 4px; vertical-align: middle;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .partial-badge {
+    display: inline-block; font-size: 9px; background: var(--yellow-s);
+    color: var(--yellow); border: 1px solid #fcd34d; border-radius: 4px;
+    padding: 1px 5px; font-family: var(--mono); margin-left: 4px; vertical-align: middle;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  .no-results { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .no-results .nr-icon { font-size: 36px; margin-bottom: 12px; }
+  .no-results h3 { font-size: 15px; color: var(--text2); margin-bottom: 6px; }
+  .no-results p { font-size: 12px; }
+
+  .th-modal   { color: #c81e1e !important; }
+  .th-jual    { color: #057a55 !important; }
+  .th-special { color: #6b21a8 !important; }
+  .th-ltc     { color: #7c3aed !important; }
+
+  /* ── PAGINATION ── */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px; padding: 14px; border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .page-btn {
+    min-width: 32px; height: 32px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 7px; color: var(--text2);
+    cursor: pointer; font-family: var(--mono); font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.13s; padding: 0 8px;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .page-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-dots { color: var(--muted); font-family: var(--mono); }
+  .page-count-inline { font-size: 11px; color: var(--muted); font-family: var(--mono); padding: 0 8px; }
+
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-row { animation: fadeSlide 0.15s ease both; }
+
+  /* ── FAB: Copy WA ── */
+  .fab-wa {
+    position: fixed; bottom: 28px; right: 28px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 22px; background: #25d366; color: #fff;
+    border: none; border-radius: 50px; cursor: pointer;
+    font-family: var(--sans); font-size: 14px; font-weight: 700;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    transition: all 0.2s; z-index: 90;
+    display: none;
+  }
+  .fab-wa.show { display: flex; animation: fabIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+  @keyframes fabIn { from { opacity: 0; transform: scale(0.7) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .fab-wa:hover { background: #1ebe5a; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,0.5); }
+  .fab-wa.copied { background: var(--green); }
+
+  /* ── TOAST ── */
+  .wa-toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1a1a2e; color: #fff; padding: 10px 20px; border-radius: 10px;
+    font-family: var(--mono); font-size: 13px; opacity: 0;
+    transition: all 0.3s; z-index: 9999; pointer-events: none;
+  }
+  .wa-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .main { padding: 14px 12px; }
+    header { padding: 0 14px; height: auto; min-height: 58px; flex-wrap: wrap; padding: 10px 14px; gap: 10px; }
+    .header-chips { order: 3; width: 100%; padding-bottom: 4px; }
+    .edp-input-wrap { flex-direction: column; }
+    .search-actions { flex-direction: row; }
+    .fab-wa { bottom: 16px; right: 16px; padding: 11px 18px; font-size: 13px; }
+    .col-modal-usd { display: none !important; }
+  }
+</style>
+<style>
+  /* ══ FASE 1: MOQ + SIMPAN & LINK ══ */
+  th.th-moq, td.td-moq { text-align:center; white-space:nowrap; }
+  .moq-check { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--text2); cursor:pointer; user-select:none; }
+  .moq-check input { accent-color:var(--accent); cursor:pointer; }
+  .moq-input { width:64px; margin-top:4px; padding:3px 6px; border:1px solid var(--border2); border-radius:6px;
+    font-family:var(--mono); font-size:12px; text-align:center; color:var(--text); background:var(--surface); display:block; }
+  .moq-input:disabled { background:var(--surface2); color:var(--muted); border-color:var(--border); }
+  .moq-input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+
+  .fab-save { position:fixed; right:24px; bottom:84px; z-index:91;
+    display:none; align-items:center; gap:8px; padding:13px 20px; border:0; border-radius:30px;
+    background:var(--accent); color:#fff; font-family:var(--sans); font-weight:600; font-size:14px; cursor:pointer;
+    box-shadow:0 6px 20px rgba(26,86,219,.35); transition:background .15s, transform .06s; }
+  .fab-save.show { display:flex; }
+  .fab-save:hover { background:var(--accent-h); }
+  .fab-save:active { transform:scale(.98); }
+  .fab-save:disabled { background:#c3ccd6; box-shadow:none; cursor:default; }
+
+  .modal-ov { display:none; position:fixed; inset:0; z-index:100; background:rgba(17,25,40,.5);
+    align-items:center; justify-content:center; padding:16px; }
+  .modal-ov.show { display:flex; }
+  .modal-card { background:var(--surface); border-radius:16px; width:100%; max-width:440px; padding:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25); max-height:90vh; overflow:auto; }
+  .modal-card h3 { font-size:17px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .modal-card .sub { font-size:12px; color:var(--text2); margin-bottom:18px; }
+  .fld { margin-bottom:14px; }
+  .fld label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; }
+  .fld input, .fld textarea { width:100%; padding:9px 11px; border:1px solid var(--border2); border-radius:8px;
+    font-family:var(--sans); font-size:14px; color:var(--text); background:var(--surface); }
+  .fld input:focus, .fld textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent); }
+  .fld-row { display:flex; gap:12px; } .fld-row .fld { flex:1; }
+  .modal-actions { display:flex; gap:10px; margin-top:8px; }
+  .btn-primary { flex:1; padding:12px; border:0; border-radius:9px; background:var(--accent); color:#fff;
+    font-weight:600; font-size:14px; cursor:pointer; } .btn-primary:hover { background:var(--accent-h); }
+  .btn-primary:disabled { background:#c3ccd6; cursor:default; }
+  .btn-ghost { padding:12px 18px; border:1px solid var(--border2); border-radius:9px; background:var(--surface);
+    color:var(--text2); font-weight:600; font-size:14px; cursor:pointer; }
+  .quote-summary { background:var(--surface2); border:1px solid var(--border); border-radius:9px; padding:11px 13px;
+    font-size:12px; color:var(--text2); margin-bottom:16px; font-family:var(--mono); line-height:1.7; }
+  .quote-summary b { color:var(--text); }
+  .link-box { display:flex; gap:8px; margin:14px 0; }
+  .link-box input { flex:1; padding:10px 12px; border:1px solid var(--border2); border-radius:8px;
+    font-family:var(--mono); font-size:12px; color:var(--accent); background:var(--surface2); }
+  .link-code { font-family:var(--mono); font-size:20px; font-weight:700; color:var(--text); text-align:center;
+    background:var(--accent-s); border-radius:10px; padding:14px; margin-bottom:14px; letter-spacing:.5px; }
+  .cfg-warn { background:var(--yellow-s); border:1px solid #fcd34d; color:var(--yellow); border-radius:9px;
+    padding:11px 13px; font-size:12px; line-height:1.6; margin-bottom:14px; }
+  .cfg-warn code { background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px; font-family:var(--mono); }
 </style>
 </head>
 <body>
 
-<nav id="nav">
-  <a href="#s0">Intro</a>
-  <a href="#s1">Recap</a>
-  <a href="#s2">Samuel Menyamar</a>
-  <a href="#s3">7 Anak</a>
-  <a href="#s4">Tidak Diundang</a>
-  <a href="#s5">Pelita Berpindah</a>
-  <a href="#s6">Kecapi</a>
-  <a href="#s7">Nyanyian Firman</a>
-  <a href="#s8">Goliat</a>
-  <a href="#s9">Hab-be-naim</a>
-  <a href="#s10">Dua Perantara</a>
-  <a href="#s11">Cara Berperang</a>
-  <a href="#s12">Batu & Dahi</a>
-  <a href="#s13">Perang TUHAN</a>
-  <a href="#s14">Aplikasi</a>
-</nav>
-
-<!-- 0 COVER -->
-<section id="s0">
-  <div class="label">Pelajaran 7 · 1 Samuel 16–17</div>
-  <div class="kw kw-lg">Daud Muda</div>
-  <div style="font-family:var(--serif);font-size:var(--fs-sub);color:var(--muted);margin-top:6px;font-style:italic;">Dari Pengurapan sampai Goliat</div>
-  <div class="gold-line"></div>
-  <div class="sub">±1025 – 1020 SM &nbsp;·&nbsp; Usia Daud ±15–20 tahun</div>
-</section>
-
-<!-- 1 RECAP -->
-<section id="s1">
-  <div class="label">Minggu Lalu</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Di mana kita berhenti</div>
-  <div class="gold-line"></div>
-  <div class="pts">
-    <div class="pt"><div class="num">1050</div><div class="pt-body"><div class="pt-title">Saul menjadi raja</div><div class="pt-ref">Dilantik di Gilgal · 1 Sam 11:15</div></div></div>
-    <div class="pt"><div class="num">+2</div><div class="pt-body"><div class="pt-title">Ketidaktaatan pertama</div><div class="pt-ref">Mempersembahkan korban sendiri · 1 Sam 13</div></div></div>
-    <div class="pt"><div class="num">+25</div><div class="pt-body"><div class="pt-title">Ketidaktaatan Amalek — Samuel pergi</div><div class="pt-ref">Tidak bertemu Saul sampai matinya · 1 Sam 15:35</div></div></div>
-    <div class="pt"><div class="num">↓</div><div class="pt-body"><div class="pt-title">Allah mengutus Samuel ke Betlehem</div><div class="pt-ref">Di tahun yang sama · 1 Sam 16:1</div></div></div>
-  </div>
-  <div class="note" style="margin-top:clamp(16px,3vh,28px);">Dari titik inilah pelajaran hari ini dimulai.</div>
-</section>
-
-<!-- 2 SAMUEL MENYAMAR -->
-<section id="s2">
-  <div class="label">Pengurapan Daud · 1 Sam 16</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Samuel harus menyamar</div>
-  <div class="gold-line"></div>
-  <div class="verse">
-    <div class="ref">1 Samuel 16:2</div>
-    <p>"Bagaimana aku dapat pergi? Jika Saul mendengarnya, ia akan membunuh aku."</p>
-  </div>
-  <div style="display:flex;gap:clamp(10px,2vw,20px);justify-content:center;margin-top:clamp(14px,2.5vh,26px);flex-wrap:wrap;">
-    <div class="sp" style="flex:0 1 200px;text-align:center;"><div class="sp-label" style="color:var(--red);">Risikonya</div><div class="sp-title">Pengkhianatan negara</div><p>Hukumannya mati.</p></div>
-    <div class="sp" style="flex:0 1 200px;text-align:center;"><div class="sp-label">Samuel</div><div class="sp-title">Sudah tua · sudah beruban</div><p>Tetap menaati. Bukan keberanian — ini <strong>iman</strong>.</p></div>
-  </div>
-</section>
-
-<!-- 3 TUJUH ANAK -->
-<section id="s3">
-  <div class="label">1 Samuel 16:6–11</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Tujuh anak lewat — satu per satu</div>
-  <div class="gold-line"></div>
-  <div class="verse">
-    <div class="ref">1 Samuel 16:7</div>
-    <p>"Janganlah pandang parasnya atau perawakan yang tinggi, sebab Aku telah menolaknya. Bukan yang dilihat manusia yang dilihat Allah; manusia melihat apa yang di depan mata, tetapi <strong>TUHAN melihat hati</strong>."</p>
-  </div>
-  <div class="sp-grid" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="sp red"><div class="sp-label">Eliab — anak sulung</div><div class="sp-title">Gagah, perawakan tinggi</div><p>Samuel langsung terkesan. Allah langsung menolak.</p></div>
-    <div class="sp red"><div class="sp-label">Abinadab · Syama · …</div><div class="sp-title">Anak ke-2 sampai ke-7</div><p>"Orang ini pun tidak dipilih TUHAN." — 7 kali.</p></div>
-    <div class="sp"><div class="sp-label">Samuel bertanya</div><div class="sp-title">"Inikah anakmu semuanya?"</div><p>Isai: masih ada yang bungsu. Tapi sedang menggembalakan domba.</p></div>
-  </div>
-</section>
-
-<!-- 4 TIDAK DIUNDANG -->
-<section id="s4">
-  <div class="label">Insight Terpenting</div>
-  <div class="kw" style="font-size:var(--fs-sub);margin-bottom:clamp(6px,1vh,12px);">Daud tidak diundang</div>
-  <div class="sub" style="margin-bottom:clamp(4px,0.8vh,10px);">Isai sendiri tidak kepikiran.</div>
-  <div class="gold-line"></div>
-  <div class="cmp">
-    <div class="cmp-col bad">
-      <div class="cmp-head">Di mata Isai</div>
-      <div class="cmp-row">Anak bungsu · tidak relevan</div>
-      <div class="cmp-row">Tugasnya: jaga domba di padang</div>
-      <div class="cmp-row">Tidak perlu hadir di momen penting</div>
-    </div>
-    <div class="cmp-col good">
-      <div class="cmp-head">Di mata Allah</div>
-      <div class="cmp-row">Di padang itulah hati dibentuk</div>
-      <div class="cmp-row">Bergumul dengan singa, beruang, Allah</div>
-      <div class="cmp-row">Mazmur lahir dari sana</div>
-    </div>
-  </div>
-  <div class="verse" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="ref">Kisah Para Rasul 13:22</div>
-    <p>"Aku telah mendapat Daud bin Isai, seorang yang <strong>berkenan di hati-Ku</strong> dan yang melakukan segala kehendak-Ku."</p>
-  </div>
-</section>
-
-<!-- 5 PELITA BERPINDAH -->
-<section id="s5">
-  <div class="label">1 Samuel 16:13–14 · Dua Ayat Berlawanan</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Roh Allah tidak padam —<br>Roh itu berpindah</div>
-  <div class="gold-line"></div>
-  <div class="cmp">
-    <div class="cmp-col good">
-      <div class="cmp-head">Daud ↑</div>
-      <div class="cmp-row">Sejak hari itu, berkuasalah Roh TUHAN atas Daud dengan kuatnya</div>
-      <div class="cmp-row">Pelita perjanjian menyala di keluarganya</div>
-      <div class="cmp-row">2 Tawarikh 21:7 — perjanjian dimulai dari momen ini</div>
-    </div>
-    <div class="cmp-col bad">
-      <div class="cmp-head">Saul ↓</div>
-      <div class="cmp-row">Roh TUHAN mundur dari Saul</div>
-      <div class="cmp-row">Ia diganggu oleh roh jahat</div>
-      <div class="cmp-row">Membutuhkan Daud untuk memainkan kecapi</div>
-    </div>
-  </div>
-  <div class="note">
-    Pelita tidak terpadamkan — bukan karena Saul berhasil, melainkan meski Saul gagal.<br>
-    Ketika satu raja menolak, Allah mempersiapkan yang lain.
-  </div>
-</section>
-
-<!-- 6 KECAPI -->
-<section id="s6">
-  <div class="label">Daud di Istana Saul · 1 Sam 16:18–23</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Kenapa kecapi Daud<br>bisa menenangkan Saul?</div>
-  <div class="gold-line"></div>
-  <div class="verse">
-    <div class="ref">1 Samuel 16:18</div>
-    <p>"...yang pandai bermain kecapi; ia seorang pahlawan yang gagah perkasa, seorang prajurit dan bijak dalam perkataan; orangnya elok dan <strong>TUHAN menyertainya</strong>."</p>
-  </div>
-  <div class="sub" style="margin-top:clamp(14px,2.5vh,24px);">
-    Bukan karena Daud berbakat musik.<br>Tapi karena <strong>TUHAN menyertainya</strong>.
-  </div>
-  <div class="verse" style="margin-top:clamp(10px,1.8vh,18px);">
-    <div class="ref">Wahyu 1:15</div>
-    <p>Suara-Nya bagaikan desau air bah.</p>
-  </div>
-</section>
-
-<!-- 7 NYANYIAN FIRMAN -->
-<section id="s7">
-  <div class="label">Teologi Nyanyian</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Nyanyian adalah<br>firman yang dilagukan</div>
-  <div class="gold-line"></div>
-  <div class="chain">
-    <div class="chain-node">Desau<br>air bah</div>
-    <div class="chain-arr">→</div>
-    <div class="chain-node">Nada<br>teratur</div>
-    <div class="chain-arr">→</div>
-    <div class="chain-node">Melodi</div>
-    <div class="chain-arr">→</div>
-    <div class="chain-node">Nyanyian<br>baru</div>
-    <div class="chain-arr">→</div>
-    <div class="chain-node" style="border-color:var(--gold);color:var(--gold);">Firman<br>yang hidup</div>
-  </div>
-  <div class="sp-grid" style="margin-top:clamp(16px,3vh,30px);">
-    <div class="sp"><div class="sp-label">Mazmur Daud</div><div class="sp-title">Nyanyian Pengajaran</div><p>Mzm 32:1, 52:1 — di dalam lagu ada pengajaran firman yang dilagukan.</p></div>
-    <div class="sp"><div class="sp-label">Nyanyian Musa · Ul 31–32</div><div class="sp-title">Firman yang Melekat</div><p>"Letakkanlah di dalam mulut mereka, supaya nyanyian ini menjadi saksi bagi-Ku."</p></div>
-    <div class="sp"><div class="sp-label">Pelajaran ini</div><div class="sp-title">Sejarah Penebusan</div><p>Kita pun sedang mempelajari "nyanyian" yang sama — supaya iman hadir.</p></div>
-  </div>
-  <div class="verse" style="margin-top:clamp(14px,2.5vh,24px);">
-    <div class="ref">Ulangan 32:7</div>
-    <p>"Ingatlah kepada zaman dahulu kala, perhatikanlah tahun-tahun keturunan yang lalu, tanyakanlah kepada ayahmu, maka ia memberitahukannya kepadamu."</p>
-  </div>
-</section>
-
-<!-- 8 GOLIAT -->
-<section id="s8">
-  <div class="label">±1020 SM · 1 Samuel 17</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Goliat</div>
-  <div class="gold-line"></div>
-  <div class="sp-grid">
-    <div class="sp red"><div class="sp-label">Fisik</div><div class="sp-title">2,9 meter</div><p>Enam hasta sejengkal. Tidak ada yang setara secara fisik di seluruh Israel.</p></div>
-    <div class="sp red"><div class="sp-label">Persenjataan</div><div class="sp-title">Baju zirah 57 kg</div><p>Ketopong tembaga · baju zirah · penutup kaki · lembing · tombak 6,8 kg · pembawa perisai di depan.</p></div>
-    <div class="sp red"><div class="sp-label">Durasi</div><div class="sp-title">40 hari · pagi & petang</div><p>Seluruh pahlawan Saul — gemetar ketakutan. Lari. 40 hari penuh.</p></div>
-  </div>
-  <div class="verse" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="ref">1 Samuel 17:26 — Daud yang belum 20 tahun</div>
-    <p>"Siapakah orang Filistin yang tak bersunat ini, sampai ia berani <strong>mencemoohkan barisan dari Allah yang hidup?</strong>"</p>
-  </div>
-  <div class="sub">Yang ia rasakan: bukan takut — tapi <strong>marah</strong>.</div>
-</section>
-
-<!-- 9 HAB-BE-NAIM -->
-<section id="s9">
-  <div class="label">Eksegetis · 1 Sam 17:4</div>
-  <div class="kw" style="font-size:var(--fs-sub);">הַבֵּנַיִם<br>hab-be-na-yim</div>
-  <div class="gold-line"></div>
-  <div class="sub" style="margin-bottom:clamp(14px,2.5vh,24px);">
-    Diterjemahkan: <strong>"pendekar"</strong> atau <em>champion</em><br>
-    Arti asli: <strong>"yang berdiri di antara"</strong>
-  </div>
-  <div class="sp-grid">
-    <div class="sp"><div class="sp-label">Peran di medan perang</div><div class="sp-title">Perantara · Mediator</div><p>Berdiri di antara dua barisan untuk <strong>memprovokasi</strong>.</p></div>
-    <div class="sp"><div class="sp-label">Tujuannya satu</div><div class="sp-title">Buat lawan emosi</div><p>Tujuannya bukan menang — tapi bikin berantem.</p></div>
-    <div class="sp red"><div class="sp-label">Wahyu 12:10</div><div class="sp-title">Gambaran iblis</div><p>Pendakwa siang dan malam — menuduh, mengungkit.</p></div>
-  </div>
-</section>
-
-<!-- 10 DUA PERANTARA -->
-<section id="s10">
-  <div class="label">Dua Macam Perantara di Alkitab</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Goliat atau Yesus?</div>
-  <div class="gold-line"></div>
-  <div class="cmp">
-    <div class="cmp-col bad">
-      <div class="cmp-head">Goliat · Iblis</div>
-      <div class="cmp-row"><div class="ck">Posisi</div>Berdiri di tengah untuk menuduh</div>
-      <div class="cmp-row"><div class="ck">Tujuan</div>Provokasi — supaya berantem</div>
-      <div class="cmp-row"><div class="ck">Senjata</div>Tuduhan, ungkitan, fitnah, amarah</div>
-      <div class="cmp-row"><div class="ck">Rujukan</div>Why 12:10</div>
-    </div>
-    <div class="cmp-col good">
-      <div class="cmp-head">Yesus · Pembela</div>
-      <div class="cmp-row"><div class="ck">Posisi</div>Duduk di kanan Allah sebagai Pembela</div>
-      <div class="cmp-row"><div class="ck">Tujuan</div>Damai — mendamaikan Allah dengan manusia</div>
-      <div class="cmp-row"><div class="ck">Senjata</div>Kasih, salib, kebangkitan</div>
-      <div class="cmp-row"><div class="ck">Rujukan</div>Roma 8:34</div>
-    </div>
-  </div>
-  <div class="note" style="margin-top:clamp(16px,3vh,28px);">
-    Kita lebih sering berdiri seperti <strong>Goliat</strong> atau seperti <strong>Yesus</strong>?
-  </div>
-</section>
-
-<!-- 11 CARA BERPERANG -->
-<section id="s11">
-  <div class="label">1 Samuel 17:45, 47, 50</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Cara Daud berperang</div>
-  <div class="gold-line"></div>
-  <div class="cmp">
-    <div class="cmp-col bad">
-      <div class="cmp-head">Goliat</div>
-      <div class="cmp-row">Pedang · tombak · lembing</div>
-      <div class="cmp-row">Baju zirah 57 kg</div>
-      <div class="cmp-row">Kekuatan manusia</div>
-    </div>
-    <div class="cmp-col good">
-      <div class="cmp-head">Daud</div>
-      <div class="cmp-row">Nama TUHAN semesta alam</div>
-      <div class="cmp-row">Umban dan lima batu licin</div>
-      <div class="cmp-row"><strong>Tanpa pedang di tangan</strong></div>
-    </div>
-  </div>
-  <div class="verse" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="ref">1 Samuel 17:47</div>
-    <p>"Sebab di tangan TUHANlah pertempuran dan Ia pun menyerahkan kamu ke dalam tangan kami."</p>
-  </div>
-  <div class="sub" style="margin-top:clamp(10px,1.8vh,18px);">
-    Yesus: bukan memukul — tapi <strong>menjadi korban</strong>.<br>Hasilnya: kemenangan atas maut.
-  </div>
-</section>
-
-<!-- 12 BATU & DAHI -->
-<section id="s12">
-  <div class="label">1 Samuel 17:49 · Simbol</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Batu yang meremukkan dahi</div>
-  <div class="gold-line"></div>
-  <div class="sub">
-    Dahi = <strong>pikiran, ide, cara pandang</strong>.
-  </div>
-  <div class="sp-grid" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="sp"><div class="sp-label">Batu = Kristus</div><div class="sp-title">1 Korintus 10:4</div><p>"...batu karang rohani yang mengikuti mereka, dan batu karang itu ialah Kristus."</p></div>
-    <div class="sp"><div class="sp-label">Batu penjuru</div><div class="sp-title">Yesaya 28:16</div><p>"Siapa yang percaya, tidak akan gelisah."</p></div>
-    <div class="sp"><div class="sp-label">Perang ide</div><div class="sp-title">Kolose 2:8</div><p>"Hati-hatilah, supaya jangan ada yang menawan kamu dengan filsafatnya yang kosong dan palsu."</p></div>
-  </div>
-  <div class="verse" style="margin-top:clamp(14px,2.5vh,26px);">
-    <div class="ref">Firman bagaikan batu — Lukas 6:27-28</div>
-    <p>"Kasihilah musuhmu, berbuatlah baik kepada orang yang membenci kamu; mintalah berkat bagi orang yang mengutuk kamu."</p>
-  </div>
-</section>
-
-<!-- 13 PERANG TUHAN -->
-<section id="s13">
-  <div class="label">1 Samuel 25:28–29</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Melakukan perang TUHAN</div>
-  <div class="gold-line"></div>
-  <div class="verse">
-    <div class="ref">1 Samuel 25:28</div>
-    <p>"...pastilah TUHAN akan membangun bagi tuanku keturunan yang teguh, karena tuanku ini <strong>melakukan perang TUHAN</strong> dan tidak ada yang jahat terdapat padamu selama hidupmu."</p>
-  </div>
-  <div class="verse">
-    <div class="ref">1 Samuel 25:29</div>
-    <p>"...nyawa tuanku akan terbungkus dalam bungkusan tempat orang-orang hidup pada TUHAN, Allahmu."</p>
-  </div>
-  <div class="cmp" style="margin-top:clamp(16px,3vh,28px);">
-    <div class="cmp-col bad">
-      <div class="cmp-head">Perang pribadi</div>
-      <div class="cmp-row">Membalas sakit hati</div>
-      <div class="cmp-row">Mempertahankan ego</div>
-      <div class="cmp-row">Membuktikan diri kepada yang meremehkan</div>
-    </div>
-    <div class="cmp-col good">
-      <div class="cmp-head">Perang TUHAN</div>
-      <div class="cmp-row">Berdiri untuk kebenaran firman</div>
-      <div class="cmp-row">Berdamai dengan yang memusuhi</div>
-      <div class="cmp-row">Mendoakan yang mencaci</div>
-    </div>
-  </div>
-</section>
-
-<!-- 14 APLIKASI -->
-<section id="s14">
-  <div class="label">Aplikasi · Matius 5:9</div>
-  <div class="kw" style="font-size:var(--fs-sub);">Lebih mirip siapa?</div>
-  <div class="gold-line"></div>
-  <div class="cmp" style="margin-bottom:clamp(16px,3vh,28px);">
-    <div class="cmp-col bad">
-      <div class="cmp-head">Jalan Goliat</div>
-      <div class="cmp-row">Berdiri di tengah untuk mengolok</div>
-      <div class="cmp-row">Mengungkit, memprovokasi</div>
-      <div class="cmp-row">Bikin suasana keruh</div>
-      <div class="cmp-row">Dari luar: kelihatan menang</div>
-    </div>
-    <div class="cmp-col good">
-      <div class="cmp-head">Jalan Daud</div>
-      <div class="cmp-row">Maju untuk nama Allah, bukan nama sendiri</div>
-      <div class="cmp-row">Senjata: firman, kebenaran, damai</div>
-      <div class="cmp-row">Dari luar: kelihatan kalah</div>
-      <div class="cmp-row"><strong>Pada akhirnya: yang menang</strong></div>
-    </div>
-  </div>
-  <div class="big-quote">
-    "Berbahagialah orang yang membawa damai,<br>karena mereka akan disebut <em>anak-anak Allah</em>."
-    <span class="qref">Matius 5:9</span>
-  </div>
-</section>
-
-<div id="fc">
-  <button id="fa-">A−</button>
-  <button id="fa0">A</button>
-  <button id="fa+">A+</button>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Memuat...</div>
 </div>
 
-<script>
-const KEY='p7_fs';
-let scale=parseFloat(localStorage.getItem(KEY))||1;
-function applyScale(s){
-  scale=Math.min(1.5,Math.max(0.7,s));
-  const r=document.documentElement.style;
-  r.setProperty('--fs',`clamp(${Math.round(18*scale)}px,2.5vw,${Math.round(26*scale)}px)`);
-  r.setProperty('--fs-sm',`clamp(${Math.round(14*scale)}px,1.8vw,${Math.round(19*scale)}px)`);
-  r.setProperty('--fs-xs',`clamp(${Math.round(12*scale)}px,1.4vw,${Math.round(16*scale)}px)`);
-  r.setProperty('--fs-kw',`clamp(${Math.round(30*scale)}px,5vw,${Math.round(62*scale)}px)`);
-  r.setProperty('--fs-title',`clamp(${Math.round(34*scale)}px,7vw,${Math.round(84*scale)}px)`);
-  r.setProperty('--fs-sub',`clamp(${Math.round(18*scale)}px,3.2vw,${Math.round(38*scale)}px)`);
-  localStorage.setItem(KEY,scale);
-}
-applyScale(scale);
-document.getElementById('fa+').onclick=()=>applyScale(scale+.1);
-document.getElementById('fa-').onclick=()=>applyScale(scale-.1);
-document.getElementById('fa0').onclick=()=>applyScale(1);
+<!-- ══ SETTINGS POPOVER ══ -->
+<div class="settings-popover" id="settingsPopover">
+  <h4>⚙️ Pengaturan</h4>
+  <div class="settings-row">
+    <span class="settings-label">Kurs USD → IDR</span>
+    <input class="settings-input" type="number" id="settingKurs" value="16700" min="1000" max="99999" step="100" oninput="saveSettings();renderResults()">
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Diskon Modal (%)</span>
+    <input class="settings-input" type="number" id="settingModal" value="65" min="0" max="99" step="0.5" oninput="saveSettings();renderResults()">
+  </div>
+  <div class="settings-sub">Perubahan langsung berlaku · Disimpan otomatis</div>
+</div>
 
-const secs=document.querySelectorAll('section[id]');
-const links=document.querySelectorAll('nav a');
-new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      links.forEach(a=>a.classList.remove('active'));
-      const l=document.querySelector(`nav a[href="#${e.target.id}"]`);
-      if(l){l.classList.add('active');l.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+<header>
+  <div class="brand">
+    <div class="brand-icon">📦</div>
+    <div class="brand-name">StockSearch</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="header-chips">
+    <div class="file-chip" id="chipStok" title="Klik untuk muat file stok">
+      <input type="file" accept=".xlsx,.xls" id="fileStokInput" onchange="loadFile('stok',this)">
+      <div class="file-chip-dot" id="dotStok"></div>
+      <span class="file-chip-name" id="chipStokName">📊 Stok — pilih file</span>
+      <button class="chip-reload" onclick="reloadChip('stok',event)" title="Ganti file">↺</button>
+    </div>
+    <div class="file-chip" id="chipStokLtc" title="Klik untuk muat file stok LTC">
+      <input type="file" accept=".xlsx,.xls,.csv" id="fileStokLtcInput" onchange="loadFile('stokLtc',this)">
+      <div class="file-chip-dot" id="dotStokLtc"></div>
+      <span class="file-chip-name" id="chipStokLtcName">🏪 Stok LTC — pilih file</span>
+      <button class="chip-reload" onclick="reloadChip('stokLtc',event)" title="Ganti file">↺</button>
+    </div>
+    <div class="file-chip" id="chipHarga" title="Klik untuk muat file pricelist">
+      <input type="file" accept=".xlsx,.xls" id="fileHargaInput" onchange="loadFile('harga',this)">
+      <div class="file-chip-dot" id="dotHarga"></div>
+      <span class="file-chip-name" id="chipHargaName">💰 Harga — pilih file</span>
+      <button class="chip-reload" onclick="reloadChip('harga',event)" title="Ganti file">↺</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="last-update" id="lastUpdate">Belum ada file dimuat</div>
+    <button class="btn-settings" onclick="toggleSettings()" title="Pengaturan kurs & modal">⚙️</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ══ EMPTY STATE ══ -->
+  <div class="empty-state" id="emptyState">
+    <div class="empty-state-icon">🔍</div>
+    <h2>Muat File untuk Memulai</h2>
+    <p>Klik chip file di header di atas untuk memuat file Excel.<br>File dibaca langsung di browser — tidak diunggah ke server.</p>
+    <div class="empty-state-steps">
+      <div class="empty-step"><div class="empty-step-num">1</div>📊 Klik chip <b>Stok</b></div>
+      <div class="empty-step"><div class="empty-step-num">2</div>💰 Klik chip <b>Harga</b></div>
+      <div class="empty-step"><div class="empty-step-num">3</div>🏪 Opsional: chip <b>Stok LTC</b></div>
+      <div class="empty-step"><div class="empty-step-num">4</div>🔍 Mulai pencarian EDP</div>
+    </div>
+  </div>
+
+  <!-- ══ READY STATE ══ -->
+  <div class="ready-state hidden" id="readyState">
+    <div class="ready-state-icon">✅</div>
+    <div class="ready-state-text">
+      <strong>File berhasil dimuat — siap untuk pencarian</strong>
+      <p id="readyStateText">—</p>
+    </div>
+  </div>
+
+  <!-- ══ SEARCH PANEL ══ -->
+  <div class="search-panel hidden" id="searchPanel">
+    <div class="search-panel-header">
+      <span class="section-title">// Cari EDP</span>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="searchStatus"></span>
+    </div>
+    <div class="edp-input-wrap">
+      <textarea class="edp-textarea" id="edpInput"
+        placeholder="Masukkan satu atau beberapa kode EDP&#10;Pisahkan dengan enter, koma, atau spasi&#10;Contoh: 12000001, 12000002, E5C12010"
+        oninput="autoResizeTextarea(this);updateEdpCounter()"
+        onkeydown="if(event.key==='Enter'&&event.ctrlKey){doSearch();return false;}"></textarea>
+      <div class="search-actions">
+        <button class="btn-primary" onclick="doSearch()">🔍 Cari</button>
+        <button class="btn-secondary" onclick="clearSearch()">✕ Reset</button>
+      </div>
+    </div>
+    <div class="search-footer">
+      <span class="search-hint">Ctrl+Enter untuk cari cepat · &lt;6 karakter = pencarian partial</span>
+      <span class="edp-counter" id="edpCounter">0 EDP</span>
+    </div>
+
+    <!-- DISKON ROW (integrated into search panel) -->
+    <div class="diskon-row hidden" id="diskonRow">
+      <span class="diskon-label">Harga Jual:</span>
+      <div class="diskon-tabs">
+        <button class="diskon-tab active" id="tabT3" onclick="setDiskon('t3')">T3 — 52%</button>
+        <button class="diskon-tab" id="tabT5" onclick="setDiskon('t5')">T5 — 55%</button>
+        <button class="diskon-tab" id="tabSp" onclick="setDiskon('special')">Special</button>
+      </div>
+      <div class="diskon-special-wrap hidden" id="specialWrap">
+        <input type="number" class="diskon-input" id="specialDiskon" min="0" max="99" step="0.5" value="60" oninput="renderResults()">
+        <span class="diskon-input-label">% diskon</span>
+      </div>
+      <div class="kurs-info" id="kursInfoDisplay">Kurs <span id="kursDisplay">×16.700</span> · Modal <span id="modalDisplay">diskon 65%</span></div>
+    </div>
+  </div>
+
+  <!-- ══ NOT FOUND BANNER ══ -->
+  <div class="not-found-banner hidden" id="notFoundBanner">
+    <div class="nfb-icon">⚠️</div>
+    <div class="nfb-content">
+      <div class="nfb-title" id="nfbTitle">3 dari 12 kode EDP tidak ditemukan:</div>
+      <div class="nfb-codes" id="nfbCodes"></div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS BAR ══ -->
+  <div class="results-bar hidden" id="resultsBar">
+    <div class="results-count" id="resultsCount"></div>
+    <div class="results-meta">
+      <button class="col-toggle-btn" id="colToggleBtn" onclick="toggleModalUSD()">👁 Tampilkan Modal USD</button>
+    </div>
+  </div>
+
+  <!-- ══ TABLE ══ -->
+  <div class="table-wrap hidden" id="tableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('edp')">Kode EDP</th>
+          <th onclick="sortBy('name')">Nama Item</th>
+          <th onclick="sortBy('size')">Ukuran</th>
+          <th class="right" onclick="sortBy('qty')">Stok Pusat</th>
+          <th class="right th-ltc" onclick="sortBy('qtyLtc')">Stok LTC</th>
+          <th class="right" onclick="sortBy('listPrice')">List USD</th>
+          <th class="right th-modal col-modal-usd" id="thModalUSD" style="display:none">Modal USD</th>
+          <th class="right th-modal" onclick="sortBy('modalIDR')">Modal IDR</th>
+          <th class="right th-jual" id="thJual" onclick="sortBy('jualIDR')">Jual T3 (dis 52%)</th>
+          <th class="center th-moq" title="Centang jika barang dijual per pack, lalu isi jumlah per pack">Pack / MOQ</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="wa-toast" id="waToast">✓ Disalin ke clipboard!</div>
+
+</div><!-- /main -->
+
+<!-- FAB: Simpan & Buat Link (Fase 1) -->
+<button class="fab-save" id="fabSave" onclick="openSaveModal()">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+  Simpan &amp; Buat Link
+</button>
+
+<!-- MODAL: Form data penawaran -->
+<div class="modal-ov" id="saveModal">
+  <div class="modal-card">
+    <h3>Simpan penawaran &amp; buat link</h3>
+    <div class="sub">Harga akan dikunci pada nilai saat ini. Customer mengisi jumlah lewat link.</div>
+    <div class="cfg-warn" id="cfgWarn" style="display:none">
+      Kredensial Supabase belum diisi. Buka file ini, cari <code>SB_CONFIG</code> di bagian bawah, isi <code>url</code> dan <code>anon</code> key. Panduan ada di chat.
+    </div>
+    <div class="quote-summary" id="quoteSummary"></div>
+    <div class="fld">
+      <label>Nama customer / PIC</label>
+      <input type="text" id="fCustName" placeholder="mis. Bapak Andi">
+    </div>
+    <div class="fld">
+      <label>Perusahaan (opsional)</label>
+      <input type="text" id="fCustCompany" placeholder="mis. PT Karya Logam">
+    </div>
+    <div class="fld-row">
+      <div class="fld">
+        <label>Nama sales</label>
+        <input type="text" id="fSalesName" placeholder="mis. Rina">
+      </div>
+      <div class="fld">
+        <label>Berlaku (hari)</label>
+        <input type="number" id="fValidDays" value="14" min="1" step="1">
+      </div>
+    </div>
+    <div class="fld">
+      <label>Catatan (opsional)</label>
+      <input type="text" id="fNote" placeholder="mis. franco Jakarta">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeSaveModal()">Batal</button>
+      <button class="btn-primary" id="btnDoSave" onclick="doSaveQuote()">Simpan &amp; Buat Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Hasil link -->
+<div class="modal-ov" id="linkModal">
+  <div class="modal-card">
+    <h3>Penawaran tersimpan ✓</h3>
+    <div class="sub">Bagikan link ini ke customer. Mereka tinggal atur jumlah dan submit.</div>
+    <div class="link-code" id="resCode">QT-—</div>
+    <div class="link-box">
+      <input type="text" id="resLink" readonly>
+      <button class="btn-primary" style="flex:0 0 auto;padding:10px 16px" onclick="copyLink()">Salin</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeLinkModal()">Tutup</button>
+      <button class="btn-primary" id="btnWaShare" onclick="shareLinkWA()">Kirim via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB: Copy WA -->
+<button class="fab-wa" id="fabWa" onclick="copyWA()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+  Copy ke WA
+</button>
+
+<script>
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+const PAGE_SIZE = 100;
+
+const state = {
+  stok:     { data: new Map(), loaded: false, fileName: '' },
+  stokLtc:  { data: new Map(), loaded: false, fileName: '' },
+  harga:    { data: new Map(), loaded: false, fileName: '' },
+  results:  [],
+  filtered: [],
+  page:     1,
+  diskon:   't3',
+  specialPct: 60,
+  sortCol:  null,
+  sortDir:  'asc',
+  showModalUSD: false,
+};
+
+// Dynamic settings (editable via popover)
+function getKurs()  { return parseFloat(document.getElementById('settingKurs').value)  || 16700; }
+function getDModal(){ return (parseFloat(document.getElementById('settingModal').value) || 65) / 100; }
+
+const D_T3 = 0.52;
+const D_T5 = 0.55;
+
+// ═══════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════
+function toggleSettings() {
+  document.getElementById('settingsPopover').classList.toggle('show');
+}
+function saveSettings() {
+  localStorage.setItem('ss_kurs',  document.getElementById('settingKurs').value);
+  localStorage.setItem('ss_modal', document.getElementById('settingModal').value);
+  updateKursDisplay();
+}
+function loadSettings() {
+  const k = localStorage.getItem('ss_kurs');
+  const m = localStorage.getItem('ss_modal');
+  if (k) document.getElementById('settingKurs').value  = k;
+  if (m) document.getElementById('settingModal').value = m;
+  updateKursDisplay();
+}
+function updateKursDisplay() {
+  const k = getKurs().toLocaleString('id-ID');
+  const m = getDModal() * 100;
+  const d = document.getElementById('kursDisplay');
+  const md = document.getElementById('modalDisplay');
+  if (d)  d.textContent  = '×' + k;
+  if (md) md.textContent = 'diskon ' + m + '%';
+}
+
+// Close settings on outside click
+document.addEventListener('click', e => {
+  const pop = document.getElementById('settingsPopover');
+  const btn = document.querySelector('.btn-settings');
+  if (pop && !pop.contains(e.target) && e.target !== btn) {
+    pop.classList.remove('show');
+  }
+});
+
+// ═══════════════════════════════════════════
+//  FILE LOADING
+// ═══════════════════════════════════════════
+function loadFile(tab, input) {
+  const file = input.files ? input.files[0] : input;
+  if (!file) return;
+  showLoading('Membaca ' + file.name + '...');
+  const isCsv = file.name.toLowerCase().endsWith('.csv');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      if (isCsv) {
+        parseCsvStokLtc(e.target.result, file.name);
+      } else {
+        const wb   = XLSX.read(e.target.result, { type: 'array' });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        if (tab === 'stok')         parseStok(rows, file.name);
+        else if (tab === 'stokLtc') parseStokLtcRows(rows, file.name);
+        else                        parseHarga(rows, file.name);
+      }
+    } catch(err) {
+      hideLoading();
+      alert('Gagal membaca file: ' + err.message);
     }
-  });
-},{threshold:.4}).observe;
-secs.forEach(s=>new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      links.forEach(a=>a.classList.remove('active'));
-      const l=document.querySelector(`nav a[href="#${e.target.id}"]`);
-      if(l){l.classList.add('active');l.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+  };
+  if (isCsv) reader.readAsText(file, 'utf-8');
+  else        reader.readAsArrayBuffer(file);
+}
+
+function parseStok(rows, fileName) {
+  let hi = 0;
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    const r = rows[i].map(c => String(c).toLowerCase());
+    if (r.some(c => c.includes('item') || c.includes('edp') || c.includes('kode') || c.includes('unit'))) { hi = i; break; }
+  }
+  const hdrs = rows[hi].map(c => String(c).toLowerCase().trim());
+  let eCol = hdrs.findIndex(h => h.includes('item #') || h === 'item #' || h.includes('edp') || h.includes('kode'));
+  let qCol = hdrs.findIndex(h => h.includes('unit') || h.includes('qty') || h.includes('stok') || h.includes('hand'));
+  let nCol = hdrs.findIndex(h => h.includes('name') || h.includes('nama'));
+  let sCol = hdrs.findIndex(h => h.includes('size') || h.includes('ukuran'));
+  if (eCol < 0) eCol = 0;
+  if (qCol < 0) qCol = 1;
+  if (nCol < 0) nCol = 2;
+  if (sCol < 0) sCol = 3;
+
+  const map = new Map();
+  for (let i = hi + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const edpRaw = row[eCol] ?? '';
+    const edp = String(edpRaw).trim();
+    if (!edp) continue;
+    const qty  = String(row[qCol] ?? '0').trim();
+    const name = String(row[nCol] ?? '').trim();
+    const size = String(row[sCol] ?? '').trim();
+    const entry = { edp, qty, name, size: (size === '0' ? '' : size) };
+    map.set(edp, entry);
+    if (!isNaN(edpRaw)) map.set(String(Number(edpRaw)), entry);
+  }
+  state.stok.data = map; state.stok.loaded = true; state.stok.fileName = fileName;
+  updateChip('stok', fileName); checkReady(); hideLoading();
+}
+
+function parseCsvStokLtc(text, fileName) {
+  const lines = text.replace(/\r/g, '').split('\n');
+  const map = new Map();
+  for (let i = 6; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line.startsWith('"Cetak') || line.startsWith('"(')) continue;
+    const parts = line.split(';').map(p => p.replace(/^"|"$/g, '').trim());
+    const edpRaw = parts[0]; const edp = String(edpRaw).trim();
+    if (!edp) continue;
+    const name   = String(parts[1] ?? '').trim();
+    const qtyStr = String(parts[2] ?? '0').replace(',', '.').trim();
+    const qty    = String(Math.round(parseFloat(qtyStr) || 0));
+    const entry  = { edp, qty, name };
+    map.set(edp, entry);
+    if (!isNaN(edpRaw)) map.set(String(Number(edpRaw)), entry);
+  }
+  state.stokLtc.data = map; state.stokLtc.loaded = true; state.stokLtc.fileName = fileName;
+  updateChip('stokLtc', fileName); checkReady(); hideLoading();
+}
+
+function parseStokLtcRows(rows, fileName) {
+  const map = new Map();
+  for (let i = 6; i < rows.length; i++) {
+    const row = rows[i];
+    const edpRaw = row[0] ?? ''; const edp = String(edpRaw).trim();
+    if (!edp) continue;
+    const name  = String(row[1] ?? '').trim();
+    const qty   = String(Math.round(parseFloat(String(row[2] ?? '0').replace(',', '.')) || 0));
+    const entry = { edp, qty, name };
+    map.set(edp, entry);
+    if (!isNaN(edpRaw)) map.set(String(Number(edpRaw)), entry);
+  }
+  state.stokLtc.data = map; state.stokLtc.loaded = true; state.stokLtc.fileName = fileName;
+  updateChip('stokLtc', fileName); checkReady(); hideLoading();
+}
+
+function parseHarga(rows, fileName) {
+  let hi = 0;
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    const r = rows[i].map(c => String(c).toLowerCase());
+    if (r.some(c => c.includes('edp') || c.includes('list') || c.includes('price') || c.includes('harga'))) { hi = i; break; }
+  }
+  const map = new Map();
+  for (let i = hi + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const edp = String(row[1] ?? '').trim();
+    if (!edp) continue;
+    const priceD = parseFloat(row[3]) || 0;
+    const priceE_raw = row[4];
+    const priceE_str = String(priceE_raw ?? '').trim();
+    const priceE = (priceE_str && priceE_str !== '#N/A' && priceE_str !== '' && !isNaN(parseFloat(priceE_raw))) ? parseFloat(priceE_raw) : null;
+    const listPrice = (priceE !== null && priceE > priceD) ? priceE : priceD;
+    const hasNew    = (priceE !== null && priceE > priceD);
+    const entry = { edp, listPrice, hasNew, name: String(row[2] ?? '').trim() };
+    map.set(edp, entry);
+    if (!isNaN(row[1])) map.set(String(Number(row[1])), entry);
+  }
+  state.harga.data = map; state.harga.loaded = true; state.harga.fileName = fileName;
+  updateChip('harga', fileName); checkReady(); hideLoading();
+}
+
+function checkReady() {
+  const ready = state.stok.loaded && state.harga.loaded;
+  if (ready) {
+    hide('emptyState');
+    show('readyState');
+    show('searchPanel');
+    updateReadyText();
+    updateKursDisplay();
+  } else {
+    // Update empty state if partially loaded
+  }
+  // Update header last update
+  const parts = [];
+  if (state.stok.loaded)    parts.push('Stok: ' + state.stok.fileName);
+  if (state.stokLtc.loaded) parts.push('LTC: ' + state.stokLtc.fileName);
+  if (state.harga.loaded)   parts.push('Harga: ' + state.harga.fileName);
+  if (parts.length) document.getElementById('lastUpdate').textContent = parts.join(' · ');
+}
+
+function updateReadyText() {
+  const stokCount  = state.stok.data.size.toLocaleString('id-ID');
+  const ltcCount   = state.stokLtc.loaded ? state.stokLtc.data.size.toLocaleString('id-ID') : 'belum dimuat';
+  const hargaCount = state.harga.data.size.toLocaleString('id-ID');
+  const el = document.getElementById('readyStateText');
+  if (el) el.textContent = stokCount + ' baris stok pusat · ' + ltcCount + ' baris stok LTC · ' + hargaCount + ' baris harga';
+  const el2 = document.getElementById('searchStatus');
+  if (el2) el2.textContent = stokCount + ' stok · ' + ltcCount + ' LTC · ' + hargaCount + ' harga';
+}
+
+// ═══════════════════════════════════════════
+//  CHIP
+// ═══════════════════════════════════════════
+function updateChip(tab, fileName) {
+  const chip   = document.getElementById('chip' + cap(tab));
+  const nameEl = document.getElementById('chip' + cap(tab) + 'Name');
+  const icons  = { stok: '📊', stokLtc: '🏪', harga: '💰' };
+  if (chip) chip.classList.add('loaded');
+  const short = fileName.length > 22 ? fileName.substring(0, 20) + '…' : fileName;
+  if (nameEl) nameEl.textContent = (icons[tab] || '📄') + ' ' + short;
+}
+
+function reloadChip(tab, e) {
+  e.stopPropagation(); e.preventDefault();
+  const chip   = document.getElementById('chip' + cap(tab));
+  const nameEl = document.getElementById('chip' + cap(tab) + 'Name');
+  const labels = { stok: '📊 Stok — pilih file', stokLtc: '🏪 Stok LTC — pilih file', harga: '💰 Harga — pilih file' };
+  chip.classList.remove('loaded');
+  nameEl.textContent = labels[tab] || tab;
+  state[tab].loaded = false; state[tab].data = new Map();
+  document.getElementById('file' + cap(tab) + 'Input').value = '';
+  if (!state.stok.loaded || !state.harga.loaded) {
+    show('emptyState'); hide('readyState'); hide('searchPanel');
+    hide('diskonRow'); hide('resultsBar'); hide('tableWrap');
+    hide('notFoundBanner');
+    document.getElementById('fabWa').classList.remove('show');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  TEXTAREA AUTO-RESIZE
+// ═══════════════════════════════════════════
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+}
+
+function updateEdpCounter() {
+  const raw = document.getElementById('edpInput').value;
+  const tokens = parseTokens(raw);
+  const counter = document.getElementById('edpCounter');
+  counter.textContent = tokens.length + ' EDP';
+  counter.classList.toggle('has-items', tokens.length > 0);
+}
+
+function parseTokens(raw) {
+  return raw.split(/[\n,;]+|\s{2,}|\s*,\s*/).map(t => t.trim()).filter(t => t.length > 0);
+}
+
+// ═══════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════
+function doSearch() {
+  const raw    = document.getElementById('edpInput').value;
+  const tokens = parseTokens(raw);
+  if (tokens.length === 0) { clearSearch(); return; }
+
+  const results   = [];
+  const stokMap   = state.stok.data;
+  const hargaMap  = state.harga.data;
+  const ltcMap    = state.stokLtc.data;
+
+  for (const token of tokens) {
+    const normToken = token.replace(/[\s\-]/g, '').toUpperCase();
+    const numToken  = !isNaN(token) ? String(Number(token)) : null;
+
+    // ── Cek exact match dulu sebelum partial ──
+    const exactStok  = stokMap.get(token) || stokMap.get(token.toUpperCase()) || (numToken ? stokMap.get(numToken) : null)
+                    || (() => { for (const [k,v] of stokMap)  if (k.replace(/[\s\-]/g,'').toUpperCase()===normToken) return v; })();
+    const exactHarga = hargaMap.get(token) || hargaMap.get(token.toUpperCase()) || (numToken ? hargaMap.get(numToken) : null)
+                    || (() => { for (const [k,v] of hargaMap) if (k.replace(/[\s\-]/g,'').toUpperCase()===normToken) return v; })();
+    const exactLtc   = ltcMap.get(token) || ltcMap.get(token.toUpperCase()) || (numToken ? ltcMap.get(numToken) : null)
+                    || (() => { for (const [k,v] of ltcMap)   if (k.replace(/[\s\-]/g,'').toUpperCase()===normToken) return v; })();
+
+    if (exactStok || exactHarga || exactLtc) {
+      // BUG FIX: nama diambil dari semua sumber (stok pusat → LTC → harga), bukan hanya stok pusat
+      const resolvedName = exactStok?.name || exactLtc?.name || exactHarga?.name || '';
+      // Size hanya ada di stok pusat
+      const resolvedSize = exactStok?.size || '';
+      results.push({
+        edp: token,
+        name: resolvedName,
+        qty: exactStok?.qty ?? null,
+        qtyLtc: exactLtc?.qty ?? null,
+        size: resolvedSize,
+        listPrice: exactHarga?.listPrice ?? null,
+        hasNew: exactHarga?.hasNew ?? false,
+        found: true, partial: false,
+      });
+      continue;
     }
+
+    // ── Partial search (hanya kalau exact tidak ketemu) ──
+    if (token.length >= 3 && token.length <= 12) {
+      const partialMatches = [];
+      const seen = new Set();
+
+      // Partial dari stok pusat
+      for (const [k, v] of stokMap) {
+        const kNorm = k.replace(/[\s\-]/g, '').toUpperCase();
+        if (kNorm.startsWith(normToken) && !seen.has(k)) {
+          seen.add(k);
+          const hargaMatch = hargaMap.get(k) || (numToken ? hargaMap.get(numToken) : null);
+          const ltcMatch   = ltcMap.get(k)   || (numToken ? ltcMap.get(numToken)   : null);
+          partialMatches.push({
+            edp: k,
+            // BUG FIX: fallback nama dari LTC dan harga
+            name: v.name || ltcMatch?.name || hargaMatch?.name || '',
+            qty: v.qty, qtyLtc: ltcMatch?.qty ?? null,
+            size: v.size || '',
+            listPrice: hargaMatch?.listPrice ?? null,
+            hasNew: hargaMatch?.hasNew ?? false,
+            found: true, partial: true,
+          });
+        }
+      }
+      // Partial dari harga (yang tidak ada di stok pusat)
+      for (const [k, v] of hargaMap) {
+        const kNorm = k.replace(/[\s\-]/g, '').toUpperCase();
+        if (kNorm.startsWith(normToken) && !seen.has(k)) {
+          seen.add(k);
+          const ltcMatch = ltcMap.get(k);
+          partialMatches.push({
+            edp: k,
+            // BUG FIX: fallback nama dari LTC
+            name: v.name || ltcMatch?.name || '',
+            qty: null, qtyLtc: ltcMatch?.qty ?? null,
+            size: '', listPrice: v.listPrice ?? null,
+            hasNew: v.hasNew ?? false,
+            found: true, partial: true,
+          });
+        }
+      }
+      // Partial dari LTC (yang tidak ada di stok pusat maupun harga)
+      for (const [k, v] of ltcMap) {
+        const kNorm = k.replace(/[\s\-]/g, '').toUpperCase();
+        if (kNorm.startsWith(normToken) && !seen.has(k)) {
+          seen.add(k);
+          const hargaMatch = hargaMap.get(k);
+          const stokMatch  = stokMap.get(k);
+          partialMatches.push({
+            edp: k,
+            // BUG FIX: fallback nama dari stok pusat dan harga
+            name: v.name || stokMatch?.name || hargaMatch?.name || '',
+            qty: stokMatch?.qty ?? null, qtyLtc: v.qty ?? null,
+            size: stokMatch?.size || '',
+            listPrice: hargaMatch?.listPrice ?? null,
+            hasNew: hargaMatch?.hasNew ?? false,
+            found: true, partial: true,
+          });
+        }
+      }
+      if (partialMatches.length > 0) {
+        results.push(...partialMatches);
+        continue;
+      }
+    }
+
+    // ── Tidak ditemukan sama sekali ──
+    results.push({
+      edp: token, name: '', qty: null, qtyLtc: null, size: '',
+      listPrice: null, hasNew: false, found: false, partial: false,
+    });
+  }
+
+  state.results  = results;
+  state.filtered = results;
+  state.page     = 1;
+  state.sortCol  = null;
+  state.sortDir  = 'asc';
+
+  // Show not-found banner
+  const notFound = results.filter(r => !r.found && !r.partial);
+  if (notFound.length > 0) {
+    show('notFoundBanner');
+    const title = document.getElementById('nfbTitle');
+    const codes = document.getElementById('nfbCodes');
+    title.textContent = notFound.length + ' dari ' + tokens.length + ' kode EDP tidak ditemukan:';
+    codes.innerHTML = notFound.map(r => `<span class="nfb-code">${r.edp}</span>`).join('');
+  } else {
+    hide('notFoundBanner');
+  }
+
+  show('diskonRow');
+  show('resultsBar');
+  show('tableWrap');
+  document.getElementById('fabWa').classList.add('show');
+
+  renderResults();
+}
+
+function clearSearch() {
+  document.getElementById('edpInput').value = '';
+  document.getElementById('edpInput').style.height = '';
+  updateEdpCounter();
+  state.results = []; state.filtered = [];
+  hide('diskonRow'); hide('resultsBar'); hide('tableWrap'); hide('notFoundBanner');
+  document.getElementById('fabWa').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+//  SORT
+// ═══════════════════════════════════════════
+function sortBy(col) {
+  if (state.sortCol === col) {
+    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortCol = col; state.sortDir = 'asc';
+  }
+
+  const diskonPct = getDiskonPct();
+  const kurs      = getKurs();
+  const dModal    = getDModal();
+
+  state.filtered.sort((a, b) => {
+    let va, vb;
+    if (col === 'edp')      { va = a.edp; vb = b.edp; }
+    else if (col === 'name'){ va = a.name; vb = b.name; }
+    else if (col === 'size'){ va = a.size; vb = b.size; }
+    else if (col === 'qty') { va = parseInt(a.qty)  || -1; vb = parseInt(b.qty)  || -1; }
+    else if (col === 'qtyLtc') { va = parseInt(a.qtyLtc) || -1; vb = parseInt(b.qtyLtc) || -1; }
+    else if (col === 'listPrice') { va = a.listPrice ?? -1; vb = b.listPrice ?? -1; }
+    else if (col === 'modalIDR')  { va = a.listPrice !== null ? a.listPrice * (1-dModal) * kurs : -1; vb = b.listPrice !== null ? b.listPrice * (1-dModal) * kurs : -1; }
+    else if (col === 'jualIDR')   { va = a.listPrice !== null ? a.listPrice * kurs * (1-diskonPct) : -1; vb = b.listPrice !== null ? b.listPrice * kurs * (1-diskonPct) : -1; }
+    else { va = 0; vb = 0; }
+
+    if (typeof va === 'string') return state.sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return state.sortDir === 'asc' ? va - vb : vb - va;
   });
-},{threshold:.4}).observe(s));
+
+  state.page = 1;
+  renderResults();
+  // Update header sort indicators
+  document.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+  });
+}
+
+// ═══════════════════════════════════════════
+//  DISKON
+// ═══════════════════════════════════════════
+function setDiskon(mode) {
+  state.diskon = mode;
+  ['t3','t5','sp'].forEach(id => document.getElementById('tab' + cap(id)).classList.remove('active'));
+  document.getElementById('tab' + cap(mode === 'special' ? 'sp' : mode)).classList.add('active');
+  const sw = document.getElementById('specialWrap');
+  if (mode === 'special') sw.classList.remove('hidden'); else sw.classList.add('hidden');
+  renderResults();
+}
+
+function getDiskonPct() {
+  if (state.diskon === 't3') return D_T3;
+  if (state.diskon === 't5') return D_T5;
+  return (parseFloat(document.getElementById('specialDiskon').value) || 0) / 100;
+}
+
+function updateTableHeader() {
+  const th = document.getElementById('thJual');
+  if (state.diskon === 't3')     { th.textContent = 'Jual T3 (dis 52%)';  th.className = 'right th-jual'; }
+  else if (state.diskon === 't5'){ th.textContent = 'Jual T5 (dis 55%)';  th.className = 'right th-jual'; }
+  else {
+    const pct = document.getElementById('specialDiskon').value || '?';
+    th.textContent = 'Jual Special (' + pct + '%)'; th.className = 'right th-special';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  COLUMN TOGGLE (Modal USD)
+// ═══════════════════════════════════════════
+function toggleModalUSD() {
+  state.showModalUSD = !state.showModalUSD;
+  const btn  = document.getElementById('colToggleBtn');
+  const thEl = document.getElementById('thModalUSD');
+  btn.textContent = state.showModalUSD ? '👁 Sembunyikan Modal USD' : '👁 Tampilkan Modal USD';
+  btn.classList.toggle('active', state.showModalUSD);
+  thEl.style.display = state.showModalUSD ? '' : 'none';
+  document.querySelectorAll('.col-modal-usd').forEach(el => {
+    el.style.display = state.showModalUSD ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+function fmtIDR(n) {
+  if (n === null || n === undefined) return '<span class="price-na">—</span>';
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+function renderResults() {
+  updateTableHeader();
+  const diskonPct = getDiskonPct();
+  const kurs      = getKurs();
+  const dModal    = getDModal();
+  const total     = state.filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  state.page = Math.min(state.page, totalPages);
+  const page = state.filtered.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE);
+
+  document.getElementById('resultsCount').innerHTML =
+    'Ditemukan <strong>' + total + '</strong> item' +
+    (state.filtered.some(r => r.partial) ? ' <span style="font-size:10px;background:var(--yellow-s);color:var(--yellow);border:1px solid #fcd34d;border-radius:4px;padding:1px 6px;font-family:var(--mono)">termasuk hasil partial</span>' : '');
+
+  const tbody = document.getElementById('tableBody');
+  if (page.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="no-results">
+      <div class="nr-icon">🔍</div><h3>Tidak ada hasil</h3>
+      <p>Masukkan kode EDP di atas lalu klik Cari</p>
+    </div></td></tr>`;
+    renderPagination(totalPages);
+    return;
+  }
+
+  const modalUSDVisible = state.showModalUSD;
+
+  tbody.innerHTML = page.map((item, i) => {
+    const hasPrice  = item.listPrice !== null;
+    const modalUSD  = hasPrice ? item.listPrice * (1 - dModal) : null;
+    const modalIDR  = hasPrice ? modalUSD * kurs : null;
+    const jualIDR   = hasPrice ? item.listPrice * kurs * (1 - diskonPct) : null;
+
+    // Stok Pusat
+    let qtyPusatDisplay;
+    if (item.qty === null) {
+      qtyPusatDisplay = '<span class="qty-badge qty-na" style="font-size:10px">tidak ada data</span>';
+    } else if (item.qty === '0') {
+      qtyPusatDisplay = '<span class="qty-badge qty-zero">Stok Kosong</span>';
+    } else {
+      qtyPusatDisplay = `<span class="qty-badge ${qtyClass(item.qty)}">${item.qty}</span>`;
+    }
+
+    // Stok LTC
+    let qtyLtcDisplay;
+    if (!state.stokLtc.loaded) {
+      qtyLtcDisplay = '<span class="qty-badge qty-na" style="font-size:10px">—</span>';
+    } else if (item.qtyLtc === null) {
+      qtyLtcDisplay = '<span class="qty-badge qty-na" style="font-size:10px">tidak ada data</span>';
+    } else if (item.qtyLtc === '0') {
+      qtyLtcDisplay = '<span class="qty-badge qty-zero">Stok Kosong</span>';
+    } else {
+      qtyLtcDisplay = `<span class="qty-badge ${qtyClass(item.qtyLtc)}">${item.qtyLtc}</span>`;
+    }
+
+    const newBadge     = item.hasNew  ? '<span class="new-price-badge">NEW</span>'         : '';
+    const partialBadge = item.partial ? '<span class="partial-badge">PARTIAL</span>' : '';
+    const notFoundMark = !item.found  ? ' <span style="font-size:10px;color:var(--red)">✗ tidak ditemukan</span>' : '';
+
+    const listUSDDisplay = hasPrice
+      ? `<span class="price-usd">$${item.listPrice.toFixed(4)}${newBadge}</span>`
+      : '<span class="price-na">—</span>';
+    const modalUSDDisplay = modalUSD !== null
+      ? `<span class="price-usd">$${modalUSD.toFixed(4)}</span>`
+      : '<span class="price-na">—</span>';
+    const modalIDRDisplay = modalIDR !== null
+      ? `<span class="price-modal">${fmtIDR(modalIDR)}</span>`
+      : '<span class="price-na">—</span>';
+    const jualClass = state.diskon === 'special' ? 'price-special' : 'price-jual';
+    const jualIDRDisplay = jualIDR !== null
+      ? `<span class="${jualClass}">${fmtIDR(jualIDR)}</span>`
+      : '<span class="price-na">—</span>';
+
+    const rowStyle = !item.found && !item.partial ? ' style="opacity:0.5"' : '';
+
+    return `<tr class="fade-row" style="animation-delay:${Math.min(i,30)*0.01}s"${rowStyle}>
+      <td class="td-edp">${item.edp}${partialBadge}${notFoundMark}</td>
+      <td class="td-name">${item.name || '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="td-name" style="color:var(--text2);font-size:11px">${item.size || '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="td-num">${qtyPusatDisplay}</td>
+      <td class="td-num">${qtyLtcDisplay}</td>
+      <td class="td-num">${listUSDDisplay}</td>
+      <td class="td-num col-modal-usd" style="display:${modalUSDVisible ? '' : 'none'}">${modalUSDDisplay}</td>
+      <td class="td-num">${modalIDRDisplay}</td>
+      <td class="td-num">${jualIDRDisplay}</td>
+      <td class="td-moq">
+        <label class="moq-check"><input type="checkbox" onchange="toggleMoq('${item.edp}',this)" ${state.moq && state.moq[item.edp] ? 'checked' : ''}>pack</label>
+        <input type="number" class="moq-input" min="1" step="1" value="${state.moq && state.moq[item.edp] ? state.moq[item.edp] : ''}" ${state.moq && state.moq[item.edp] ? '' : 'disabled'} placeholder="isi/pack" oninput="setMoq('${item.edp}',this.value)">
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  const s = state;
+  const range = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= s.page - 2 && i <= s.page + 2)) range.push(i);
+    else if (range[range.length - 1] !== '...') range.push('...');
+  }
+  let html = `<button class="page-btn" onclick="goPage(${s.page-1})" ${s.page===1?'disabled':''}>‹ Prev</button>`;
+  range.forEach(r => {
+    if (r === '...') html += `<span class="page-dots">…</span>`;
+    else html += `<button class="page-btn ${r===s.page?'active':''}" onclick="goPage(${r})">${r}</button>`;
+  });
+  html += `<button class="page-btn" onclick="goPage(${s.page+1})" ${s.page===totalPages?'disabled':''}>Next ›</button>`;
+  html += `<span class="page-count-inline">Hal. ${s.page} / ${totalPages}</span>`;
+  el.innerHTML = html;
+}
+
+function goPage(p) {
+  state.page = p;
+  renderResults();
+  // Scroll to TOP of table, not window top
+  const tableEl = document.getElementById('tableWrap');
+  if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════
+//  COPY WA  (improved)
+// ═══════════════════════════════════════════
+function getJualLabel() {
+  if (state.diskon === 't3') return 'Harga T3';
+  if (state.diskon === 't5') return 'Harga T5';
+  return 'Harga Special';
+}
+
+function getTodayStr() {
+  const now = new Date();
+  const dd  = String(now.getDate()).padStart(2,'0');
+  const mm  = String(now.getMonth()+1).padStart(2,'0');
+  const yyyy = now.getFullYear();
+  return dd + '/' + mm + '/' + yyyy;
+}
+
+function copyWA() {
+  if (!state.filtered.length) return;
+
+  // ── GUARD: peringatan jika diskon bukan T3 ──
+  if (state.diskon === 't5') {
+    const ok = confirm(
+      '⚠️ PERHATIAN!\n\n' +
+      'Kamu sedang menggunakan harga T5 (diskon lebih besar).\n' +
+      'Harga umum customer adalah T3.\n\n' +
+      'Yakin ingin kirim harga T5 ke customer?'
+    );
+    if (!ok) return;
+  } else if (state.diskon === 'special') {
+    const pct = document.getElementById('specialDiskon').value || '?';
+    const ok = confirm(
+      '⚠️ PERHATIAN!\n\n' +
+      'Kamu sedang menggunakan DISKON SPECIAL (' + pct + '%).\n' +
+      'Harga umum customer adalah T3.\n\n' +
+      'Yakin ingin kirim harga special ini ke customer?'
+    );
+    if (!ok) return;
+  }
+
+  const diskonPct  = getDiskonPct();
+  const kurs       = getKurs();
+  const jualLabel  = getJualLabel();
+  const today      = getTodayStr();
+
+  // Only include items that were found (skip silent not-found in WA message)
+  const validItems    = state.filtered.filter(r => r.found || r.partial);
+  const notFoundItems = state.filtered.filter(r => !r.found && !r.partial);
+
+  let lines = [
+    'Halo! Berikut info stok & harga yang dicari 🙏',
+    '',
+    '📋 *Detail produk:*',
+  ];
+
+  validItems.forEach((item, idx) => {
+    const hasPrice = item.listPrice !== null;
+    const jualIDR  = hasPrice ? Math.round(item.listPrice * kurs * (1 - diskonPct)) : null;
+    const jualStr  = jualIDR !== null ? '*Rp ' + jualIDR.toLocaleString('id-ID') + '*' : '_tidak ada data harga_';
+    const sizeStr  = item.size ? ' (' + item.size + ')' : '';
+    const nameStr  = item.name ? item.name + sizeStr : item.edp;
+
+    // Header item
+    lines.push('');
+    lines.push('*' + (idx + 1) + '. ' + item.edp + '*');
+    lines.push('   ' + nameStr + (item.partial ? ' _(kode mirip)_' : ''));
+
+    // Stok
+    const pusatAda  = item.qty !== null && item.qty !== '0';
+    const ltcLoaded = state.stokLtc.loaded;
+    const ltcAda    = ltcLoaded && item.qtyLtc !== null && item.qtyLtc !== '0';
+
+    if (!pusatAda && (!ltcLoaded || !ltcAda)) {
+      // Keduanya kosong — cukup 1 baris
+      lines.push('   📦 Stok: _Maaf, sedang kosong_');
+    } else if (pusatAda && ltcLoaded && ltcAda) {
+      // Keduanya ada — tampilkan dua-duanya
+      lines.push('   📦 Stok Pusat: *' + item.qty + ' pcs*');
+      lines.push('   🏪 Stok LTC: *' + item.qtyLtc + ' pcs*');
+    } else if (!pusatAda && ltcAda) {
+      // Pusat kosong, LTC ada — tampilkan LTC saja
+      lines.push('   🏪 Stok LTC: *' + item.qtyLtc + ' pcs*');
+    } else if (pusatAda && ltcLoaded && !ltcAda) {
+      // Pusat ada, LTC kosong — tampilkan Pusat + info pengiriman
+      lines.push('   📦 Stok Pusat: *' + item.qty + ' pcs* (pengiriman maks. 2 hari kerja)');
+    } else {
+      // LTC tidak dimuat, tampilkan Pusat saja
+      if (pusatAda) {
+        lines.push('   📦 Stok Pusat: *' + item.qty + ' pcs*');
+      } else {
+        lines.push('   📦 Stok: _Maaf, sedang kosong_');
+      }
+    }
+
+    // Harga
+    lines.push('   💰 Harga: ' + jualStr);
+  });
+
+  // Garis pemisah sebelum footer
+  lines.push('');
+  lines.push('〰〰〰〰〰〰〰〰〰');
+
+  // Kode tidak ditemukan
+  if (notFoundItems.length > 0) {
+    lines.push('');
+    lines.push('⚠️ *Kode tidak ditemukan:*');
+    notFoundItems.forEach(item => lines.push('   • ' + item.edp));
+    lines.push('');
+    lines.push('〰〰〰〰〰〰〰〰〰');
+  }
+
+  lines.push('');
+  lines.push('ℹ️ _Harga ' + jualLabel + ' · ' + today + '_');
+  lines.push('_*Belum termasuk PPN 11%_');
+  lines.push('');
+  lines.push('Terima kasih 🙏');
+
+  const text = lines.join('\n');
+
+  const fab = document.getElementById('fabWa');
+  navigator.clipboard.writeText(text).then(() => {
+    fab.classList.add('copied');
+    fab.innerHTML = '✓ Tersalin!';
+    setTimeout(() => {
+      fab.classList.remove('copied');
+      fab.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Copy ke WA';
+    }, 2500);
+    showToast('✓ Pesan WA berhasil disalin!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ Pesan WA berhasil disalin!');
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('waToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function qtyClass(q) {
+  const n = parseInt(q);
+  if (isNaN(n) || n === 0) return 'qty-zero';
+  if (n < 50)  return 'qty-low';
+  if (n < 200) return 'qty-ok';
+  return 'qty-high';
+}
+function show(id) { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); }
+function hide(id) { const el = document.getElementById(id); if (el) el.classList.add('hidden'); }
+function cap(s)  { return s.charAt(0).toUpperCase() + s.slice(1); }
+function showLoading(txt) {
+  document.getElementById('loadingText').textContent = txt || 'Memuat...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadSettings();
+</script>
+<script>
+/* ═══════════════════════════════════════════
+   FASE 1 — SIMPAN & BUAT LINK (Supabase)
+   ═══════════════════════════════════════════ */
+
+/* ┌─────────────────────────────────────────┐
+   │  ISI KREDENSIAL SUPABASE ANDA DI SINI     │
+   └─────────────────────────────────────────┘ */
+const SB_CONFIG = {
+  url:      'https://ulwiljcwwitaekbeuanp.supabase.co',
+  anon:     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsd2lsamN3d2l0YWVrYmV1YW5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTUyMDMsImV4cCI6MjA5ODQ5MTIwM30.-nFyLeSvGKgsigIxTabHfmQZqGWNC1g1jfWLVMbX_RU',
+  linkBase: 'penawaran.html?q='    // ← halaman customer (dibangun di Fase 2)
+};
+
+let _sb = null;
+function sbReady() {
+  if (_sb) return _sb;
+  if (!SB_CONFIG.url || !SB_CONFIG.anon || !window.supabase) return null;
+  _sb = window.supabase.createClient(SB_CONFIG.url, SB_CONFIG.anon);
+  return _sb;
+}
+
+/* ── MOQ per barang (isi per pack) ── */
+state.moq = state.moq || {};
+function toggleMoq(edp, el) {
+  const td  = el.closest('td');
+  const inp = td.querySelector('.moq-input');
+  if (el.checked) {
+    inp.disabled = false;
+    if (!inp.value) inp.value = 10;
+    state.moq[edp] = parseInt(inp.value) || 10;
+    inp.focus();
+  } else {
+    inp.disabled = true;
+    delete state.moq[edp];
+  }
+}
+function setMoq(edp, val) {
+  const n = parseInt(val) || 0;
+  if (n > 0) state.moq[edp] = n; else delete state.moq[edp];
+}
+
+/* ── Helper ── */
+function genQuoteCode() {
+  const d = new Date();
+  const ymd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  const rnd = Math.random().toString(36).slice(2,6).toUpperCase();
+  return 'QT-' + ymd + '-' + rnd;
+}
+function stockStatusOf(item) {
+  const pusatAda = item.qty !== null && item.qty !== '0';
+  const ltcAda   = state.stokLtc.loaded && item.qtyLtc !== null && item.qtyLtc !== '0';
+  if (pusatAda) return 'ready';
+  if (ltcAda)   return 'ltc';
+  return 'kosong';
+}
+function validItemsForSave() {
+  return state.filtered.filter(r => r.found || r.partial);
+}
+
+/* ── Modal simpan ── */
+function openSaveModal() {
+  const items = validItemsForSave();
+  if (!items.length) { showToast('Belum ada barang untuk disimpan'); return; }
+
+  const kurs = getKurs();
+  const tier = state.diskon.toUpperCase();
+  const moqCount = items.filter(it => state.moq[it.edp]).length;
+  document.getElementById('quoteSummary').innerHTML =
+    '<b>' + items.length + '</b> barang · harga <b>' + getJualLabel() + '</b> · kurs <b>×' +
+    kurs.toLocaleString('id-ID') + '</b>' + (moqCount ? ' · <b>' + moqCount + '</b> barang per-pack' : '');
+
+  document.getElementById('cfgWarn').style.display = sbReady() ? 'none' : 'block';
+  const last = localStorage.getItem('ss_sales');
+  if (last) document.getElementById('fSalesName').value = last;
+  document.getElementById('saveModal').classList.add('show');
+}
+function closeSaveModal(){ document.getElementById('saveModal').classList.remove('show'); }
+function closeLinkModal(){ document.getElementById('linkModal').classList.remove('show'); }
+
+/* ── Simpan ke Supabase ── */
+let _lastLink = '', _lastCode = '', _lastCust = '';
+async function doSaveQuote() {
+  const sb = sbReady();
+  if (!sb) { document.getElementById('cfgWarn').style.display = 'block'; return; }
+
+  // Guard: kalau harga bukan T3
+  if (state.diskon !== 't3') {
+    const lbl = state.diskon === 't5' ? 'T5 (diskon lebih besar)' : 'SPECIAL';
+    if (!confirm('⚠️ Harga yang dikunci adalah ' + lbl + ', bukan T3.\nYakin lanjut simpan link dengan harga ini?')) return;
+  }
+
+  const btn = document.getElementById('btnDoSave');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+  try {
+    const kurs = getKurs(), diskonPct = getDiskonPct();
+    const items = validItemsForSave();
+    const code  = genQuoteCode();
+    const days  = parseInt(document.getElementById('fValidDays').value) || 14;
+    const validUntil = new Date(Date.now() + days*86400000).toISOString().slice(0,10);
+    const salesName  = document.getElementById('fSalesName').value.trim();
+    if (salesName) localStorage.setItem('ss_sales', salesName);
+
+    const header = {
+      code,
+      customer_name:    document.getElementById('fCustName').value.trim() || null,
+      customer_company: document.getElementById('fCustCompany').value.trim() || null,
+      sales_name:       salesName || null,
+      kurs, tier: state.diskon, tier_pct: diskonPct, ppn_pct: 11,
+      status: 'terkirim',
+      note: document.getElementById('fNote').value.trim() || null,
+      valid_until: validUntil
+    };
+
+    const { data: q, error: e1 } = await sb.from('quotes').insert(header).select().single();
+    if (e1) throw new Error('Simpan header gagal: ' + e1.message);
+
+    const rows = items.map((it, idx) => ({
+      quote_id: q.id,
+      edp: it.edp,
+      name: it.name || null,
+      size: it.size || null,
+      qty_pusat: it.qty,
+      qty_ltc: it.qtyLtc,
+      stock_status: stockStatusOf(it),
+      list_usd: it.listPrice,
+      unit_idr: it.listPrice !== null ? Math.round(it.listPrice * kurs * (1 - diskonPct)) : null,
+      moq_pack: state.moq[it.edp] || null,
+      sort_order: idx
+    }));
+    const { error: e2 } = await sb.from('quote_items').insert(rows);
+    if (e2) throw new Error('Header tersimpan, item gagal: ' + e2.message);
+
+    // Bangun link absolut
+    let link;
+    if (/:\/\//.test(SB_CONFIG.linkBase)) link = SB_CONFIG.linkBase + encodeURIComponent(code);
+    else link = new URL(SB_CONFIG.linkBase + encodeURIComponent(code), location.href).href;
+
+    _lastLink = link; _lastCode = code;
+    _lastCust = header.customer_name || '';
+    document.getElementById('resCode').textContent = code;
+    document.getElementById('resLink').value = link;
+    closeSaveModal();
+    document.getElementById('linkModal').classList.add('show');
+  } catch (err) {
+    alert('Gagal: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan & Buat Link';
+  }
+}
+
+function copyLink() {
+  const inp = document.getElementById('resLink');
+  navigator.clipboard.writeText(inp.value).then(() => showToast('✓ Link tersalin!'))
+    .catch(() => { inp.select(); document.execCommand('copy'); showToast('✓ Link tersalin!'); });
+}
+function shareLinkWA() {
+  const sapaan = _lastCust ? ('Halo ' + _lastCust + ', ') : 'Halo, ';
+  const msg = sapaan + 'berikut penawaran harga dari kami. Silakan buka link, atur jumlah, lalu submit 🙏\n\n' +
+              _lastLink + '\n\nNo. ' + _lastCode;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* Tutup modal saat klik area gelap */
+document.querySelectorAll('.modal-ov').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+});
+
+/* FAB Simpan muncul/hilang mengikuti FAB WA */
+(function(){
+  const wa = document.getElementById('fabWa'), save = document.getElementById('fabSave');
+  if (!wa || !save) return;
+  const sync = () => save.classList.toggle('show', wa.classList.contains('show'));
+  new MutationObserver(sync).observe(wa, { attributes:true, attributeFilter:['class'] });
+  sync();
+})();
 </script>
 </body>
 </html>
