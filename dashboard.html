@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Sales — Pesanan Masuk</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f0f2f5;
+    --surface:  #ffffff;
+    --surface2: #f7f8fa;
+    --border:   #e2e6eb;
+    --border2:  #d0d7df;
+    --accent:   #1a56db;
+    --accent-h: #1648c0;
+    --accent-s: #e8effe;
+    --green:    #057a55;
+    --green-s:  #def7ec;
+    --red:      #c81e1e;
+    --red-s:    #fde8e8;
+    --yellow:   #b45309;
+    --yellow-s: #fef3c7;
+    --purple:   #6b21a8;
+    --purple-s: #f3e8ff;
+    --text:     #111928;
+    --text2:    #4b5563;
+    --muted:    #9ca3af;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; padding-bottom: 60px; }
+  .mono { font-family: var(--mono); }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 58px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .brand-name { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .btn-refresh { border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); border-radius: 8px; padding: 7px 12px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tab { border: 1px solid var(--border2); background: var(--surface); color: var(--text2); border-radius: 9px; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tab .cnt { font-family: var(--mono); font-size: 11px; background: rgba(0,0,0,0.08); padding: 1px 7px; border-radius: 10px; }
+  .tab.active .cnt { background: rgba(255,255,255,0.25); }
+
+  .empty { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .empty .ic { font-size: 40px; margin-bottom: 10px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+  .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.07); border-color: var(--border2); }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-code { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .badge { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: .02em; }
+  .b-terkirim { background: var(--surface2); color: var(--muted); }
+  .b-disubmit { background: var(--yellow-s); color: var(--yellow); }
+  .b-review   { background: var(--accent-s); color: var(--accent); }
+  .b-direvisi { background: var(--purple-s); color: var(--purple); }
+  .b-diterima { background: var(--green-s); color: var(--green); }
+  .b-ditolak  { background: var(--red-s); color: var(--red); }
+  .card-cust { font-size: 14px; font-weight: 600; margin-top: 8px; }
+  .card-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .card-items { font-size: 12px; color: var(--text2); }
+  .card-total { font-family: var(--mono); font-weight: 700; font-size: 14px; }
+
+  /* Overlay + detail sheet */
+  .overlay { position: fixed; inset: 0; background: rgba(17,25,40,.5); z-index: 200; display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 30px 16px; }
+  .overlay.show { display: flex; }
+  .sheet { background: var(--surface); width: 100%; max-width: 820px; border-radius: 14px; overflow: hidden; margin-bottom: 30px; }
+  .sheet-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .sheet-head h2 { font-family: var(--mono); font-size: 16px; }
+  .sheet-head .sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .btn-x { border: none; background: none; font-size: 20px; cursor: pointer; color: var(--muted); line-height: 1; }
+  .sheet-body { padding: 18px 22px; }
+  .infobar { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12.5px; color: var(--text2); margin-bottom: 14px; }
+  .infobar b { color: var(--text); }
+  .note-box { background: var(--surface2); border-radius: 9px; padding: 10px 12px; font-size: 12.5px; color: var(--text2); margin-bottom: 14px; }
+  .note-box b { color: var(--text); }
+
+  .banner { border-radius: 9px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+  .banner.warn { background: var(--yellow-s); color: var(--yellow); }
+  .banner.purple { background: var(--purple-s); color: var(--purple); }
+  .banner.red { background: var(--red-s); color: var(--red); }
+  .banner.green { background: var(--green-s); color: var(--green); }
+
+  .validate-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .file-chip { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1.5px dashed var(--border2); background: var(--surface2); font-family: var(--mono); font-size: 11.5px; color: var(--text2); position: relative; }
+  .file-chip input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .file-chip.loaded { border-style: solid; border-color: var(--green); background: var(--green-s); color: var(--green); }
+  .validate-hint { font-size: 11px; color: var(--muted); }
+
+  table.items { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.items th { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .02em; }
+  table.items td { padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.items td.right, table.items th.right { text-align: right; }
+  .diff { color: var(--red); font-weight: 700; }
+  .diff-ok { color: var(--green); }
+  .pip { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; }
+  .p-ready{background:var(--green)} .p-ltc{background:var(--yellow)} .p-kosong{background:var(--muted)}
+  input.edit-num { width: 70px; border: 1px solid var(--border2); border-radius: 6px; padding: 4px 6px; font-family: var(--mono); font-size: 12px; text-align: right; }
+
+  .totals { margin-top: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 12.5px; }
+  .totals .grand { font-size: 15px; font-weight: 700; font-family: var(--mono); }
+
+  .revise-note { margin-top: 14px; }
+  .revise-note label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .revise-note textarea { width: 100%; border: 1px solid var(--border2); border-radius: 9px; padding: 9px 11px; font-family: var(--sans); font-size: 13px; min-height: 56px; resize: vertical; }
+
+  .sheet-actions { display: flex; gap: 8px; padding: 16px 22px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .btn { border: none; border-radius: 9px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+  .btn-approve { background: var(--green); color: #fff; }
+  .btn-revise  { background: var(--purple); color: #fff; }
+  .btn-reject  { background: var(--red-s); color: var(--red); }
+  .btn-ghost   { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn[disabled] { opacity: .5; cursor: default; }
+  .spacer { flex: 1; }
+
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 9px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 300; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .loading-txt { text-align:center; padding: 60px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">📋</div>
+    <div class="brand-name">Dashboard Sales</div>
+  </div>
+  <div class="header-right">
+    <button class="btn-refresh" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+  <div id="content"><div class="loading-txt">Memuat pesanan…</div></div>
+</div>
+
+<div class="overlay" id="detailOv"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ┌─────────────────────────────────────────┐
+   │  KREDENSIAL SUPABASE (sama dengan index.html) │
+   └─────────────────────────────────────────┘ */
+const SB_CONFIG = {
+  url:  'https://ulwiljcwwitaekbeuanp.supabase.co',
+  anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsd2lsamN3d2l0YWVrYmV1YW5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTUyMDMsImV4cCI6MjA5ODQ5MTIwM30.-nFyLeSvGKgsigIxTabHfmQZqGWNC1g1jfWLVMbX_RU',
+  customerLinkBase: 'penawaran.html?q='
+};
+const sb = window.supabase.createClient(SB_CONFIG.url, SB_CONFIG.anon);
+const rp = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+
+let QUOTES = [];       // all quotes fetched
+let ITEMS_BY_Q = {};   // quote_id -> [items]
+let TAB = 'aksi';
+let hargaMap = null;   // optional validation source: edp -> listPrice(USD)
+let stokMap  = null;   // optional validation source: edp -> qty pusat
+let kursNow  = 16700;
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ── Load semua quotes + items ── */
+async function loadAll(){
+  document.getElementById('content').innerHTML = '<div class="loading-txt">Memuat pesanan…</div>';
+  const { data: quotes, error: e1 } = await sb.from('quotes').select('*').order('created_at', { ascending: false }).limit(300);
+  if(e1){ document.getElementById('content').innerHTML = '<div class="loading-txt">Gagal memuat: '+e1.message+'</div>'; return; }
+  QUOTES = quotes || [];
+  const ids = QUOTES.map(q=>q.id);
+  ITEMS_BY_Q = {};
+  if(ids.length){
+    const { data: items, error: e2 } = await sb.from('quote_items').select('*').in('quote_id', ids);
+    if(e2){ document.getElementById('content').innerHTML = '<div class="loading-txt">Gagal memuat item: '+e2.message+'</div>'; return; }
+    (items||[]).forEach(it=>{ (ITEMS_BY_Q[it.quote_id] = ITEMS_BY_Q[it.quote_id]||[]).push(it); });
+  }
+  renderTabs();
+  renderList();
+}
+
+function computeTotals(q){
+  const items = (ITEMS_BY_Q[q.id]||[]);
+  const sub = items.reduce((s,it)=> s + (it.unit_idr!=null && it.qty_ordered ? it.unit_idr*it.qty_ordered : 0), 0);
+  const ppn = Math.round(sub * ((q.ppn_pct||11)/100));
+  const lines = items.filter(it=>it.qty_ordered>0).length;
+  return { sub, ppn, grand: sub+ppn, lines };
+}
+
+function tabFilter(status){
+  if(TAB==='aksi')     return status==='disubmit' || status==='review';
+  if(TAB==='direvisi') return status==='direvisi';
+  if(TAB==='diterima') return status==='diterima';
+  if(TAB==='ditolak')  return status==='ditolak';
+  return true; // semua
+}
+
+function renderTabs(){
+  const counts = { aksi:0, direvisi:0, diterima:0, ditolak:0, semua: QUOTES.length };
+  QUOTES.forEach(q=>{
+    if(q.status==='disubmit'||q.status==='review') counts.aksi++;
+    else if(q.status==='direvisi') counts.direvisi++;
+    else if(q.status==='diterima') counts.diterima++;
+    else if(q.status==='ditolak') counts.ditolak++;
+  });
+  const defs = [
+    ['aksi','Perlu Ditindak'], ['direvisi','Menunggu Customer'],
+    ['diterima','Diterima'], ['ditolak','Ditolak'], ['semua','Semua']
+  ];
+  document.getElementById('tabs').innerHTML = defs.map(([k,label])=>
+    `<button class="tab ${TAB===k?'active':''}" onclick="setTab('${k}')">${label} <span class="cnt">${counts[k]}</span></button>`
+  ).join('');
+}
+function setTab(t){ TAB=t; renderTabs(); renderList(); }
+
+function fmtDate(d){ if(!d) return '—'; return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
+function fmtDateTime(d){ if(!d) return '—'; return new Date(d).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
+
+const STATUS_LABEL = { terkirim:'Terkirim', disubmit:'Disubmit', review:'Review', direvisi:'Direvisi', diterima:'Diterima', ditolak:'Ditolak' };
+
+function renderList(){
+  const list = QUOTES.filter(q=>tabFilter(q.status));
+  const el = document.getElementById('content');
+  if(!list.length){ el.innerHTML = `<div class="empty"><div class="ic">📭</div>Tidak ada pesanan di kategori ini.</div>`; return; }
+  el.innerHTML = `<div class="grid">${list.map(q=>{
+    const t = computeTotals(q);
+    const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
+    return `<div class="card" onclick="openDetail('${q.id}')">
+      <div class="card-top">
+        <div class="card-code">${esc(q.code)}</div>
+        <span class="badge b-${q.status}">${STATUS_LABEL[q.status]||q.status}</span>
+      </div>
+      <div class="card-cust">${esc(who)}</div>
+      <div class="card-meta">Sales ${esc(q.sales_name||'—')} · ${fmtDateTime(q.submitted_at||q.created_at)}</div>
+      <div class="card-bottom">
+        <div class="card-items">${t.lines} barang</div>
+        <div class="card-total">${rp(t.grand)}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ── Detail sheet ── */
+let CUR = null;       // current quote being viewed
+let EDIT_MODE = false;
+let EDIT_VALS = {};   // item.id -> {qty, unit_idr}
+
+async function openDetail(id){
+  CUR = QUOTES.find(q=>q.id===id);
+  if(!CUR) return;
+  EDIT_MODE = false; EDIT_VALS = {};
+
+  // Auto-claim: disubmit -> review begitu dibuka
+  if(CUR.status === 'disubmit'){
+    const { data, error } = await sb.from('quotes').update({ status:'review', reviewed_at:new Date().toISOString() }).eq('id', id).select().single();
+    if(!error && data){ CUR = data; const idx=QUOTES.findIndex(q=>q.id===id); QUOTES[idx]=data; renderTabs(); renderList(); }
+  }
+
+  renderDetail();
+  document.getElementById('detailOv').classList.add('show');
+}
+function closeDetail(){ document.getElementById('detailOv').classList.remove('show'); CUR=null; }
+
+function itemStockBadge(it, live){
+  const status = it.stock_status;
+  const map = { ready:['p-ready','Ready'], ltc:['p-ltc','LTC'], kosong:['p-kosong','Kosong'] };
+  const [cls,label] = map[status] || ['p-kosong','—'];
+  let html = `<span class="pip ${cls}"></span>${label}`;
+  if(live && live.qty!=null){
+    const liveStatus = live.qty>0 ? 'ready' : 'kosong';
+    if(liveStatus !== status) html += ` <span class="diff">(kini: ${live.qty>0?'Ready · '+live.qty:'Kosong'})</span>`;
+  }
+  return html;
+}
+
+function renderDetail(){
+  const q = CUR;
+  const items = (ITEMS_BY_Q[q.id]||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const t = computeTotals(q);
+  const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
+  const canAct = q.status==='disubmit' || q.status==='review';
+  const link = /:\/\//.test(SB_CONFIG.customerLinkBase) ? SB_CONFIG.customerLinkBase+encodeURIComponent(q.code) : new URL(SB_CONFIG.customerLinkBase+encodeURIComponent(q.code), location.href).href;
+
+  let banner = '';
+  if(q.status==='direvisi') banner = `<div class="banner purple">Menunggu customer mengecek &amp; kirim ulang. Catatan revisi: ${esc(q.revision_note||'-')}</div>`;
+  if(q.status==='diterima') banner = `<div class="banner green">Pesanan sudah diterima${q.decided_at?' · '+fmtDateTime(q.decided_at):''}.</div>`;
+  if(q.status==='ditolak')  banner = `<div class="banner red">Pesanan ditolak${q.decided_at?' · '+fmtDateTime(q.decided_at):''}. Alasan: ${esc(q.reject_reason||'-')}</div>`;
+  if(q.status==='review')   banner = `<div class="banner warn">Sedang direview. Cek stok &amp; harga di bawah sebelum memutuskan.</div>`;
+
+  const validateRow = canAct ? `
+    <div class="validate-row">
+      <span class="validate-hint">Opsional — muat file terkini untuk validasi harga &amp; stok:</span>
+      <div class="file-chip ${hargaMap?'loaded':''}" title="Muat pricelist terbaru">
+        <input type="file" accept=".xlsx,.xls" onchange="loadValidateFile('harga',this)">
+        💰 ${hargaMap? hargaMap.size+' harga dimuat' : 'Pricelist terbaru'}
+      </div>
+      <div class="file-chip ${stokMap?'loaded':''}" title="Muat stok pusat terbaru">
+        <input type="file" accept=".xlsx,.xls" onchange="loadValidateFile('stok',this)">
+        📊 ${stokMap? stokMap.size+' stok dimuat' : 'Stok pusat terbaru'}
+      </div>
+    </div>` : '';
+
+  const rows = items.map(it=>{
+    const qty = EDIT_MODE ? (EDIT_VALS[it.id]?.qty ?? it.qty_ordered ?? 0) : (it.qty_ordered||0);
+    const unit = EDIT_MODE ? (EDIT_VALS[it.id]?.unit_idr ?? it.unit_idr ?? 0) : it.unit_idr;
+    const live = hargaMap && hargaMap.has(it.edp) ? { listUsd: hargaMap.get(it.edp) } : null;
+    const liveStok = stokMap && stokMap.has(it.edp) ? { qty: stokMap.get(it.edp) } : null;
+    let priceDiffHtml = '';
+    if(live && it.list_usd!=null){
+      const changed = Math.abs(live.listUsd - it.list_usd) > 0.0001;
+      priceDiffHtml = changed ? ` <span class="diff">(list kini $${live.listUsd.toFixed(2)})</span>` : ` <span class="diff-ok">✓ sama</span>`;
+    }
+    const custQty = it.qty_customer!=null ? it.qty_customer : it.qty_ordered;
+    const qtyChangedNote = (EDIT_MODE && custQty!=null && qty!==custQty) ? `<div style="font-size:10.5px;color:var(--muted)">customer minta ${custQty}</div>` : '';
+    return `<tr>
+      <td class="mono">${esc(it.edp)}</td>
+      <td>${esc(it.name||'')}</td>
+      <td>${itemStockBadge(it, liveStok)}</td>
+      <td class="right">
+        ${EDIT_MODE ? `<input class="edit-num" type="number" min="0" value="${qty}" onchange="setEditVal('${it.id}','qty',this.value)">` : (qty||'—')}
+        ${qtyChangedNote}
+      </td>
+      <td class="right">
+        ${EDIT_MODE ? `<input class="edit-num" type="number" min="0" value="${unit||0}" onchange="setEditVal('${it.id}','unit_idr',this.value)">` : (unit!=null?rp(unit):'—')}
+        <div style="font-size:10.5px;color:var(--muted)">${priceDiffHtml}</div>
+      </td>
+      <td class="right mono">${(unit!=null && qty)?rp(unit*qty):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('detailOv').innerHTML = `
+    <div class="sheet">
+      <div class="sheet-head">
+        <div>
+          <h2>${esc(q.code)} <span class="badge b-${q.status}" style="margin-left:8px">${STATUS_LABEL[q.status]}</span></h2>
+          <div class="sub">${esc(who)}</div>
+        </div>
+        <button class="btn-x" onclick="closeDetail()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="infobar">
+          <span>Sales <b>${esc(q.sales_name||'—')}</b></span>
+          <span>Dibuat <b>${fmtDate(q.created_at)}</b></span>
+          <span>Berlaku s/d <b>${fmtDate(q.valid_until)}</b></span>
+          <span>Kurs terkunci <b>×${(q.kurs||0).toLocaleString('id-ID')}</b></span>
+          <span>Tier <b>${(q.tier||'').toUpperCase()}</b></span>
+        </div>
+        ${q.note ? `<div class="note-box"><b>Catatan sales:</b> ${esc(q.note)}</div>` : ''}
+        ${q.customer_note ? `<div class="note-box"><b>Catatan customer:</b> ${esc(q.customer_note)}</div>` : ''}
+        ${banner}
+        ${validateRow}
+        <table class="items">
+          <thead><tr>
+            <th>EDP</th><th>Nama</th><th>Stok</th>
+            <th class="right">Qty</th><th class="right">Harga/unit</th><th class="right">Subtotal</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="totals">
+          <div>Subtotal <b class="mono">${rp(t.sub)}</b></div>
+          <div>PPN 11% <b class="mono">${rp(t.ppn)}</b></div>
+          <div class="grand">Total ${rp(t.grand)}</div>
+        </div>
+        ${EDIT_MODE ? `
+        <div class="revise-note">
+          <label>Catatan revisi untuk customer (jelaskan apa yang berubah)</label>
+          <textarea id="reviseNote" placeholder="mis. EDP 12000201 stok kosong, qty disesuaikan jadi indent"></textarea>
+        </div>` : ''}
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-ghost" onclick="copyCustLink('${link}')">🔗 Salin link customer</button>
+        <div class="spacer"></div>
+        ${EDIT_MODE ? `
+          <button class="btn-ghost" onclick="cancelEdit()">Batal</button>
+          <button class="btn-revise" onclick="sendRevision()">Kirim Revisi ke Customer</button>
+        ` : canAct ? `
+          <button class="btn-reject" onclick="rejectQuote()">✕ Tolak</button>
+          <button class="btn-revise" onclick="startEdit()">✏️ Edit &amp; Revisi</button>
+          <button class="btn-approve" onclick="approveQuote()">✓ Setujui Pesanan</button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function copyCustLink(link){
+  navigator.clipboard.writeText(link).then(()=>showToast('✓ Link tersalin')).catch(()=>showToast('Gagal menyalin'));
+}
+
+function startEdit(){
+  EDIT_MODE = true; EDIT_VALS = {};
+  (ITEMS_BY_Q[CUR.id]||[]).forEach(it=>{ EDIT_VALS[it.id] = { qty: it.qty_ordered||0, unit_idr: it.unit_idr||0 }; });
+  renderDetail();
+}
+function cancelEdit(){ EDIT_MODE = false; EDIT_VALS = {}; renderDetail(); }
+function setEditVal(itemId, field, val){
+  const n = field==='qty' ? (parseInt(val)||0) : (parseFloat(val)||0);
+  EDIT_VALS[itemId] = EDIT_VALS[itemId] || {};
+  EDIT_VALS[itemId][field] = n;
+  // update subtotal cell live without full re-render
+  renderDetail();
+}
+
+async function approveQuote(){
+  if(!confirm('Setujui pesanan '+CUR.code+' apa adanya (tanpa perubahan)?')) return;
+  const { data, error } = await sb.from('quotes').update({ status:'diterima', decided_at:new Date().toISOString() }).eq('id', CUR.id).select().single();
+  if(error){ alert('Gagal: '+error.message); return; }
+  applyQuoteUpdate(data);
+  showToast('✓ Pesanan diterima');
+  closeDetail();
+}
+
+async function rejectQuote(){
+  const reason = prompt('Alasan penolakan (akan terlihat oleh customer):');
+  if(reason===null) return;
+  const { data, error } = await sb.from('quotes').update({ status:'ditolak', reject_reason: reason.trim()||null, decided_at:new Date().toISOString() }).eq('id', CUR.id).select().single();
+  if(error){ alert('Gagal: '+error.message); return; }
+  applyQuoteUpdate(data);
+  showToast('Pesanan ditolak');
+  closeDetail();
+}
+
+async function sendRevision(){
+  const note = (document.getElementById('reviseNote')?.value || '').trim();
+  if(!note){ alert('Isi catatan revisi dulu, supaya customer tahu apa yang berubah.'); return; }
+  try{
+    const updates = Object.entries(EDIT_VALS).map(([itemId, v]) =>
+      sb.from('quote_items').update({ qty_ordered: v.qty, unit_idr: v.unit_idr }).eq('id', itemId)
+    );
+    const results = await Promise.all(updates);
+    const bad = results.find(r=>r.error);
+    if(bad) throw bad.error;
+    (ITEMS_BY_Q[CUR.id]||[]).forEach(it=>{ if(EDIT_VALS[it.id]){ it.qty_ordered = EDIT_VALS[it.id].qty; it.unit_idr = EDIT_VALS[it.id].unit_idr; } });
+
+    const { data, error } = await sb.from('quotes').update({ status:'direvisi', revision_note: note, reviewed_at:new Date().toISOString() }).eq('id', CUR.id).select().single();
+    if(error) throw error;
+    applyQuoteUpdate(data);
+    EDIT_MODE = false; EDIT_VALS = {};
+    showToast('✓ Revisi dikirim ke customer');
+    closeDetail();
+  }catch(err){
+    alert('Gagal mengirim revisi: '+(err.message||'coba lagi'));
+  }
+}
+
+function applyQuoteUpdate(data){
+  const idx = QUOTES.findIndex(q=>q.id===data.id);
+  if(idx>=0) QUOTES[idx] = data;
+  CUR = data;
+  renderTabs(); renderList();
+}
+
+/* ── Validasi opsional: load pricelist / stok terkini ── */
+function loadValidateFile(kind, input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:null });
+      if(kind==='harga') hargaMap = parseHargaLite(rows);
+      else stokMap = parseStokLite(rows);
+      renderDetail();
+      showToast('✓ File dimuat untuk validasi');
+    }catch(err){ alert('Gagal membaca file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function findHeaderRow(rows){
+  for (let i=0; i<Math.min(5,rows.length); i++){
+    const r = (rows[i]||[]).map(c=>String(c??'').toLowerCase());
+    if (r.some(c=>c.includes('edp')||c.includes('list')||c.includes('price')||c.includes('harga'))) return i;
+  }
+  return 0;
+}
+function parseHargaLite(rows){
+  const hi = findHeaderRow(rows);
+  const header = (rows[hi]||[]).map(c=>String(c??'').toLowerCase().trim());
+  let edpIdx = header.findIndex(c=>c.includes('edp')); if(edpIdx===-1) edpIdx=1;
+  const priceIdxs = header.reduce((a,c,i)=>{ if(c.includes('price')||c.includes('harga')) a.push(i); return a; },[]);
+  const priceIdx = priceIdxs.length ? priceIdxs[0] : header.length-1;
+  const map = new Map();
+  for (let i=hi+1; i<rows.length; i++){
+    const row = rows[i]; const edp = String(row[edpIdx]??'').trim();
+    if(!edp) continue;
+    const price = parseFloat(row[priceIdx]);
+    if(!isNaN(price)) map.set(edp, price);
+  }
+  return map;
+}
+function parseStokLite(rows){
+  const hi = findHeaderRow(rows);
+  const map = new Map();
+  for (let i=hi+1; i<rows.length; i++){
+    const row = rows[i]; const edp = String(row[0]??'').trim();
+    if(!edp) continue;
+    const qty = parseFloat(String(row[2]??'0').replace(',','.')) || 0;
+    map.set(edp, qty);
+  }
+  return map;
+}
+
+document.getElementById('detailOv').addEventListener('click', e=>{ if(e.target.id==='detailOv') closeDetail(); });
+
+loadAll();
+</script>
+</body>
+</html>

@@ -198,12 +198,7 @@ async function load(){
     return;
   }
   QUOTE = q; ITEMS = items; PPN = (q.ppn_pct||11)/100;
-
-  if(q.status === 'diterima'){
-    render(true);   // read-only, sudah dikonfirmasi
-    return;
-  }
-  render(false);
+  render();
 }
 
 function fmtDate(d){
@@ -216,17 +211,31 @@ function isExpired(){
   return new Date(QUOTE.valid_until) < today;
 }
 
-function render(readOnly){
+function render(){
   const expired = isExpired();
-  const locked = readOnly || expired;
+  const status = QUOTE.status;
+  const editable = (status === 'terkirim' || status === 'direvisi') && !expired;
+  const locked = !editable;
   const who = QUOTE.customer_name
     ? (QUOTE.customer_name + (QUOTE.customer_company ? ' — ' + QUOTE.customer_company : ''))
     : (QUOTE.customer_company || 'Anda');
 
   let banner = '';
-  if(readOnly)      banner = `<div class="banner warn">Penawaran ini sudah dikonfirmasi sales. Untuk perubahan, hubungi sales.</div>`;
-  else if(expired)  banner = `<div class="banner warn">Masa berlaku penawaran ini sudah lewat (${fmtDate(QUOTE.valid_until)}). Hubungi sales untuk penawaran baru.</div>`;
-  else              banner = `<div class="banner info">Harga <b>belum termasuk PPN 11%</b>. Atur jumlah pada barang yang Anda butuhkan.</div>`;
+  if(expired && status !== 'diterima' && status !== 'ditolak'){
+    banner = `<div class="banner warn">Masa berlaku penawaran ini sudah lewat (${fmtDate(QUOTE.valid_until)}). Hubungi sales untuk penawaran baru.</div>`;
+  } else if(status === 'disubmit'){
+    banner = `<div class="banner info">Pesanan sudah terkirim. Menunggu sales mengecek stok &amp; harga terkini.</div>`;
+  } else if(status === 'review'){
+    banner = `<div class="banner info">Sales sedang mengecek pesanan Anda. Mohon tunggu konfirmasi.</div>`;
+  } else if(status === 'direvisi'){
+    banner = `<div class="banner warn">Sales merevisi pesanan ini${QUOTE.revision_note ? ': ' + esc(QUOTE.revision_note) : '.'} Silakan cek ulang jumlah &amp; harga di bawah, lalu kirim ulang.</div>`;
+  } else if(status === 'diterima'){
+    banner = `<div class="banner info">Penawaran ini sudah dikonfirmasi sales. Untuk perubahan, hubungi sales.</div>`;
+  } else if(status === 'ditolak'){
+    banner = `<div class="banner warn">Pesanan ini ditolak sales${QUOTE.reject_reason ? ': ' + esc(QUOTE.reject_reason) : '.'} Hubungi sales untuk info lebih lanjut.</div>`;
+  } else {
+    banner = `<div class="banner info">Harga <b>belum termasuk PPN 11%</b>. Atur jumlah pada barang yang Anda butuhkan.</div>`;
+  }
 
   document.getElementById('app').innerHTML = `
     <div class="wrap">
@@ -292,12 +301,12 @@ function renderList(locked){
     const hasPrice = it.unit_idr !== null && it.unit_idr !== undefined;
     const priceStr = hasPrice ? rp(it.unit_idr) : '—';
     const moq = it.moq_pack && it.moq_pack>1 ? it.moq_pack : null;
-    const preset = locked ? (it.qty_ordered||0) : 0;
+    const preset = QUOTE.status !== 'terkirim' ? (it.qty_ordered||0) : 0;
     const stepper = locked
       ? `<div class="mono" style="font-size:14px;font-weight:600">${preset>0? preset+' pcs':'—'}</div>`
       : `<div class="stepper">
-          <button aria-label="Kurangi" data-act="dec" data-id="${it.id}" disabled>−</button>
-          <input type="number" inputmode="numeric" min="0" value="0" aria-label="Jumlah ${it.edp}" data-id="${it.id}">
+          <button aria-label="Kurangi" data-act="dec" data-id="${it.id}" ${preset===0?'disabled':''}>−</button>
+          <input type="number" inputmode="numeric" min="0" value="${preset}" aria-label="Jumlah ${it.edp}" data-id="${it.id}">
           <button aria-label="Tambah" data-act="inc" data-id="${it.id}">+</button>
         </div>`;
     return `
@@ -320,7 +329,11 @@ function renderList(locked){
       </div>
     </div>`;
   }).join('');
-  ITEMS.forEach(it=>order[it.id]=0);
+
+  ITEMS.forEach(it=>{ order[it.id] = locked ? 0 : (it.qty_ordered||0); });
+  if(!locked){
+    ITEMS.forEach(it=>{ if(order[it.id]>0) setQty(it.id, order[it.id]); });
+  }
 }
 
 function packOf(id){ const it=ITEMS.find(x=>x.id===id); return (it.moq_pack && it.moq_pack>1)?it.moq_pack:1; }
@@ -421,7 +434,7 @@ async function submitOrder(){
   btn.disabled=true; btn.textContent='Mengirim…'; errBox.style.display='none';
   const note=document.getElementById('custNote').value.trim();
   try{
-    const updates = ITEMS.map(it => sb.from('quote_items').update({ qty_ordered: order[it.id]||0 }).eq('id', it.id));
+    const updates = ITEMS.map(it => sb.from('quote_items').update({ qty_ordered: order[it.id]||0, qty_customer: order[it.id]||0 }).eq('id', it.id));
     const results = await Promise.all(updates);
     const bad = results.find(r=>r.error);
     if(bad) throw bad.error;
