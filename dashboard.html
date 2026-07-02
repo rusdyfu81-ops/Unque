@@ -153,10 +153,36 @@
   .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 9px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 300; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .loading-txt { text-align:center; padding: 60px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 28px; width:100%; max-width:360px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .login-box .brand-icon { width:40px;height:40px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px; }
+  .login-box h1 { font-family:var(--mono); font-size:17px; margin-bottom:4px; }
+  .login-box p { font-size:12.5px; color:var(--muted); margin-bottom:20px; }
+  .login-fld { margin-bottom:12px; }
+  .login-fld label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; }
+  .login-fld input { width:100%; border:1px solid var(--border2); border-radius:9px; padding:10px 12px; font-size:14px; font-family:var(--sans); }
+  .login-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:9px; padding:11px; font-weight:600; font-size:14px; cursor:pointer; margin-top:6px; }
+  .login-btn[disabled] { opacity:.6; cursor:default; }
+  .login-err { background:var(--red-s); color:var(--red); border-radius:8px; padding:9px 11px; font-size:12.5px; margin-bottom:12px; display:none; }
+  .btn-logout { border:1px solid var(--border2); background:var(--surface2); color:var(--text2); border-radius:8px; padding:7px 12px; font-family:var(--mono); font-size:12px; cursor:pointer; }
 </style>
 </head>
 <body>
 
+<div id="loginGate" class="login-wrap">
+  <div class="login-box">
+    <div class="brand-icon">📋</div>
+    <h1>Dashboard Sales</h1>
+    <p>Masuk dengan akun yang diberikan admin.</p>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-fld"><label>Email</label><input type="email" id="loginEmail" autocomplete="username"></div>
+    <div class="login-fld"><label>Password</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Masuk</button>
+  </div>
+</div>
+
+<div id="appMain" style="display:none">
 <header>
   <div class="brand">
     <div class="brand-icon">📋</div>
@@ -164,6 +190,7 @@
   </div>
   <div class="header-right">
     <button class="btn-refresh" onclick="loadAll()">↻ Refresh</button>
+    <button class="btn-logout" onclick="doLogout()">Keluar</button>
   </div>
 </header>
 
@@ -174,6 +201,7 @@
 
 <div class="overlay" id="detailOv"></div>
 <div class="toast" id="toast"></div>
+</div>
 
 <script>
 /* ┌─────────────────────────────────────────┐
@@ -242,14 +270,10 @@ function lastActivity(q){
   const dates = [q.created_at, q.submitted_at, q.reviewed_at, q.decided_at, q.confirmed_at, q.shipped_at].filter(Boolean).map(d=>new Date(d).getTime());
   return dates.length ? Math.max(...dates) : 0;
 }
-function isPastDeadline(q){
-  return q.status==='diterima' && q.confirm_deadline && new Date(q.confirm_deadline).getTime() < Date.now();
-}
-
 function groupOf(status){
   if(status==='terkirim') return 'baru';
-  if(status==='disubmit' || status==='review' || status==='dikonfirmasi') return 'perlu_sales';
-  if(status==='direvisi' || status==='diterima') return 'nunggu_customer';
+  if(status==='dikonfirmasi') return 'perlu_sales';
+  if(status==='direvisi') return 'nunggu_customer';
   if(status==='dikirim') return 'selesai';
   if(status==='ditolak') return 'ditolak';
   return 'lainnya';
@@ -276,7 +300,7 @@ function setTab(t){ TAB=t; renderTabs(); renderList(); }
 function fmtDate(d){ if(!d) return '—'; return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
 function fmtDateTime(d){ if(!d) return '—'; return new Date(d).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
 
-const STATUS_LABEL = { terkirim:'Terkirim', disubmit:'Disubmit', review:'Review', direvisi:'Direvisi', diterima:'Diterima', dikonfirmasi:'Menunggu Pengiriman', dikirim:'Dikirim', ditolak:'Ditolak' };
+const STATUS_LABEL = { terkirim:'Terkirim', dikonfirmasi:'Menunggu Pengiriman', direvisi:'Direvisi', dikirim:'Dikirim', ditolak:'Ditolak' };
 
 function renderList(){
   const list = QUOTES.filter(q=>tabFilter(q.status)).slice().sort((a,b)=>lastActivity(b)-lastActivity(a));
@@ -291,7 +315,7 @@ function renderList(){
       const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
       return `<tr onclick="openDetail('${q.id}')">
         <td class="row-code">${esc(q.code)}</td>
-        <td class="row-cust">${esc(who)}${q.is_new_customer?'<span class="new-badge">🆕 Baru</span>':''}${isPastDeadline(q)?'<span class="late-badge">⚠ Lewat waktu</span>':''}</td>
+        <td class="row-cust">${esc(who)}${q.is_new_customer?'<span class="new-badge">🆕 Baru</span>':''}</td>
         <td><span class="badge b-${q.status}">${STATUS_LABEL[q.status]||q.status}</span></td>
         <td class="right">${t.lines}</td>
         <td class="right row-total">${rp(t.grand)}</td>
@@ -312,12 +336,6 @@ async function openDetail(id){
   CUR = QUOTES.find(q=>q.id===id);
   if(!CUR) return;
   EDIT_MODE = false; EDIT_VALS = {};
-
-  // Auto-claim: disubmit -> review begitu dibuka
-  if(CUR.status === 'disubmit'){
-    const { data, error } = await sb.from('quotes').update({ status:'review', reviewed_at:new Date().toISOString() }).eq('id', id).select().single();
-    if(!error && data){ CUR = data; const idx=QUOTES.findIndex(q=>q.id===id); QUOTES[idx]=data; renderTabs(); renderList(); }
-  }
 
   renderDetail();
   document.getElementById('detailOv').classList.add('show');
@@ -341,19 +359,16 @@ function renderDetail(){
   const items = (ITEMS_BY_Q[q.id]||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
   const t = computeTotals(q);
   const who = q.customer_name ? (q.customer_name + (q.customer_company?' · '+q.customer_company:'')) : (q.customer_company||'—');
-  const canAct = q.status==='disubmit' || q.status==='review';
-  const canShip = q.status==='dikonfirmasi';
+  const canDecide = q.status==='dikonfirmasi';
   const link = /:\/\//.test(SB_CONFIG.customerLinkBase) ? SB_CONFIG.customerLinkBase+encodeURIComponent(q.code) : new URL(SB_CONFIG.customerLinkBase+encodeURIComponent(q.code), location.href).href;
 
   let banner = '';
   if(q.status==='direvisi') banner = `<div class="banner purple">Menunggu customer mengecek &amp; kirim ulang. Catatan revisi: ${esc(q.revision_note||'-')}</div>`;
-  if(q.status==='diterima') banner = `<div class="banner green">Menunggu customer isi alamat &amp; klik Confirm Order${isPastDeadline(q) ? ' — <b>⚠ sudah lewat batas 1 jam, cek ulang stok sebelum lanjut</b>' : (q.confirm_deadline ? ' (batas '+fmtDateTime(q.confirm_deadline)+')' : '')}.</div>`;
-  if(q.status==='dikonfirmasi') banner = `<div class="banner green">Customer sudah konfirmasi${q.confirmed_at?' · '+fmtDateTime(q.confirmed_at):''}. Proses SJ/invoice di Accurate, kirim barang, lalu isi resi di bawah.</div>`;
+  if(q.status==='dikonfirmasi') banner = `<div class="banner green">Customer sudah konfirmasi pesanan${q.confirmed_at?' · '+fmtDateTime(q.confirmed_at):''}. Cek stok &amp; harga di bawah — lanjut kirim, revisi, atau tolak.</div>`;
   if(q.status==='dikirim') banner = `<div class="banner green">✓ Selesai — dikirim${q.shipped_at?' · '+fmtDateTime(q.shipped_at):''} via ${esc(q.courier_name||'-')}, resi ${esc(q.tracking_no||'-')}.</div>`;
   if(q.status==='ditolak')  banner = `<div class="banner red">Pesanan ditolak${q.decided_at?' · '+fmtDateTime(q.decided_at):''}. Alasan: ${esc(q.reject_reason||'-')}</div>`;
-  if(q.status==='review')   banner = `<div class="banner warn">Sedang direview. Cek stok &amp; harga di bawah sebelum memutuskan.</div>`;
 
-  const validateRow = canAct ? `
+  const validateRow = canDecide ? `
     <div class="validate-row">
       <span class="validate-hint">Opsional — muat file terkini untuk validasi harga &amp; stok:</span>
       <div class="file-chip ${hargaMap?'loaded':''}" title="Muat pricelist terbaru">
@@ -367,7 +382,7 @@ function renderDetail(){
     </div>
     ${(!hargaMap && !stokMap) ? `<div class="validate-warn">⚠ Belum ada file divalidasi — harga/stok di bawah masih data saat quote dibuat, belum tentu masih sama sekarang.</div>` : ''}` : '';
 
-  const shipInfoBox = (canShip || q.status==='dikirim') ? `
+  const shipInfoBox = (canDecide || q.status==='dikirim') ? `
     <div class="ship-box">
       <div class="r"><span class="k">Penerima</span><span class="v">${esc(q.shipping_name||'-')}</span></div>
       <div class="r"><span class="k">No. HP</span><span class="v">${esc(q.shipping_phone||'-')}</span></div>
@@ -443,7 +458,7 @@ function renderDetail(){
           <label>Catatan revisi untuk customer (jelaskan apa yang berubah)</label>
           <textarea id="reviseNote" placeholder="mis. EDP 12000201 stok kosong, qty disesuaikan jadi indent"></textarea>
         </div>` : ''}
-        ${canShip ? `
+        ${(canDecide && !EDIT_MODE) ? `
         <div class="revise-note">
           <label>No. Resi &amp; Nama Kurir (isi setelah barang benar-benar dikirim)</label>
           <div class="ship-fields">
@@ -458,13 +473,11 @@ function renderDetail(){
         ${EDIT_MODE ? `
           <button class="btn-ghost" onclick="cancelEdit()">Batal</button>
           <button class="btn-revise" onclick="sendRevision()">Kirim Revisi ke Customer</button>
-        ` : canAct ? `
+        ` : canDecide ? `
           <button class="btn-reject" onclick="rejectQuote()">✕ Tolak</button>
           <button class="btn-revise" onclick="startEdit()">✏️ Edit &amp; Revisi</button>
-          <button class="btn-approve" onclick="approveQuote()">✓ Setujui Pesanan</button>
-        ` : canShip ? `
           <button class="btn-ship" onclick="markShipped()">🚚 Tandai Terkirim</button>
-        ` : (q.status==='diterima' || q.status==='dikonfirmasi' || q.status==='dikirim') ? `
+        ` : (q.status==='direvisi' || q.status==='dikirim') ? `
           <button class="btn-approve" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button>
         ` : ''}
       </div>
@@ -490,22 +503,13 @@ function setEditVal(itemId, field, val){
   renderDetail();
 }
 
-async function approveQuote(){
-  let msg = 'Setujui pesanan '+CUR.code+' apa adanya (tanpa perubahan)?';
-  if(!hargaMap && !stokMap) msg = '⚠ Kamu belum muat file validasi harga/stok terbaru.\n\n' + msg + '\n\n(Data harga masih dari saat quote dibuat, belum tentu masih sama sekarang)';
-  if(!confirm(msg)) return;
-  const deadline = new Date(Date.now() + 60*60*1000).toISOString();
-  const { data, error } = await sb.from('quotes').update({ status:'diterima', decided_at:new Date().toISOString(), confirm_deadline: deadline }).eq('id', CUR.id).select().single();
-  if(error){ alert('Gagal: '+error.message); return; }
-  applyQuoteUpdate(data);
-  showToast('✓ Pesanan diterima — customer punya 1 jam untuk konfirmasi');
-  closeDetail();
-}
-
 async function markShipped(){
   const courier = document.getElementById('fCourier').value.trim();
   const tracking = document.getElementById('fTracking').value.trim();
   if(!courier || !tracking){ alert('Isi nama kurir dan no. resi dulu.'); return; }
+  if(!hargaMap && !stokMap){
+    if(!confirm('⚠ Kamu belum muat file validasi harga/stok terbaru.\n\nTandai terkirim tanpa validasi?')) return;
+  }
   const { data, error } = await sb.from('quotes').update({
     status:'dikirim', courier_name:courier, tracking_no:tracking, shipped_at:new Date().toISOString()
   }).eq('id', CUR.id).select().single();
@@ -514,6 +518,8 @@ async function markShipped(){
   showToast('✓ Ditandai terkirim');
   closeDetail();
 }
+
+
 
 async function rejectQuote(){
   const reason = prompt('Alasan penolakan (akan terlihat oleh customer):');
@@ -601,7 +607,7 @@ function generateProformaPDF(q, items){
   doc.text('PROFORMA INVOICE', pw-14, 18, { align:'right' });
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90);
   doc.text('No.  ' + invoiceNo, pw-14, 24, { align:'right' });
-  doc.text('Tanggal  ' + fmtDate(q.decided_at||new Date()), pw-14, 29, { align:'right' });
+  doc.text('Tanggal  ' + fmtDate(q.confirmed_at||new Date()), pw-14, 29, { align:'right' });
 
   doc.setDrawColor(220); doc.line(14, 34, pw-14, 34);
 
@@ -705,7 +711,36 @@ function parseStokLite(rows){
 
 document.getElementById('detailOv').addEventListener('click', e=>{ if(e.target.id==='detailOv') closeDetail(); });
 
-loadAll();
+/* ── Auth gate ── */
+async function doLogin(){
+  const btn = document.getElementById('loginBtn'), errBox = document.getElementById('loginErr');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if(!email || !pass){ errBox.textContent='Isi email dan password.'; errBox.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Masuk…'; errBox.style.display='none';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(error){
+    errBox.textContent = 'Login gagal: email/password salah.'; errBox.style.display='block';
+    btn.disabled=false; btn.textContent='Masuk';
+    return;
+  }
+  showApp();
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+function showApp(){
+  document.getElementById('loginGate').style.display='none';
+  document.getElementById('appMain').style.display='block';
+  loadAll();
+}
+(async function boot(){
+  const { data } = await sb.auth.getSession();
+  if(data.session) showApp();
+  else document.getElementById('loginGate').style.display='flex';
+})();
+
 </script>
 </body>
 </html>
