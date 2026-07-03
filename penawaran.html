@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Penawaran Harga</title>
+<meta name="robots" content="noindex, nofollow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -41,6 +42,10 @@
   .brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;letter-spacing:.14em}
   .brand span{color:var(--cobalt)}
+  .brand img{height:34px;width:auto;display:block}
+  .trustbar{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:8px}
+  .trustbar a{color:var(--ink-2);text-decoration:none;display:flex;align-items:center;gap:4px}
+  .trustbar a:hover{color:var(--cobalt)}
   .doctag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:#9FB0BE;
     text-transform:uppercase;border:1px solid rgba(255,255,255,.18);padding:5px 9px;border-radius:6px;white-space:nowrap}
   .lede{margin-top:16px}
@@ -236,13 +241,11 @@ async function load(){
   if(!CODE){ stateCard(iconX,'#8A2B2E','#FDEBEC','Link tidak lengkap','Kode penawaran tidak ditemukan pada link. Minta link baru ke sales.'); return; }
   let q, items;
   try{
-    const r1 = await sb.from('quotes').select('*').eq('code', CODE).maybeSingle();
+    const r1 = await sb.rpc('get_quote_by_code', { p_code: CODE });
     if(r1.error) throw r1.error;
-    q = r1.data;
-    if(!q){ stateCard(iconX,'#8A2B2E','#FDEBEC','Penawaran tidak ditemukan','Kode ini tidak ada atau sudah dihapus. Silakan hubungi sales.'); return; }
-    const r2 = await sb.from('quote_items').select('*').eq('quote_id', q.id).order('sort_order',{ascending:true});
-    if(r2.error) throw r2.error;
-    items = r2.data || [];
+    if(!r1.data || !r1.data.quote){ stateCard(iconX,'#8A2B2E','#FDEBEC','Penawaran tidak ditemukan','Kode ini tidak ada atau sudah dihapus. Silakan hubungi sales.'); return; }
+    q = r1.data.quote;
+    items = r1.data.items || [];
   }catch(err){
     stateCard(iconX,'#8A2B2E','#FDEBEC','Gagal memuat','Terjadi masalah koneksi. Coba buka ulang link, atau hubungi sales.<br><br><span style="font-size:11px;color:#9AA">'+(err.message||'')+'</span>');
     return;
@@ -276,64 +279,6 @@ function eyebrowText(status){
   return 'Detail Pesanan';
 }
 
-let COUNTDOWN_TIMER = null;
-function stopCountdown(){ if(COUNTDOWN_TIMER){ clearInterval(COUNTDOWN_TIMER); COUNTDOWN_TIMER=null; } }
-function fmtCountdown(ms){
-  if(ms<=0) return '00:00';
-  const totalSec = Math.floor(ms/1000);
-  const m = Math.floor(totalSec/60), s = totalSec%60;
-  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-}
-function startCountdown(deadlineIso){
-  stopCountdown();
-  const tick = () => {
-    const el = document.getElementById('countdownTxt'), pill = document.getElementById('deadlinePill');
-    if(!el || !pill) { stopCountdown(); return; }
-    const diff = new Date(deadlineIso).getTime() - Date.now();
-    if(diff <= 0){
-      el.textContent = 'Waktu tunggu sudah lewat';
-      pill.classList.remove('urgent');
-      el.previousElementSibling && (el.previousElementSibling.textContent='⏱');
-      stopCountdown();
-    } else {
-      el.textContent = fmtCountdown(diff) + ' lagi';
-      pill.classList.toggle('urgent', diff < 10*60*1000);
-    }
-  };
-  tick();
-  COUNTDOWN_TIMER = setInterval(tick, 1000);
-}
-
-function shipFormHTML(){
-  const deadline = QUOTE.confirm_deadline;
-  return `
-    ${deadline ? `<div style="padding:0 14px"><div class="deadline-pill" id="deadlinePill">⏱ <span id="countdownTxt">menghitung…</span> — stok ditahan sales sementara</div></div>` : ''}
-    <div class="ship-card" style="margin-top:14px">
-      <h3>🚚 Lengkapi Data Pengiriman</h3>
-      <div class="sub">Isi data ini supaya sales bisa langsung proses pengiriman begitu Anda konfirmasi.</div>
-      <div class="ship-err" id="shipErr"></div>
-      <div class="ship-fld"><label>Nama penerima</label><input type="text" id="fShipName" placeholder="mis. Budi (gudang)"></div>
-      <div class="ship-fld"><label>No. HP penerima</label><input type="text" id="fShipPhone" placeholder="mis. 08123456789"></div>
-      <div class="ship-fld"><label>Alamat kirim lengkap</label><textarea id="fShipAddr" placeholder="Jalan, no, kota, kode pos, patokan"></textarea></div>
-      <button class="cta" style="width:100%" id="btnConfirmOrder" onclick="submitShipping()">Confirm Order</button>
-    </div>`;
-}
-
-function confirmedInfoHTML(){
-  return `
-    <div class="confirmed-card">
-      <div class="ic">✅</div>
-      <b>Order Dikonfirmasi</b>
-      <p>Menunggu diproses &amp; dikirim oleh sales.</p>
-    </div>
-    <div class="track-card" style="border-left-color:var(--cobalt)">
-      <h3>📍 Dikirim ke</h3>
-      <div class="track-row"><span class="k">Penerima</span><span class="v" style="font-family:inherit">${esc(QUOTE.shipping_name||'-')}</span></div>
-      <div class="track-row"><span class="k">No. HP</span><span class="v">${esc(QUOTE.shipping_phone||'-')}</span></div>
-      <div class="track-row"><span class="k">Alamat</span><span class="v" style="font-family:inherit;text-align:right;max-width:65%">${esc(QUOTE.shipping_address||'-')}</span></div>
-    </div>`;
-}
-
 function trackInfoHTML(){
   return `
     <div class="track-card">
@@ -345,8 +290,17 @@ function trackInfoHTML(){
     </div>`;
 }
 
+function shipSummaryHTML(){
+  if(!QUOTE.shipping_name) return '';
+  return `
+    <div class="ship-box">
+      <div class="r"><span class="k">Dikirim ke</span><span class="v">${esc(QUOTE.shipping_name)}</span></div>
+      <div class="r"><span class="k">No. HP</span><span class="v">${esc(QUOTE.shipping_phone||'-')}</span></div>
+      <div class="r"><span class="k">Alamat</span><span class="v">${esc(QUOTE.shipping_address||'-')}</span></div>
+    </div>`;
+}
+
 function render(){
-  stopCountdown();
   const status = QUOTE.status;
   const editable = status === 'terkirim' ? !isExpired() : status === 'direvisi';
   const locked = !editable;
@@ -358,30 +312,25 @@ function render(){
   if(status === 'terkirim'){
     banner = isExpired()
       ? bannerBlock('warn','⏱️ Masa berlaku penawaran ini sudah lewat', '', `Berlaku sampai ${fmtDate(QUOTE.valid_until)}. Hubungi sales untuk penawaran baru.`)
-      : bannerBlock('info','💬 Harga belum termasuk PPN 11%', '', 'Atur jumlah pada barang yang Anda butuhkan.');
-  } else if(status === 'disubmit'){
-    banner = bannerBlock('info','✅ Pesanan sudah terkirim', '', 'Menunggu sales mengecek stok & harga terkini.');
-  } else if(status === 'review'){
-    banner = bannerBlock('info','👀 Sedang dicek sales', '', 'Mohon tunggu konfirmasi, tidak perlu melakukan apa pun.');
+      : bannerBlock('info','💬 Harga belum termasuk PPN 11%', '', 'Atur jumlah, lalu klik Buat Pesanan di bawah. Anda juga bisa unduh PDF simulasi dulu.');
   } else if(status === 'direvisi'){
-    banner = bannerBlock('revise','📝 Sales merevisi pesanan ini', QUOTE.revision_note, 'Cek ulang jumlah & harga di bawah, lalu kirim ulang.');
-  } else if(status === 'diterima'){
-    banner = bannerBlock('good','🎉 Pesanan dikonfirmasi sales!', '', 'Lengkapi data pengiriman di bawah untuk melanjutkan.');
+    banner = bannerBlock('revise','📝 Sales merevisi pesanan ini', QUOTE.revision_note, 'Alamat kirim Anda tetap tersimpan — cek ulang jumlah & harga di bawah, lalu konfirmasi lagi.');
   } else if(status === 'dikonfirmasi'){
-    banner = bannerBlock('good','📦 Pesanan Anda sedang diproses', '', 'Menunggu diproses & dikirim oleh sales.');
+    banner = bannerBlock('good','🎉 Pesanan Anda diterima!', '', 'Sales sedang cek stok sebelum diproses & dikirim.');
   } else if(status === 'dikirim'){
     banner = bannerBlock('good','🚚 Pesanan sudah dikirim', '', 'Terima kasih sudah berbelanja bersama kami.');
   } else if(status === 'ditolak'){
     banner = bannerBlock('warn','✕ Pesanan ini ditolak sales', QUOTE.reject_reason, 'Hubungi sales untuk info lebih lanjut.');
   }
 
-  const showProforma = ['diterima','dikonfirmasi','dikirim'].includes(status);
+  const showProforma = status !== 'ditolak';
+  const proformaLabel = status === 'terkirim' ? '📄 Unduh PDF (Simulasi)' : '📄 Unduh Proforma Invoice';
 
   document.getElementById('app').innerHTML = `
     <div class="wrap">
       <header>
         <div class="brandrow">
-          <div class="brand">${esc(COMPANY_CONFIG.name)}</div>
+          <div class="brand"><img src="https://gofir.co.id/wp-content/uploads/2016/06/cropped-logo-gss-1.png" alt="${esc(COMPANY_CONFIG.name)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(COMPANY_CONFIG.name)}'}))"></div>
           <div class="doctag">${QUOTE.code}</div>
         </div>
         <div class="lede">
@@ -392,15 +341,18 @@ function render(){
             ${status==='terkirim' ? `<span>Berlaku s/d <b>${fmtDate(QUOTE.valid_until)}</b></span>` : ''}
             ${QUOTE.sales_name ? `<span>Sales <b>${esc(QUOTE.sales_name)}</b></span>` : ''}
           </div>
+          <div class="trustbar">
+            <a href="tel:${COMPANY_CONFIG.phone.replace(/\D/g,'')}">📞 ${esc(COMPANY_CONFIG.phone)}</a>
+            <a href="https://gofir.co.id" target="_blank" rel="noopener">🌐 gofir.co.id</a>
+          </div>
         </div>
         <div class="ruler"></div>
       </header>
       ${banner}
       <div class="list" id="list"></div>
-      ${status==='diterima' ? shipFormHTML() : ''}
-      ${status==='dikonfirmasi' ? confirmedInfoHTML() : ''}
+      ${status==='dikonfirmasi' ? shipSummaryHTML() : ''}
       ${status==='dikirim' ? trackInfoHTML() : ''}
-      ${showProforma ? `<div style="padding:0 14px 4px"><button class="cta" style="width:100%;background:var(--ink)" onclick="downloadProforma()">📄 Unduh Proforma Invoice</button></div>` : ''}
+      ${showProforma ? `<div style="padding:0 14px 4px"><button class="cta" style="width:100%;background:var(--ink)" onclick="downloadProforma()">${proformaLabel}</button></div>` : ''}
       <div class="footnote">
         Dokumen ini bukan faktur pajak resmi. Sales kami cek stok &amp; harga sebelum konfirmasi.
       </div>
@@ -419,7 +371,7 @@ function render(){
           <div class="brow indent-row" id="bIndentRow" style="display:none"><span>Termasuk barang indent</span><span class="mono" id="bIndent">0 item</span></div>
           <div class="brow grand"><span>Total</span><span class="mono" id="bGrand">Rp 0</span></div>
         </div>
-        <button class="cta" id="cta" disabled>Lanjutkan pesanan <span class="n" id="ctaN" style="display:none">0</span></button>
+        <button class="cta" id="cta" disabled>Buat Pesanan <span class="n" id="ctaN" style="display:none">0</span></button>
       </div>
     </div>`}
   `;
@@ -427,34 +379,8 @@ function render(){
   renderList(locked);
   if(!locked){
     document.getElementById('barSum').addEventListener('click',()=>document.getElementById('bar').classList.toggle('open'));
-    document.getElementById('cta').addEventListener('click', openReview);
+    document.getElementById('cta').addEventListener('click', openOrderSheet);
     updateBar();
-  }
-  if(status==='diterima' && QUOTE.confirm_deadline) startCountdown(QUOTE.confirm_deadline);
-}
-
-async function submitShipping(){
-  const btn = document.getElementById('btnConfirmOrder');
-  const errBox = document.getElementById('shipErr');
-  const name = document.getElementById('fShipName').value.trim();
-  const phone = document.getElementById('fShipPhone').value.trim();
-  const addr = document.getElementById('fShipAddr').value.trim();
-  if(!name || !phone || !addr){
-    errBox.textContent = 'Nama, No. HP, dan alamat wajib diisi.'; errBox.style.display='block';
-    return;
-  }
-  btn.disabled = true; btn.textContent = 'Mengirim…'; errBox.style.display='none';
-  try{
-    const { data, error } = await sb.from('quotes').update({
-      status:'dikonfirmasi', confirmed_at:new Date().toISOString(),
-      shipping_name:name, shipping_phone:phone, shipping_address:addr
-    }).eq('id', QUOTE.id).select().single();
-    if(error) throw error;
-    QUOTE = data;
-    render();
-  }catch(err){
-    errBox.textContent = 'Gagal mengirim: '+(err.message||'coba lagi'); errBox.style.display='block';
-    btn.disabled=false; btn.textContent='Confirm Order';
   }
 }
 
@@ -574,14 +500,15 @@ document.addEventListener('change',e=>{
 });
 
 /* ── Review + submit ── */
-function openReview(){
+function openOrderSheet(){
   let sub=0, lines=0, units=0, indent=0;
   ITEMS.forEach(it=>{ const q=order[it.id]||0; if(q>0&&it.unit_idr!=null){sub+=it.unit_idr*q;lines++;units+=q;if(it.stock_status==='kosong')indent++;} });
   const ppn=Math.round(sub*PPN), grand=sub+ppn;
+  const hasShipping = !!QUOTE.shipping_name;
   const ov=document.createElement('div'); ov.className='overlay show'; ov.id='reviewOv';
   ov.innerHTML=`<div class="sheet">
-    <h3>Kirim pesanan?</h3>
-    <p>Pesanan Anda dikirim ke sales untuk dicek stok &amp; harga terkini, lalu dikonfirmasi.</p>
+    <h3>${hasShipping ? 'Konfirmasi ulang pesanan?' : 'Buat pesanan?'}</h3>
+    <p>${hasShipping ? 'Pesanan akan dikirim ulang ke sales untuk diproses.' : 'Sales akan cek stok, lalu memproses pengiriman.'}</p>
     <div class="sheet-err" id="submitErr"></div>
     <div class="sumbox">
       <div class="r"><span>${lines} barang · ${units} unit</span><span></span></div>
@@ -590,13 +517,23 @@ function openReview(){
       ${indent?`<div class="r" style="color:var(--limited)"><span>Termasuk ${indent} barang indent</span><span></span></div>`:''}
       <div class="r big"><span>Total</span><span class="mono">${rp(grand)}</span></div>
     </div>
+    ${hasShipping ? `
+    <div class="ship-box" style="margin:14px 0">
+      <div class="r"><span class="k">Dikirim ke</span><span class="v">${esc(QUOTE.shipping_name)}</span></div>
+      <div class="r"><span class="k">No. HP</span><span class="v">${esc(QUOTE.shipping_phone||'-')}</span></div>
+      <div class="r"><span class="k">Alamat</span><span class="v">${esc(QUOTE.shipping_address||'-')}</span></div>
+    </div>` : `
+    <div class="notefld"><label>Nama penerima</label><input type="text" id="fShipName" placeholder="mis. Budi (gudang)"></div>
+    <div class="notefld"><label>No. HP penerima</label><input type="text" id="fShipPhone" placeholder="mis. 08123456789"></div>
+    <div class="notefld"><label>Alamat kirim lengkap</label><textarea id="fShipAddr" placeholder="Jalan, no, kota, kode pos, patokan"></textarea></div>
+    `}
     <div class="notefld">
       <label>Catatan untuk sales (opsional)</label>
-      <textarea id="custNote" placeholder="mis. alamat kirim, minta franco, dll"></textarea>
+      <textarea id="custNote" placeholder="mis. minta franco, dll"></textarea>
     </div>
     <div class="sheet-actions">
       <button class="btn-ghost" onclick="closeReview()">Batal</button>
-      <button class="cta" id="btnSubmit" style="flex:1" onclick="submitOrder()">Kirim ke sales</button>
+      <button class="cta" id="btnSubmit" style="flex:1" onclick="submitPesanan()">${hasShipping ? 'Konfirmasi Ulang' : 'Konfirmasi Pesanan'}</button>
     </div>
   </div>`;
   document.body.appendChild(ov);
@@ -604,9 +541,20 @@ function openReview(){
 }
 function closeReview(){ const o=document.getElementById('reviewOv'); if(o) o.remove(); }
 
-async function submitOrder(){
+async function submitPesanan(){
   const btn=document.getElementById('btnSubmit');
   const errBox=document.getElementById('submitErr');
+  const hasShipping = !!QUOTE.shipping_name;
+  let name, phone, addr;
+  if(!hasShipping){
+    name = document.getElementById('fShipName').value.trim();
+    phone = document.getElementById('fShipPhone').value.trim();
+    addr = document.getElementById('fShipAddr').value.trim();
+    if(!name || !phone || !addr){
+      errBox.textContent = 'Nama, No. HP, dan alamat wajib diisi.'; errBox.style.display='block';
+      return;
+    }
+  }
   btn.disabled=true; btn.textContent='Mengirim…'; errBox.style.display='none';
   const note=document.getElementById('custNote').value.trim();
   try{
@@ -614,15 +562,16 @@ async function submitOrder(){
     const results = await Promise.all(updates);
     const bad = results.find(r=>r.error);
     if(bad) throw bad.error;
-    const r = await sb.from('quotes').update({
-      status:'disubmit', submitted_at:new Date().toISOString(), customer_note: note || null
-    }).eq('id', QUOTE.id);
+    const payload = { status:'dikonfirmasi', confirmed_at:new Date().toISOString(), customer_note: note || null };
+    if(!hasShipping){ payload.shipping_name=name; payload.shipping_phone=phone; payload.shipping_address=addr; }
+    const r = await sb.from('quotes').update(payload).eq('id', QUOTE.id);
     if(r.error) throw r.error;
+    QUOTE = { ...QUOTE, ...payload };
     closeReview();
     showSuccess();
   }catch(err){
     errBox.textContent = 'Gagal mengirim: ' + (err.message||'coba lagi'); errBox.style.display='block';
-    btn.disabled=false; btn.textContent='Kirim ke sales';
+    btn.disabled=false; btn.textContent = hasShipping ? 'Konfirmasi Ulang' : 'Konfirmasi Pesanan';
   }
 }
 
@@ -630,13 +579,12 @@ function showSuccess(){
   const ov=document.createElement('div'); ov.className='overlay show';
   ov.innerHTML=`<div class="sheet">
     <div class="checkwrap">${iconCheck}</div>
-    <h3>Pesanan terkirim</h3>
-    <p>Terima kasih. Pesanan Anda masuk ke sales untuk dicek ketersediaan dan harga terkini. Buka kembali link ini sewaktu-waktu untuk lihat perkembangannya.</p>
+    <h3>Pesanan dikonfirmasi</h3>
+    <p>Terima kasih. Sales akan cek stok, lalu memproses pengiriman. Buka kembali link ini sewaktu-waktu untuk lihat perkembangannya.</p>
     <div class="steps">
-      <div class="step done"><span class="num">✓</span><span class="st"><b>Pesanan dikirim</b> — barusan</span></div>
-      <div class="step now"><span class="num">2</span><span class="st"><b>Dicek sales</b> — stok &amp; harga divalidasi</span></div>
-      <div class="step wait"><span class="num">3</span><span class="st">Konfirmasi, proforma invoice &amp; data pengiriman</span></div>
-      <div class="step wait"><span class="num">4</span><span class="st">Barang dikirim</span></div>
+      <div class="step done"><span class="num">✓</span><span class="st"><b>Pesanan dikonfirmasi</b> — barusan</span></div>
+      <div class="step now"><span class="num">2</span><span class="st"><b>Sales cek stok</b> — sebelum diproses</span></div>
+      <div class="step wait"><span class="num">3</span><span class="st">Barang dikirim</span></div>
     </div>
     <button class="close-full" onclick="location.reload()">Selesai</button>
   </div>`;
@@ -671,7 +619,10 @@ function downloadProforma(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const pw = doc.internal.pageSize.getWidth();
-  const q = QUOTE, items = ITEMS;
+  const q = QUOTE;
+  const isDraft = q.status === 'terkirim' || q.status === 'direvisi';
+  // Simulasi pakai qty draft yang sedang diketik customer; kalau sudah final pakai qty_ordered tersimpan
+  const items = ITEMS.map(it => ({ ...it, qty_ordered: isDraft ? (order[it.id]||0) : (it.qty_ordered||0) }));
   const invoiceNo = q.code.replace(/^QT-/,'PI-');
   const rows = items.filter(it=>it.qty_ordered>0).map((it,i)=>[
     i+1, it.edp, it.name||'', it.qty_ordered,
@@ -690,10 +641,10 @@ function downloadProforma(){
   doc.text(COMPANY_CONFIG.phone + '  ·  ' + COMPANY_CONFIG.email, 14, 29);
 
   doc.setTextColor(20); doc.setFont('helvetica','bold'); doc.setFontSize(15);
-  doc.text('PROFORMA INVOICE', pw-14, 18, { align:'right' });
+  doc.text(isDraft ? 'SIMULASI PESANAN' : 'PROFORMA INVOICE', pw-14, 18, { align:'right' });
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90);
   doc.text('No.  ' + invoiceNo, pw-14, 24, { align:'right' });
-  doc.text('Tanggal  ' + fmtDate(q.decided_at||new Date()), pw-14, 29, { align:'right' });
+  doc.text('Tanggal  ' + fmtDate(q.confirmed_at||new Date()), pw-14, 29, { align:'right' });
 
   doc.setDrawColor(220); doc.line(14, 34, pw-14, 34);
 
@@ -703,18 +654,23 @@ function downloadProforma(){
   doc.text(q.customer_name || '-', 14, 47);
   if(q.customer_company) doc.text(q.customer_company, 14, 52);
 
-  doc.autoTable({
-    startY: 58,
-    head: [['No','EDP','Nama Barang','Qty','Harga Satuan','Subtotal']],
-    body: rows,
-    styles: { font:'helvetica', fontSize: 8.5, cellPadding: 2.4 },
-    headStyles: { fillColor: [43,87,240], textColor: 255, fontStyle:'bold' },
-    columnStyles: { 0:{cellWidth:9}, 3:{halign:'right',cellWidth:14}, 4:{halign:'right',cellWidth:32}, 5:{halign:'right',cellWidth:32} },
-    margin: { left:14, right:14 }
-  });
+  if(rows.length === 0){
+    doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(140);
+    doc.text('Belum ada barang dengan jumlah diisi.', 14, 65);
+  } else {
+    doc.autoTable({
+      startY: 58,
+      head: [['No','EDP','Nama Barang','Qty','Harga Satuan','Subtotal']],
+      body: rows,
+      styles: { font:'helvetica', fontSize: 8.5, cellPadding: 2.4 },
+      headStyles: { fillColor: [43,87,240], textColor: 255, fontStyle:'bold' },
+      columnStyles: { 0:{cellWidth:9}, 3:{halign:'right',cellWidth:14}, 4:{halign:'right',cellWidth:32}, 5:{halign:'right',cellWidth:32} },
+      margin: { left:14, right:14 }
+    });
+  }
 
-  let y = doc.lastAutoTable.finalY + 8;
-  doc.setFontSize(9.5);
+  let y = (doc.lastAutoTable?.finalY || 65) + 8;
+  doc.setFontSize(9.5); doc.setTextColor(20);
   doc.text('Subtotal', pw-70, y); doc.text(rp(sub), pw-14, y, { align:'right' }); y+=6;
   doc.text('DPP Nilai Lain', pw-70, y); doc.text(rp(dpp), pw-14, y, { align:'right' }); y+=6;
   doc.text('PPN 12%', pw-70, y); doc.text(rp(ppn), pw-14, y, { align:'right' }); y+=6;
@@ -724,18 +680,32 @@ function downloadProforma(){
   y += 8;
   doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(90);
   doc.text('Terbilang: ' + terbilang(grand) + ' rupiah', 14, y);
-
   y += 12;
-  doc.setDrawColor(220); doc.line(14, y, pw-14, y); y += 7;
-  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(20);
-  doc.text('Instruksi Pembayaran', 14, y); y += 5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70);
-  doc.text(`Transfer ke ${COMPANY_CONFIG.bank_name} — ${COMPANY_CONFIG.bank_account_no} a.n. ${COMPANY_CONFIG.bank_account_name}`, 14, y); y += 10;
+
+  if(isDraft){
+    // Tombol klik-untuk-order tertanam sebagai link PDF, mengarah balik ke halaman ini
+    doc.setFillColor(43,87,240);
+    doc.roundedRect(14, y, pw-28, 14, 2, 2, 'F');
+    doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('🛒  Klik di sini untuk Order  →', pw/2, y+9, { align:'center' });
+    doc.link(14, y, pw-28, 14, { url: location.href });
+    y += 22;
+    doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(140);
+    doc.text('Ini simulasi — belum jadi pesanan. Harga dapat berubah sampai Anda klik Buat Pesanan.', 14, y);
+  } else {
+    doc.setDrawColor(220); doc.line(14, y, pw-14, y); y += 7;
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(20);
+    doc.text('Instruksi Pembayaran', 14, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70);
+    doc.text(`Transfer ke ${COMPANY_CONFIG.bank_name} — ${COMPANY_CONFIG.bank_account_no} a.n. ${COMPANY_CONFIG.bank_account_name}`, 14, y); y += 10;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120);
+    doc.textWithLink('📍 Cek status pesanan di sini', 14, y, { url: location.href });
+  }
 
   doc.setFontSize(7.5); doc.setTextColor(140);
   doc.text('Dokumen ini adalah proforma invoice (bukan faktur pajak resmi), diterbitkan berdasarkan pesanan yang telah dikonfirmasi.', 14, 285);
 
-  doc.save('Proforma_' + q.code + '.pdf');
+  doc.save((isDraft?'Simulasi_':'Proforma_') + q.code + '.pdf');
 }
 
 load();
